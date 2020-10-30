@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="sps-mc-link-spigot:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/sps_mc_link_spigot_jar</output-path>
+    <root id="archive" name="sps-mc-link-spigot.jar">
+      <element id="module-output" name="sps-mc-link-spigot" />
+    </root>
+  </artifact>
+</component>

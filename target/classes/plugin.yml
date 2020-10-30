@@ -1,0 +1,7 @@
+name: SPSMCLink
+description: A Spigot plugin for the unoffical (student-run) SPS Minecraft server, linking your SPS account with your Minecraft account.
+prefix: SPSMC
+main: com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot
+version: 1.0.0
+api-version: 1.16
+author: GCC Minecraft Team
