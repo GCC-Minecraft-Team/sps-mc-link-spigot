@@ -5,7 +5,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class spsspigot extends JavaPlugin {
     @Override
     public void onEnable() {
-
+        getServer().getPluginManager().registerEvents(new JoinEvent(), this);
+        System.out.println("SPS Spigot integration started.");
     }
 
     @Override
