@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class SPSSpigot extends JavaPlugin {
@@ -9,6 +10,8 @@ public class SPSSpigot extends JavaPlugin {
     @Override
     public void onEnable() {
         // Setup Permissions
+        ConfigurationSerialization.registerClass(Rank.class);
+
         perms = new PermissionsHandler();
         getServer().getPluginManager().registerEvents(new PermissionsEvents(), this);
 

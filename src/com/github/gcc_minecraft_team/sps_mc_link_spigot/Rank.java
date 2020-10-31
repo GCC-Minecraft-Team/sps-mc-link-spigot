@@ -1,11 +1,13 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.permissions.Permission;
 
 import java.util.HashMap;
+import java.util.Map;
 
-public class Rank {
+public class Rank implements ConfigurationSerializable {
     /**
      * This is not for differentiating between members and unlinked players.
      * Ranks are flairs, mod tags, etc.
@@ -60,5 +62,30 @@ public class Rank {
 
     public void setColor(ChatColor color) {
         this.color = color;
+    }
+
+    // Serialization
+    private static String NAMEKEY = "name";
+    private static String PERMSKEY = "perms";
+    private static String COLORKEY = "color";
+
+    public Rank(Map<String, Object> map) {
+        this((String) map.get(NAMEKEY));
+        this.perms = (HashMap<String, Boolean>) map.get(PERMSKEY);
+        // Try and get the color from the string; default to white if not recognized.
+        try {
+            this.color = ChatColor.valueOf(((String) map.get(COLORKEY)).strip().replace(" ", "_").toUpperCase());
+        } catch (IllegalArgumentException e) {
+            this.color = ChatColor.WHITE;
+        }
+    }
+
+    @Override
+    public Map<String, Object> serialize() {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put(NAMEKEY, this.name);
+        map.put(PERMSKEY, this.perms);
+        map.put(COLORKEY, this.color.name());
+        return map;
     }
 }
