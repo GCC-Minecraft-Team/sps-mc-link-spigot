@@ -5,3 +5,41 @@ main: com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot
 version: 1.0.0
 api-version: 1.16
 author: GCC Minecraft Team
+
+permissions:
+  spsmc.basic.interact:
+    description: Allows interaction with blocks and the air.
+    default: true
+  spsmc.basic.interactentity:
+    description: Allows interaction with entities.
+    default: true
+  spsmc.basic.attackblock:
+    description: Allows attacking blocks.
+    default: true
+  spsmc.basic.attackentity:
+    description: Allows attacking entities.
+    default: true
+  spsmc.basic.move:
+    description: Allows moving.
+    default: true
+  spsmc.basic.itempickup:
+    description: Allows picking up items.
+    default: true
+  spsmc.basic.itemdrop:
+    description: Allows dropping items.
+    default: true
+  spsmc.basic.chat:
+    description: Allows chatting.
+    default: true
+  spsmc.basic.*:
+    description: All basic permissions.
+    default: true
+    children:
+      spsmc.basic.interact: true
+      spsmc.basic.interactentity: true
+      spsmc.basic.attackblock: true
+      spsmc.basic.attackentity: true
+      spsmc.basic.move: true
+      spsmc.basic.itempickup: true
+      spsmc.basic.itemdrop: true
+      spsmc.basic.chat: true

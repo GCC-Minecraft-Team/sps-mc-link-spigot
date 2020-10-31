@@ -1,3 +1,6 @@
 com\github\gcc_minecraft_team\sps_mc_link_spigot\JoinEvent.class
+com\github\gcc_minecraft_team\sps_mc_link_spigot\PermissionsHandler.class
+com\github\gcc_minecraft_team\sps_mc_link_spigot\Rank.class
 com\github\gcc_minecraft_team\sps_mc_link_spigot\DatabaseLink.class
+com\github\gcc_minecraft_team\sps_mc_link_spigot\PermissionsEvents.class
 com\github\gcc_minecraft_team\sps_mc_link_spigot\SPSSpigot.class
