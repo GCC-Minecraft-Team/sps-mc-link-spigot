@@ -13,7 +13,7 @@ public class JoinEvent implements Listener {
             event.setJoinMessage("A player is joining the server!");
             event.getPlayer().sendMessage(ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + "Connect to your SPS profile to play: " /* TODO: Link to webapp */);
         } else {
-            event.setJoinMessage(event.getPlayer().getDisplayName() + " (" + DatabaseLink.getSPSName(event.getPlayer().getUniqueId()) + ") joined the server.");
+            event.setJoinMessage(DatabaseLink.getSPSName(event.getPlayer().getUniqueId()) + " joined the server.");
         }
         SPSSpigot.plugin().perms.loadPermissions(event.getPlayer());
     }

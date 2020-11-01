@@ -9,6 +9,9 @@ public class SPSSpigot extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // Setup Databse
+        DatabaseLink.SetupDatabase();
+
         // Setup Permissions
         ConfigurationSerialization.registerClass(Rank.class);
 
