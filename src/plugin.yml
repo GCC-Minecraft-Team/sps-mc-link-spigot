@@ -6,6 +6,12 @@ version: 1.0.0
 api-version: 1.16
 author: GCC Minecraft Team
 
+commands:
+  perms:
+    description: Controls SPSMC's permissions systems.
+    usage: "Usage: /<command> <members|rank|player|reload>"
+    alias: permissions
+
 permissions:
   spsmc.basic.interact:
     description: Allows interaction with blocks and the air.

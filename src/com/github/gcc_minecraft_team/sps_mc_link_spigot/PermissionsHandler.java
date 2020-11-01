@@ -1,9 +1,9 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
@@ -20,12 +20,12 @@ public class PermissionsHandler {
     public static final String CFGRANKS = "ranks";
     public static final String CFGPLAYERS = "player_ranks";
 
-    private HashMap<Player, PermissionAttachment> players;
+    private Map<Player, PermissionAttachment> players;
 
-    private HashMap<String, Boolean> memberPerms;
+    private Map<String, Boolean> memberPerms;
 
-    private HashSet<Rank> ranks;
-    private HashMap<OfflinePlayer, HashSet<Rank>> playerRanks;
+    private Set<Rank> ranks;
+    private Map<UUID, Set<Rank>> playerRanks;
 
     private FileConfiguration permsConfig;
 
@@ -54,11 +54,11 @@ public class PermissionsHandler {
         permsConfig.set(CFGRANKS, ranks);
         // Serialize player ranks to only store UUID String and rank names rather than their entire objects
         HashMap<String, ArrayList<String>> serialPlayerRanks = new HashMap<>();
-        for (Map.Entry<OfflinePlayer, HashSet<Rank>> player : playerRanks.entrySet()) {
+        for (Map.Entry<UUID, Set<Rank>> player : playerRanks.entrySet()) {
             ArrayList<String> rankNames = new ArrayList<>();
             for (Rank rank : player.getValue())
                 rankNames.add(rank.getName());
-            serialPlayerRanks.put(player.getKey().getUniqueId().toString(), rankNames);
+            serialPlayerRanks.put(player.getKey().toString(), rankNames);
         }
         permsConfig.set(CFGPLAYERS, serialPlayerRanks);
         try {
@@ -70,19 +70,28 @@ public class PermissionsHandler {
 
     public void loadFile() {
         try {
-            memberPerms = (HashMap<String, Boolean>) permsConfig.get(CFGMEMBERS);
-            ranks = (HashSet<Rank>) permsConfig.get(CFGRANKS);
+            try {
+                permsConfig.load(new File(SPSSpigot.plugin().getDataFolder(), PERMFILE));
+            } catch (IOException | InvalidConfigurationException e) {
+                e.printStackTrace();
+            }
+            System.out.println(0);
+            memberPerms = (Map<String, Boolean>) permsConfig.get(CFGMEMBERS);
+            System.out.println(1);
+            ranks = (Set<Rank>) permsConfig.get(CFGRANKS);
+            System.out.println(2);
             // Deserialize player ranks
-            HashMap<String, ArrayList<String>> serialPlayerRanks = (HashMap<String, ArrayList<String>>) permsConfig.get(CFGPLAYERS);
+            Map<String, ArrayList<String>> serialPlayerRanks = (Map<String, ArrayList<String>>) permsConfig.get(CFGPLAYERS);
+            System.out.println(3);
             playerRanks = new HashMap<>();
             for (Map.Entry<String, ArrayList<String>> player : serialPlayerRanks.entrySet()) {
-                HashSet<Rank> ranks = new HashSet<>();
+                Set<Rank> ranks = new HashSet<>();
                 for (String rank : player.getValue())
                     ranks.add(getRank(rank));
-                playerRanks.put(SPSSpigot.plugin().getServer().getOfflinePlayer(UUID.fromString(player.getKey())), ranks);
+                playerRanks.put(UUID.fromString(player.getKey()), ranks);
             }
         } catch (ClassCastException e) {
-
+            System.out.println("\n\n\n NOOOOOO \n\n\n");
         }
     }
 
@@ -96,37 +105,39 @@ public class PermissionsHandler {
         }
     }
 
+    /**
+     * Only finds whether or not the permission is set for members.
+     */
     public boolean isMemberPermSet(String perm) {
-        /**
-         * Only finds whether or not the permission is set for members.
-         */
         return memberPerms.containsKey(perm);
     }
 
+    /**
+     * Only finds whether or not the permission is set for members.
+     */
     public boolean isMemberPermSet(Permission perm) {
-        /**
-         * Only finds whether or not the permission is set for members.
-         */
         return isMemberPermSet(perm.getName());
     }
 
+    /**
+     * Finds what the permission is set to; throws error if unset.
+     */
     public boolean getMemberPerm(String perm) {
-        /**
-         * Finds what the permission is set to; throws error if unset.
-         */
         return memberPerms.get(perm);
     }
 
+    /**
+     * Finds what the permission is set to; throw error if unset.
+     */
     public boolean getMemberPerm(Permission perm) {
-        /**
-         * Finds what the permission is set to; throw error if unset.
-         */
         return getMemberPerm(perm.getName());
     }
 
     public void setMemberPerm(String perm, boolean value) {
         memberPerms.put(perm, value);
         saveFile();
+        for (Player player : players.keySet())
+            loadPermissions(player);
     }
 
     public void setMemberPerm(Permission perm, boolean value) {
@@ -137,6 +148,8 @@ public class PermissionsHandler {
     public boolean unsetMemberPerm(String perm) {
         boolean out = memberPerms.remove(perm);
         saveFile();
+        for (Player player : players.keySet())
+            loadPermissions(player);
         return out;
     }
 
@@ -147,10 +160,14 @@ public class PermissionsHandler {
 
     public Rank getRank(String name) {
         for (Rank r : ranks) {
-            if (name.equals(r.getName()))
+            if (name.equalsIgnoreCase(r.getName()))
                 return r;
         }
         return null;
+    }
+
+    public Set<Rank> getRanks() {
+        return ranks;
     }
 
     public void addRank(Rank rank) {
@@ -159,24 +176,29 @@ public class PermissionsHandler {
         saveFile();
     }
 
-    public boolean removeRank(Rank rank) {
-        for (HashSet<Rank> rankSet : playerRanks.values())
-            rankSet.remove(rank);
+    public boolean deleteRank(Rank rank) {
+        for (Map.Entry<UUID, Set<Rank>> rankSet : playerRanks.entrySet()) {
+            rankSet.getValue().remove(rank);
+            if (SPSSpigot.plugin().getServer().getOfflinePlayer(rankSet.getKey()).isOnline())
+                loadPermissions(SPSSpigot.plugin().getServer().getOfflinePlayer(rankSet.getKey()).getPlayer());
+        }
         boolean out = ranks.remove(rank);
         saveFile();
         return out;
     }
 
-    public void removeRank(String name) {
-        for (HashSet<Rank> rankSet : playerRanks.values()) {
+    public void deleteRank(String name) {
+        for (Map.Entry<UUID, Set<Rank>> rankSet : playerRanks.entrySet()) {
             ArrayList<Rank> remove = new ArrayList<>();
-            for (Rank r : rankSet) {
+            for (Rank r : rankSet.getValue()) {
                 if (r.getName().equals(name))
                     remove.add(r);
             }
             for (Rank r : remove) {
-                rankSet.remove(r);
+                rankSet.getValue().remove(r);
             }
+            if (SPSSpigot.plugin().getServer().getOfflinePlayer(rankSet.getKey()).isOnline())
+                loadPermissions(SPSSpigot.plugin().getServer().getOfflinePlayer(rankSet.getKey()).getPlayer());
         }
         ArrayList<Rank> remove = new ArrayList<>();
         for (Rank r : ranks) {
@@ -188,11 +210,37 @@ public class PermissionsHandler {
         saveFile();
     }
 
+    public Set<Rank> getPlayerRanks(OfflinePlayer player) {
+        if (playerRanks.containsKey(player.getUniqueId()))
+            return playerRanks.get(player.getUniqueId());
+        else
+            return new HashSet<>();
+    }
+
+    public Set<UUID> getRankPlayers(Rank rank) {
+        Set<UUID> uuids = new HashSet<>();
+        for (Map.Entry<UUID, Set<Rank>> player : playerRanks.entrySet())
+            if (player.getValue().contains(rank))
+                uuids.add(player.getKey());
+        return uuids;
+    }
+
+    public boolean hasPlayerRank(OfflinePlayer player, Rank rank) {
+        return playerRanks.containsKey(player.getUniqueId()) && playerRanks.get(player.getUniqueId()).contains(rank);
+    }
+
+    public boolean hasPlayerRank(OfflinePlayer player, String rank) {
+        Rank rObj = getRank(rank);
+        return rObj != null && hasPlayerRank(player, rObj);
+    }
+
     public boolean givePlayerRank(OfflinePlayer player, Rank rank) {
-        if (!playerRanks.containsKey(player))
-            playerRanks.put(player, new HashSet<>());
-        boolean out = playerRanks.get(player).add(rank);
+        if (!playerRanks.containsKey(player.getUniqueId()))
+            playerRanks.put(player.getUniqueId(), new HashSet<>());
+        boolean out = playerRanks.get(player.getUniqueId()).add(rank);
         saveFile();
+        if (player.isOnline())
+            loadPermissions(player.getPlayer());
         return out;
     }
 
@@ -205,11 +253,13 @@ public class PermissionsHandler {
     }
 
     public boolean removePlayerRank(OfflinePlayer player, Rank rank) {
-        if (!playerRanks.containsKey(player)) {
+        if (!playerRanks.containsKey(player.getUniqueId())) {
             return false;
         } else {
-            boolean out = playerRanks.get(player).remove(rank);
+            boolean out = playerRanks.get(player.getUniqueId()).remove(rank);
             saveFile();
+            if (player.isOnline())
+                loadPermissions(player.getPlayer());
             return out;
         }
     }
@@ -223,33 +273,25 @@ public class PermissionsHandler {
         return removePlayerRank(player, rankObj);
     }
 
-    public HashMap<String, Boolean> generatePermissions(OfflinePlayer player, boolean linked) {
-        HashMap<String, Boolean> perms = new HashMap<>();
-        // Add member perms
-        if (linked)
-            perms.putAll(memberPerms);
-        // Add rank perms
-        if (playerRanks.containsKey(player)) {
-            for (Rank rank : playerRanks.get(player)) {
-                perms.putAll(rank.getPerms());
-            }
-        }
-        return perms;
-    }
-
-    public void loadPermissions(Player player, boolean linked) {
+    public void loadPermissions(Player player) {
         if (players.containsKey(player)) {
             players.get(player).remove();
         }
         PermissionAttachment a = player.addAttachment(SPSSpigot.plugin());
-        if (!linked) {
-            for (PermissionAttachmentInfo perm : player.getEffectivePermissions()) {
+        // Remove all perms for unlinked players or add member perms for linked players
+        if (!DatabaseLink.isRegistered(player.getUniqueId()))
+            for (PermissionAttachmentInfo perm : player.getEffectivePermissions())
                 a.setPermission(perm.getPermission(), false);
-            }
-        }
-        a.getPermissions().putAll(generatePermissions(player, linked));
-        players.put(player, a);
+        else
+            for (Map.Entry<String, Boolean> perm : memberPerms.entrySet())
+                a.setPermission(perm.getKey(), perm.getValue());
+        // Add perms for each rank
+        for (Rank rank : getPlayerRanks(player))
+            for (Map.Entry<String, Boolean> perm : rank.getPerms().entrySet())
+                a.setPermission(perm.getKey(), perm.getValue());
 
+        players.put(player, a);
+        player.recalculatePermissions();
         for (PermissionAttachmentInfo i : player.getEffectivePermissions()) {
             System.out.println(i.getPermission() + " - " + i.getValue());
         }

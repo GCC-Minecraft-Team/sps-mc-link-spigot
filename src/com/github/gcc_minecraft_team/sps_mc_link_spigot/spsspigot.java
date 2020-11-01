@@ -15,6 +15,9 @@ public class SPSSpigot extends JavaPlugin {
         perms = new PermissionsHandler();
         getServer().getPluginManager().registerEvents(new PermissionsEvents(), this);
 
+        this.getCommand("perms").setExecutor(new PermissionsCommands());
+        this.getCommand("perms").setTabCompleter(new PermissionsTabCompleter());
+
         // Setup other stuff
         getServer().getPluginManager().registerEvents(new JoinEvent(), this);
         System.out.println("SPS Spigot integration started.");

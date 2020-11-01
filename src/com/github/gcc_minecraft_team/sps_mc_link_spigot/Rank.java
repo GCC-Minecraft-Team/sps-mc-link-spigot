@@ -2,10 +2,10 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Rank implements ConfigurationSerializable {
     /**
@@ -29,7 +29,7 @@ public class Rank implements ConfigurationSerializable {
     }
 
     public boolean hasPermission(String perm) {
-        return perms.containsKey(perm) && perms.get(perm) == true;
+        return perms.containsKey(perm) && perms.get(perm);
     }
 
     public boolean hasPermission(Permission perm) {
@@ -38,6 +38,7 @@ public class Rank implements ConfigurationSerializable {
 
     public void setPermission(String perm, boolean value) {
         perms.put(perm, value);
+        updateRankHolders();
     }
 
     public void setPermission(Permission perm, boolean value) {
@@ -46,6 +47,7 @@ public class Rank implements ConfigurationSerializable {
 
     public void unsetPermission(String perm) {
         perms.remove(perm);
+        updateRankHolders();
     }
 
     public void unsetPermission(Permission perm) {
@@ -62,6 +64,22 @@ public class Rank implements ConfigurationSerializable {
 
     public void setColor(ChatColor color) {
         this.color = color;
+    }
+
+    /**
+     * Convenience method that calls {@link PermissionsHandler#getRankPlayers(com.github.gcc_minecraft_team.sps_mc_link_spigot.Rank)}
+     * @return A set of all UUIDs of players with this rank.
+     */
+    public Set<UUID> getRankHolders() {
+        return SPSSpigot.plugin().perms.getRankPlayers(this);
+    }
+
+    private void updateRankHolders() {
+        for (UUID uuid : getRankHolders()) {
+            Player player = SPSSpigot.plugin().getServer().getPlayer(uuid);
+            if (player != null)
+                SPSSpigot.plugin().perms.loadPermissions(player);
+        }
     }
 
     // Serialization
