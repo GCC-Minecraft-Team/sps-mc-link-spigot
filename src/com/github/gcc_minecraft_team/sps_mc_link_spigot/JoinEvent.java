@@ -1,5 +1,8 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,7 +14,16 @@ public class JoinEvent implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (!DatabaseLink.isRegistered(event.getPlayer().getUniqueId())) {
             event.setJoinMessage("A player is joining the server!");
-            event.getPlayer().sendMessage(ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + "Connect to your SPS profile to play: " /* TODO: Link to webapp */);
+
+            // Create a token for the player
+            String jwt = WebInterfaceLink.CreateJWT(event.getPlayer().getUniqueId().toString(), "SPS MC", "Register Token", 1000000);
+
+            TextComponent message = new TextComponent( ">> CLICK HERE <<" );
+            message.setColor(net.md_5.bungee.api.ChatColor.AQUA);
+            message.setClickEvent( new ClickEvent( ClickEvent.Action.OPEN_URL, PluginConfig.GetWebAppURL() + "/register?token=" + jwt ) );
+
+            event.getPlayer().sendMessage(ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + "Connect to your SPS profile to play!");
+            event.getPlayer().spigot().sendMessage(message);
         } else {
             event.setJoinMessage(DatabaseLink.getSPSName(event.getPlayer().getUniqueId()) + " joined the server.");
         }

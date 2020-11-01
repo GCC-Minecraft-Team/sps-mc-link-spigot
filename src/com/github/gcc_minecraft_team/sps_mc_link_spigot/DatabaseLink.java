@@ -87,10 +87,24 @@ public class DatabaseLink {
 
         if (isRegistered(uuid)) {
             Document user = userCol.find(new Document("mcUUID", uuid)).first();
-            // TODO: get SPS name from user document
+            return user.getString("mcName");
+        } else {
+            return "Unregistered User";
         }
+    }
 
-        return "TODO"; // TODO: Make this access the database
+    public static void registerPlayer(String uuid, String SPSid, String name) {
+        // set UUID and Name
+        BasicDBObject updateFields = new BasicDBObject();
+        updateFields.append("mcUUID", uuid);
+        updateFields.append("mcName", name);
+
+        // set query
+        BasicDBObject setQuery = new BasicDBObject();
+        setQuery.append("$set", updateFields);
+
+        // update in the database
+        userCol.updateOne(new Document("oAuthId", SPSid), setQuery);
     }
 
 }

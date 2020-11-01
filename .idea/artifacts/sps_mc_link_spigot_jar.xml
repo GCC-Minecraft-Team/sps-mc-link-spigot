@@ -3,6 +3,8 @@
     <output-path>$PROJECT_DIR$/out/artifacts/sps_mc_link_spigot_jar</output-path>
     <root id="archive" name="sps-mc-link-spigot.jar">
       <element id="module-output" name="sps-mc-link-spigot" />
+      <element id="library" level="project" name="Maven: org.slf4j:slf4j-simple:1.8.0-beta4" />
+      <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.30" />
     </root>
   </artifact>
 </component>

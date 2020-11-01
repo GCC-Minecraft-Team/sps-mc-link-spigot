@@ -1,6 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class SPSSpigot extends JavaPlugin {
@@ -9,8 +10,14 @@ public class SPSSpigot extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // Load plugin config
+        PluginConfig.LoadConfig();
+
         // Setup Databse
         DatabaseLink.SetupDatabase();
+
+        // Start listen server
+        WebInterfaceLink.Listen();
 
         // Setup Permissions
         ConfigurationSerialization.registerClass(Rank.class);
