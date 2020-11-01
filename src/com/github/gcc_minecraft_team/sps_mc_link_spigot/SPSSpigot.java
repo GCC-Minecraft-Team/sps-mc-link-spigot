@@ -25,6 +25,9 @@ public class SPSSpigot extends JavaPlugin {
         perms = new PermissionsHandler();
         getServer().getPluginManager().registerEvents(new PermissionsEvents(), this);
 
+        // register chat events
+        getServer().getPluginManager().registerEvents(new ChatEvents(), this);
+
         this.getCommand("perms").setExecutor(new PermissionsCommands());
         this.getCommand("perms").setTabCompleter(new PermissionsTabCompleter());
 

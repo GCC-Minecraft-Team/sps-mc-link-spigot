@@ -88,7 +88,6 @@ public class DatabaseLink {
 
     public static String getSPSName(UUID uuid) {
         if (isRegistered(uuid)) {
-            System.out.println(userCol.find(new Document("mcUUID", uuid.toString())).first().toJson());
             return userCol.find(new Document("mcUUID", uuid.toString())).first().getString("mcName");
         } else {
             return "Unregistered User";
