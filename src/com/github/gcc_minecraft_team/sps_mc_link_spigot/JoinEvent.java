@@ -10,7 +10,6 @@ public class JoinEvent implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (!DatabaseLink.isRegistered(event.getPlayer().getUniqueId())) {
-            event.setJoinMessage(event.getPlayer().getDisplayName() + " joined the server. Waiting for them to connect to their SPS profile.");
             event.getPlayer().sendMessage(ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + "Connect to your SPS profile to play: " /* TODO: Link to webapp */);
         } else {
             event.setJoinMessage(event.getPlayer().getDisplayName() + " (" + DatabaseLink.getSPSName(event.getPlayer().getUniqueId()) + ") joined the server.");
