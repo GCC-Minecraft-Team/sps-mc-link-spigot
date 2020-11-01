@@ -25,7 +25,7 @@ public class JoinEvent implements Listener {
             event.getPlayer().sendMessage(ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + "Connect to your SPS profile to play!");
             event.getPlayer().spigot().sendMessage(message);
         } else {
-            event.setJoinMessage(DatabaseLink.getSPSName(event.getPlayer().getUniqueId()) + " joined the server.");
+            event.setJoinMessage(ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + DatabaseLink.getSPSName(event.getPlayer().getUniqueId()) + " joined the server.");
         }
         SPSSpigot.plugin().perms.loadPermissions(event.getPlayer());
     }

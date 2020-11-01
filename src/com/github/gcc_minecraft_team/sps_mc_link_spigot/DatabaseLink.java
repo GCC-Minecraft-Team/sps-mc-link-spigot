@@ -14,9 +14,12 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
 // yaml
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
@@ -84,15 +87,17 @@ public class DatabaseLink {
     }
 
     public static String getSPSName(UUID uuid) {
-
         if (isRegistered(uuid)) {
-            Document user = userCol.find(new Document("mcUUID", uuid)).first();
-            return user.getString("mcName");
+            System.out.println(userCol.find(new Document("mcUUID", uuid.toString())).first().toJson());
+            return userCol.find(new Document("mcUUID", uuid.toString())).first().getString("mcName");
         } else {
             return "Unregistered User";
         }
     }
 
+    /*
+    Registers a new player in the database
+     */
     public static void registerPlayer(String uuid, String SPSid, String name) {
         // set UUID and Name
         BasicDBObject updateFields = new BasicDBObject();
@@ -105,6 +110,21 @@ public class DatabaseLink {
 
         // update in the database
         userCol.updateOne(new Document("oAuthId", SPSid), setQuery);
+        String email = userCol.find(new Document("oAuthId", SPSid)).first().getString("oAuthEmail");
+
+        // get player
+        Player player = Bukkit.getPlayer(UUID.fromString(uuid));
+
+        // load permissions
+        SPSSpigot.plugin().perms.loadPermissions(player);
+
+        // send a confirmation message
+        player.sendMessage(ChatColor.BOLD.toString() + ChatColor.GREEN.toString() +
+                "Sucessfully linked account " +
+                ChatColor.BOLD.toString() + ChatColor.GOLD.toString() +
+                email +
+                ChatColor.BOLD.toString() + ChatColor.GREEN.toString() + " to the server! Your new username is: " +
+                ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + name);
     }
 
 }
