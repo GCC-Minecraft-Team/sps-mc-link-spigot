@@ -8,9 +8,42 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class PermissionsCommands implements CommandExecutor {
+
+    /**
+     * Builds the text for a list to be sent in chat.
+     * @param title The title of the list. May safely include {@link ChatColor}s.
+     * @param items A {@link List} of the items to include.
+     * @return A multi-line text representation of the list.
+     */
+    public static String buildListText(String title, List<String> items) {
+        StringBuilder str = new StringBuilder(ChatColor.BOLD + "====[" + title.strip() + ChatColor.RESET + ChatColor.BOLD + "]====\n");
+        for (String item : items) {
+            str.append(ChatColor.RESET + item.strip() + "\n");
+        }
+        return str.toString();
+    }
+
+    /**
+     * Builds the text for a list to be sent in chat, with boolean values for each item.
+     * @param title The title of the list. May safely include {@link ChatColor}s.
+     * @param items A {@link Map} of the items to include and their boolean values.
+     * @return A multi-line text representation of the list.
+     */
+    public static String buildListBooleanText(String title, Map<String, Boolean> items) {
+        List<String> strItems = new ArrayList<>();
+        for (Map.Entry<String, Boolean> item : items.entrySet()) {
+            if (item.getValue())
+                strItems.add(item.getKey().strip() + ChatColor.RESET + " - " + ChatColor.GREEN + "true");
+            else
+                strItems.add(item.getKey().strip() + ChatColor.RESET + " - " + ChatColor.RED + "false");
+        }
+        return buildListText(title, strItems);
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         // /perms a.k.a. /permissions
@@ -20,7 +53,7 @@ public class PermissionsCommands implements CommandExecutor {
         } else if (args[0].equals("members")) {
             if (args.length == 1) {
                 // No arguments for /perms members
-                sender.sendMessage(ChatColor.RED + "Usage: /" + label + " members <>");
+                sender.sendMessage(ChatColor.RED + "Usage: /" + label + " members <set|unset|list>");
                 return true;
             } else if (args[1].equals("set")) {
                 if (args.length != 4) {
@@ -73,18 +106,11 @@ public class PermissionsCommands implements CommandExecutor {
                 }
             } else if (args[1].equals("list")) {
                 // Send full list of permissions
-                StringBuilder str = new StringBuilder(ChatColor.BOLD + "====[MEMBERS]====\n" + ChatColor.RESET);
-                for (Map.Entry<String, Boolean> perm : SPSSpigot.plugin().perms.getMemberPerms().entrySet()) {
-                    if (perm.getValue())
-                        str.append(perm.getKey() + " - " + ChatColor.GREEN + "TRUE\n" + ChatColor.RESET);
-                    else
-                        str.append(perm.getKey() + " - " + ChatColor.RED + "FALSE\n" + ChatColor.RESET);
-                }
-                sender.sendMessage(str.toString());
+                sender.sendMessage(buildListBooleanText("MEMBERS", SPSSpigot.plugin().perms.getMemberPerms()));
                 return true;
             } else {
                 // args[1] is invalid
-                sender.sendMessage(ChatColor.RED + "Usage: /" + label + " members <>");
+                sender.sendMessage(ChatColor.RED + "Usage: /" + label + " members <set|unset|list>");
                 return true;
             }
         } else if (args[0].equals("rank")) {
@@ -134,11 +160,7 @@ public class PermissionsCommands implements CommandExecutor {
                     return true;
                 } else if (args.length == 2) {
                     // List all ranks
-                    StringBuilder str = new StringBuilder(ChatColor.BOLD + "====[RANKS]====\n" + ChatColor.RESET);
-                    for (Rank rank : SPSSpigot.plugin().perms.getRanks()) {
-                        str.append(rank.getColor()).append(rank.getName()).append(ChatColor.RESET).append("\n");
-                    }
-                    sender.sendMessage(str.toString());
+                    sender.sendMessage(buildListText("RANKS", new ArrayList<>(SPSSpigot.plugin().perms.getRankNames())));
                     return true;
                 } else {
                     Rank rank = SPSSpigot.plugin().perms.getRank(args[2]);
@@ -148,16 +170,8 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     } else {
                         // A valid, existing rank is chosen.
-                        StringBuilder str = new StringBuilder(ChatColor.BOLD + "====[" + rank.getColor() + rank.getName() + ChatColor.RESET + ChatColor.BOLD + "]====\n" + ChatColor.RESET);
-                        ArrayList<String> sortedPermKeys = new ArrayList<String>(rank.getPerms().keySet());
-                        sortedPermKeys.sort(String.CASE_INSENSITIVE_ORDER);
-                        for (String perm : sortedPermKeys) {
-                            if (rank.hasPermission(perm))
-                                str.append(perm).append(ChatColor.GREEN).append(" - TRUE\n").append(ChatColor.RESET);
-                            else
-                                str.append(perm).append(ChatColor.RED).append(" - FALSE\n").append(ChatColor.RESET);
-                        }
-                        sender.sendMessage(str.toString());
+                        // TODO: Make this in alphabetical order
+                        sender.sendMessage(buildListBooleanText(rank.getColor() + rank.getName(), rank.getPerms()));
                         return true;
                     }
                 }
@@ -356,17 +370,17 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     } else {
                         // Give them the info
-                        // Header
-                        StringBuilder out = new StringBuilder(ChatColor.BOLD + "====[" + player.getName() + "]====\n" + ChatColor.RESET);
+                        List<String> items = new ArrayList<>();
                         // SPS info
                         if (DatabaseLink.isRegistered(player.getUniqueId()))
-                            out.append(ChatColor.ITALIC + DatabaseLink.getSPSName(player.getUniqueId()) + "\n" + ChatColor.RESET);
+                            items.add(ChatColor.ITALIC + DatabaseLink.getSPSName(player.getUniqueId()));
                         else
-                            out.append(ChatColor.ITALIC + "SPS profile unlinked\n" + ChatColor.RESET);
+                            items.add(ChatColor.ITALIC + "SPS profile unlinked");
                         // Player ranks
                         for (Rank rank : SPSSpigot.plugin().perms.getPlayerRanks(player))
-                            out.append(rank.getColor() + rank.getName() + ChatColor.RESET + "\n");
-                        sender.sendMessage(out.toString());
+                            items.add(rank.getColor() + rank.getName());
+                        // Generate text
+                        sender.sendMessage(buildListText(player.getDisplayName(), items));
                         return true;
                     }
                 }
