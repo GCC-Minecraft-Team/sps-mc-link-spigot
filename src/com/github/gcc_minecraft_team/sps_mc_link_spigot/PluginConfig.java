@@ -13,7 +13,9 @@ public class PluginConfig {
     public static final String WEBAPPURL = "webAppURL";
     private static FileConfiguration pluginCfg;
 
-    // loads config file
+    /**
+     * loads the plugin configuration file
+     */
     public static void LoadConfig() {
         // create config if it doesn't exist
         SPSSpigot.plugin().saveResource(PLFILE, false);
@@ -30,6 +32,10 @@ public class PluginConfig {
 
     // V get functions V
 
+    /**
+     * gets the JWT secret from the plugin config file
+     * @return
+     */
     public static String GetJWTSecret() {
         if (pluginCfg != null) {
             return (String) pluginCfg.get(JWTSECRET);
@@ -38,6 +44,10 @@ public class PluginConfig {
         }
     }
 
+    /**
+     * gets the URL we should listen on for the web app
+     * @return
+     */
     public static String GetWebAppURL() {
         if (pluginCfg != null) {
             return (String) pluginCfg.get(WEBAPPURL);

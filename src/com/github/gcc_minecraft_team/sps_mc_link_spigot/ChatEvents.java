@@ -14,14 +14,16 @@ public class ChatEvents implements Listener {
      */
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e){
-        String message = e.getMessage(); //get the message
+        if (DatabaseLink.isRegistered(e.getPlayer().getUniqueId())) {
+            String message = e.getMessage(); //get the message
 
-        e.setCancelled(true); //cancel the event, so no message is sent (yet)
+            e.setCancelled(true); //cancel the event, so no message is sent (yet)
 
-        for(Player on : Bukkit.getOnlinePlayers()){ //loop threw all online players
-            String newMessage = ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId()) + "]: " + ChatColor.WHITE + message.replaceAll(e.getPlayer().getDisplayName(), ""); //format the message
-            System.out.println(newMessage);
-            on.sendMessage(newMessage); //send the player the message
+            for (Player on : Bukkit.getOnlinePlayers()) { //loop threw all online players
+                String newMessage = ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId()) + "]: " + ChatColor.WHITE + message.replaceAll(e.getPlayer().getDisplayName(), ""); //format the message
+                System.out.println(newMessage);
+                on.sendMessage(newMessage); //send the player the message
+            }
         }
     }
 }

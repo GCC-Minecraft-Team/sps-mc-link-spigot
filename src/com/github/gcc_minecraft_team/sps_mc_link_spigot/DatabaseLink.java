@@ -6,6 +6,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -13,6 +14,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import xyz.haoshoku.nick.api.NickAPI;
 
 import java.io.File;
 import java.io.IOException;
@@ -97,23 +99,70 @@ public class DatabaseLink {
     }
 
     /**
+     * Checks if a player is banned
+     * @param uuid the minecraft UUID of the player to ban
+     **/
+    public static Boolean getIsBanned(UUID uuid) {
+        try {
+            return userCol.find(new Document("mcUUID", uuid.toString())).first().getBoolean("banned");
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
+    /**
+    * Bans a player using their SPS ID
+    * @param SPSuser the SPS username (without domain) 
+    **/
+    public static boolean banPlayer(String SPSuser) {
+        String spsEmail = SPSuser + "@seattleschools.org";
+
+        System.out.println("Banning player with SPS email: " + spsEmail);
+
+        BasicDBObject updateFields = new BasicDBObject();
+        updateFields.append("banned", new Boolean(true));
+        // set query
+        BasicDBObject setQuery = new BasicDBObject();
+        setQuery.append("$set", updateFields);
+
+        // ban the player in the database
+        try {
+            userCol.updateOne(new Document("oAuthEmail", spsEmail), setQuery);
+
+            // kick them from the server
+            Bukkit.getPlayer(UUID.fromString(userCol.find(new Document("oAuthEmail", spsEmail)).first().getString("mcUUID"))).kickPlayer("Wooks wike uwu've bewn banned! UwU");
+
+            return true;
+        } catch (MongoException exception) {
+            System.out.println("Something went wrong banning a player!");
+            return false;
+        } catch (NullPointerException exception)  {
+            System.out.println("Something went wrong looking up a user to player!");
+            return false;
+        }
+    }
+
+    /**
      * Registers a new player in the database
      * @param uuid
      * @param SPSid
      * @param name
-     */
+     **/
     public static void registerPlayer(String uuid, String SPSid, String name) {
         // set UUID and Name
         BasicDBObject updateFields = new BasicDBObject();
         updateFields.append("mcUUID", uuid);
         updateFields.append("mcName", name);
+        updateFields.append( "banned", false);
 
         // set query
         BasicDBObject setQuery = new BasicDBObject();
         setQuery.append("$set", updateFields);
 
+        UpdateOptions options = new UpdateOptions().upsert(true);
+
         // update in the database
-        userCol.updateOne(new Document("oAuthId", SPSid), setQuery);
+        userCol.updateOne(new Document("oAuthId", SPSid), setQuery, options);
         String email = userCol.find(new Document("oAuthId", SPSid)).first().getString("oAuthEmail");
 
         // get player
@@ -121,6 +170,14 @@ public class DatabaseLink {
 
         // load permissions
         SPSSpigot.plugin().perms.loadPermissions(player);
+
+        // set nametag
+        int maxLength = (name.length() < 15)?name.length():15;
+
+        //NickAPI.setSkin( player, player.getName() );
+        //NickAPI.setUniqueId( player, player.getName() );
+        NickAPI.nick( player, name.substring(0, maxLength));
+        NickAPI.refreshPlayer( player );
 
         // send a confirmation message
         player.sendMessage(ChatColor.BOLD.toString() + ChatColor.GREEN.toString() +

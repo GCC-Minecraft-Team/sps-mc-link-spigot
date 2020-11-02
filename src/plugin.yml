@@ -12,6 +12,9 @@ commands:
     usage: "Usage: /<command> <members|rank|player|reload>"
     permission: spsmc.perms
     alias: permissions
+  mod:
+    description: Base command for SPSMC moderators
+    usage: "Usage: /<command> <banSPS>"
 
 permissions:
   spsmc.perms:
