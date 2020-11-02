@@ -1,7 +1,9 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -37,9 +39,7 @@ public class PermissionsHandler {
 
         SPSSpigot.plugin().saveResource(PERMFILE, false);
         permsConfig = YamlConfiguration.loadConfiguration(new File(SPSSpigot.plugin().getDataFolder(), PERMFILE));
-        permsConfig.addDefault(CFGMEMBERS, new HashMap<String, Boolean>());
-        permsConfig.addDefault(CFGRANKS, new HashSet<Rank>());
-        permsConfig.addDefault(CFGPLAYERS, new HashMap<OfflinePlayer, HashSet<Rank>>());
+        System.out.println(permsConfig.getValues(true));
         loadFile();
     }
 
@@ -47,8 +47,10 @@ public class PermissionsHandler {
      * Saves the data in this {@link PermissionsHandler} to {@value PERMFILE}.
      */
     public void saveFile() {
+        // Save members
         permsConfig.set(CFGMEMBERS, memberPerms);
-        permsConfig.set(CFGRANKS, ranks);
+        // Save ranks
+        permsConfig.set(CFGRANKS, new ArrayList<>(ranks));
         // Serialize player ranks to only store UUID String and rank names rather than their entire objects
         HashMap<String, ArrayList<String>> serialPlayerRanks = new HashMap<>();
         for (Map.Entry<UUID, Set<Rank>> player : playerRanks.entrySet()) {
@@ -70,28 +72,30 @@ public class PermissionsHandler {
      */
     public void loadFile() {
         try {
-            try {
-                permsConfig.load(new File(SPSSpigot.plugin().getDataFolder(), PERMFILE));
-            } catch (IOException | InvalidConfigurationException e) {
-                e.printStackTrace();
-            }
-            System.out.println(0);
-            memberPerms = (Map<String, Boolean>) permsConfig.get(CFGMEMBERS);
-            System.out.println(1);
-            ranks = (Set<Rank>) permsConfig.get(CFGRANKS);
-            System.out.println(2);
-            // Deserialize player ranks
-            Map<String, ArrayList<String>> serialPlayerRanks = (Map<String, ArrayList<String>>) permsConfig.get(CFGPLAYERS);
-            System.out.println(3);
-            playerRanks = new HashMap<>();
-            for (Map.Entry<String, ArrayList<String>> player : serialPlayerRanks.entrySet()) {
-                Set<Rank> ranks = new HashSet<>();
-                for (String rank : player.getValue())
-                    ranks.add(getRank(rank));
-                playerRanks.put(UUID.fromString(player.getKey()), ranks);
-            }
-        } catch (ClassCastException e) {
-            System.out.println("\n\n\n NOOOOOO \n\n\n");
+            permsConfig.load(new File(SPSSpigot.plugin().getDataFolder(), PERMFILE));
+        } catch (IOException | InvalidConfigurationException e) {
+            e.printStackTrace();
+        }
+        // Deserialize member perms
+        memberPerms = new HashMap<>();
+        MemorySection objMembers = (MemorySection) permsConfig.get(CFGMEMBERS);
+        for (String perm : objMembers.getKeys(false))
+            memberPerms.put(perm, objMembers.getBoolean(perm));
+        // Deserialize ranks
+        ranks = new HashSet<>((List<Rank>) permsConfig.getList(CFGRANKS));
+        // Deserialize player ranks
+        playerRanks = new HashMap<>();
+        MemorySection objPlayers = (MemorySection) permsConfig.get(CFGPLAYERS);
+        Map<String, List<String>> serialPlayerRanks = new HashMap<>();
+        for (String player : objPlayers.getKeys(false))
+            serialPlayerRanks.put(player, objPlayers.getStringList(player));
+        // Parse player ranks
+        playerRanks = new HashMap<>();
+        for (Map.Entry<String, List<String>> player : serialPlayerRanks.entrySet()) {
+            Set<Rank> ranks = new HashSet<>();
+            for (String rank : player.getValue())
+                ranks.add(getRank(rank));
+            playerRanks.put(UUID.fromString(player.getKey()), ranks);
         }
     }
 
@@ -420,9 +424,11 @@ public class PermissionsHandler {
 
         players.put(player, a);
         player.recalculatePermissions();
+        /*
         for (PermissionAttachmentInfo i : player.getEffectivePermissions()) {
             System.out.println(i.getPermission() + " - " + i.getValue());
         }
+        */
     }
 
 }

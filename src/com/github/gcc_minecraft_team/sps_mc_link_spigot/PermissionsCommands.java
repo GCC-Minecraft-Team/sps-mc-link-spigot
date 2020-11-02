@@ -392,6 +392,9 @@ public class PermissionsCommands implements CommandExecutor {
         } else if (args[0].equals("reload")) {
             // Reloads perms from file.
             SPSSpigot.plugin().perms.loadFile();
+            // Update perms for everybody online
+            for (Player player : SPSSpigot.plugin().getServer().getOnlinePlayers())
+                SPSSpigot.plugin().perms.loadPermissions(player);
             sender.sendMessage(ChatColor.GREEN + "Reloaded permissions!");
             return true;
         } else {

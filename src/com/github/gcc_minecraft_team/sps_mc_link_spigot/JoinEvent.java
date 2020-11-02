@@ -22,6 +22,7 @@ public class JoinEvent implements Listener {
         if (DatabaseLink.getIsBanned(event.getPlayer().getUniqueId())) {
             event.getPlayer().kickPlayer("The SPS account you linked has been banned! >:(");
         } else {
+            SPSSpigot.plugin().perms.loadPermissions(event.getPlayer());
             if (!DatabaseLink.isRegistered(event.getPlayer().getUniqueId())) {
                 event.setJoinMessage("A player is joining the server!");
 
@@ -54,7 +55,6 @@ public class JoinEvent implements Listener {
                 NickAPI.nick(player, userNoFormat.substring(0, maxLength));
                 NickAPI.refreshPlayer(player);
             }
-            SPSSpigot.plugin().perms.loadPermissions(event.getPlayer());
         }
     }
 
