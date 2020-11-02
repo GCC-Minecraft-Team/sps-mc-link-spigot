@@ -11,6 +11,7 @@ public class PluginConfig {
     public static final String PLFILE = "pluginConfig.yml";
     public static final String JWTSECRET = "jwtSecret";
     public static final String WEBAPPURL = "webAppURL";
+    public static final String PLUGINMOTD = "pluginMOTD";
     private static FileConfiguration pluginCfg;
 
     /**
@@ -51,6 +52,18 @@ public class PluginConfig {
     public static String GetWebAppURL() {
         if (pluginCfg != null) {
             return (String) pluginCfg.get(WEBAPPURL);
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * gets the plugin MOTD
+     * @return
+     */
+    public static String getPluginMOTD() {
+        if (pluginCfg != null) {
+            return (String) pluginCfg.get(PLUGINMOTD);
         } else {
             return "";
         }

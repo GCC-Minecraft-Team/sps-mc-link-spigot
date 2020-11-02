@@ -9,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.plugin.Plugin;
 import xyz.haoshoku.nick.api.NickAPI;
 
 public class JoinEvent implements Listener {
@@ -23,6 +24,8 @@ public class JoinEvent implements Listener {
             event.getPlayer().kickPlayer("The SPS account you linked has been banned! >:(");
         } else {
             SPSSpigot.plugin().perms.loadPermissions(event.getPlayer());
+            event.getPlayer().sendMessage(PluginConfig.getPluginMOTD());
+
             if (!DatabaseLink.isRegistered(event.getPlayer().getUniqueId())) {
                 event.setJoinMessage("A player is joining the server!");
 
@@ -41,6 +44,8 @@ public class JoinEvent implements Listener {
                 //NickAPI.setUniqueId( player, player.getName() );
                 NickAPI.nick(player, "Player");
                 NickAPI.refreshPlayer(player);
+
+                player.sendTitle("Welcome to" + ChatColor.BLUE +"SPS MC!", "Please use the link in chat to link your account!", 10, 160, 10);;
 
             } else {
                 String userNoFormat = DatabaseLink.getSPSName(event.getPlayer().getUniqueId());

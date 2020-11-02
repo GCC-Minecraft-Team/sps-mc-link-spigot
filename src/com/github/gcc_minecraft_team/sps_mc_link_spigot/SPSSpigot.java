@@ -1,7 +1,8 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationCommands;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationTabCompleter;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class SPSSpigot extends JavaPlugin {
