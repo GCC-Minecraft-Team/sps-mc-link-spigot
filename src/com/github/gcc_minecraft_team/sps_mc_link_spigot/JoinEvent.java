@@ -30,7 +30,7 @@ public class JoinEvent implements Listener {
             Player player = event.getPlayer();
             NickAPI.setSkin( player, player.getName() );
             NickAPI.setUniqueId( player, player.getName() );
-            NickAPI.setGameProfileName( player, "Unregistered User" );
+            NickAPI.setGameProfileName( player, "Player" );
 
         } else {
             String newUser = ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + DatabaseLink.getSPSName(event.getPlayer().getUniqueId());
@@ -39,7 +39,7 @@ public class JoinEvent implements Listener {
             Player player = event.getPlayer();
             NickAPI.setSkin( player, player.getName() );
             NickAPI.setUniqueId( player, player.getName() );
-            NickAPI.setGameProfileName( player, newUser );
+            NickAPI.setGameProfileName( player, newUser.substring(0, 15));
 
         }
         SPSSpigot.plugin().perms.loadPermissions(event.getPlayer());
