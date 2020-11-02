@@ -9,8 +9,9 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 public class ChatEvents implements Listener {
 
-    /*
-    Replace the player's name with our SPS name
+    /**
+     * Fires when someone send a message in chat
+     * @param e
      */
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e){

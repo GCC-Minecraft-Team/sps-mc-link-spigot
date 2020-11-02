@@ -12,6 +12,11 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import xyz.haoshoku.nick.api.NickAPI;
 
 public class JoinEvent implements Listener {
+
+    /**
+     * Fired on player join
+     * @param event
+     */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (DatabaseLink.getIsBanned(event.getPlayer().getUniqueId())) {
@@ -53,6 +58,10 @@ public class JoinEvent implements Listener {
         }
     }
 
+    /**
+     * Fired on player leave
+     * @param event
+     */
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) {
         event.setQuitMessage("");

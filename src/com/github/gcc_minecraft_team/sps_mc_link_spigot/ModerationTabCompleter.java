@@ -21,6 +21,14 @@ public class ModerationTabCompleter implements TabCompleter {
         return newList;
     }
 
+    /**
+     * Fires when the player presses tab to autocomplete the command
+     * @param sender
+     * @param command
+     * @param label
+     * @param args
+     * @return
+     */
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         // /mod (moderation commands)
