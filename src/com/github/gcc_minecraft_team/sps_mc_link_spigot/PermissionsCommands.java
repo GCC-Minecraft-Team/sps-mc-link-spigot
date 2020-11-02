@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class PermissionsCommands implements CommandExecutor {
     @Override
@@ -19,15 +20,73 @@ public class PermissionsCommands implements CommandExecutor {
         } else if (args[0].equals("members")) {
             if (args.length == 1) {
                 // No arguments for /perms members
-                //
-            } else if ("" == "") {
-
+                sender.sendMessage(ChatColor.RED + "Usage: /" + label + " members <>");
+                return true;
+            } else if (args[1].equals("set")) {
+                if (args.length != 4) {
+                    // Wrong number of arguments for /perms members set
+                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " members set <permission> <true|false>");
+                    return true;
+                } else {
+                    // Parse arguments
+                    Permission perm = SPSSpigot.plugin().getServer().getPluginManager().getPermission(args[2]);
+                    Boolean bool = null;
+                    if (args[3].equalsIgnoreCase("true"))
+                        bool = true;
+                    else if (args[3].equalsIgnoreCase("false"))
+                        bool = false;
+                    // Checks
+                    if (perm == null) {
+                        // Permission node not recognized
+                        sender.sendMessage(ChatColor.RED + "Permission node '" + args[2] + "' was not recognized.");
+                        return true;
+                    } else if (bool == null) {
+                        // Boolean not recognized
+                        sender.sendMessage(ChatColor.RED + "Boolean '" + args[3] + "' was not recognized as true or false.");
+                        return true;
+                    } else {
+                        // Set member perms
+                        SPSSpigot.plugin().perms.setMemberPerm(perm, bool);
+                        sender.sendMessage(ChatColor.GREEN + "Set permission node " + perm.getName() + " to " + bool + " for all members.");
+                        return true;
+                    }
+                }
+            } else if (args[1].equals("unset")) {
+                if (args.length != 3) {
+                    // Wrong number of arguments for /perms members unset
+                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " members unset <permission>");
+                    return true;
+                } else {
+                    // Parse arguments
+                    Permission perm = SPSSpigot.plugin().getServer().getPluginManager().getPermission(args[2]);
+                    // Checks
+                    if (perm == null) {
+                        // Permission node not recognized
+                        sender.sendMessage(ChatColor.RED + "Permission node '" + args[2] + "' was not recognized.");
+                        return true;
+                    } else {
+                        // Set member perms
+                        SPSSpigot.plugin().perms.unsetMemberPerm(perm);
+                        sender.sendMessage(ChatColor.GREEN + "Unset permission node " + perm.getName() + " to for all members.");
+                        return true;
+                    }
+                }
+            } else if (args[1].equals("list")) {
+                // Send full list of permissions
+                StringBuilder str = new StringBuilder(ChatColor.BOLD + "====[MEMBERS]====\n" + ChatColor.RESET);
+                for (Map.Entry<String, Boolean> perm : SPSSpigot.plugin().perms.getMemberPerms().entrySet()) {
+                    if (perm.getValue())
+                        str.append(perm.getKey() + " - " + ChatColor.GREEN + "TRUE\n" + ChatColor.RESET);
+                    else
+                        str.append(perm.getKey() + " - " + ChatColor.RED + "FALSE\n" + ChatColor.RESET);
+                }
+                sender.sendMessage(str.toString());
+                return true;
             } else {
                 // args[1] is invalid
                 sender.sendMessage(ChatColor.RED + "Usage: /" + label + " members <>");
                 return true;
             }
-            return false;
         } else if (args[0].equals("rank")) {
             if (args.length == 1) {
                 // No arguments for /perms rank

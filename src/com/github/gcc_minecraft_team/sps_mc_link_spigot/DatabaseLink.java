@@ -1,19 +1,12 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
-import java.util.UUID;
-
-// mongodb
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
-
-// yaml
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -23,7 +16,7 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.UUID;
 
 public class DatabaseLink {
 
@@ -69,8 +62,12 @@ public class DatabaseLink {
         }
     }
 
+    /**
+     * Gets whether a player is registered on the database.
+     * @param uuid The {@link UUID} of the player to check.
+     * @return {@code true} if the player is registered.
+     */
     public static boolean isRegistered(UUID uuid) {
-
         try {
             // check if player is registered
             if (userCol.countDocuments(new Document("mcUUID", uuid.toString())) == 1) {
@@ -86,6 +83,11 @@ public class DatabaseLink {
         }
     }
 
+    /**
+     * Gets the SPS name for a Minecraft player.
+     * @param uuid The {@link UUID} of the Minecraft player.
+     * @return The SPS name of the player.
+     */
     public static String getSPSName(UUID uuid) {
         if (isRegistered(uuid)) {
             return userCol.find(new Document("mcUUID", uuid.toString())).first().getString("mcName");
@@ -94,8 +96,11 @@ public class DatabaseLink {
         }
     }
 
-    /*
-    Registers a new player in the database
+    /**
+     * Registers a new player in the database
+     * @param uuid
+     * @param SPSid
+     * @param name
      */
     public static void registerPlayer(String uuid, String SPSid, String name) {
         // set UUID and Name
