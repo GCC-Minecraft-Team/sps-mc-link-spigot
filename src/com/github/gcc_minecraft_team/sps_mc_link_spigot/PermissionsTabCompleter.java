@@ -29,7 +29,41 @@ public class PermissionsTabCompleter implements TabCompleter {
             // /perms <partial>
             return keepStarts(Arrays.asList("members", "rank", "player", "reload"), args[0]);
         } else if (args[0].equals("members")) {
-            return null; // TODO
+            if (args.length == 2) {
+                // /perms members <partial>
+                return keepStarts(Arrays.asList("set", "unset", "list"), args[1]);
+            } else if (args[1].equals("set")) {
+                if (args.length == 3) {
+                    // /perms members set <partial>
+                    List<String> perms = new ArrayList<>();
+                    for (Permission p : SPSSpigot.plugin().getServer().getPluginManager().getPermissions())
+                        perms.add(p.getName());
+                    return keepStarts(perms, args[2]);
+                } else if (args.length == 4) {
+                    // /perms members set <permission> <partial>
+                    return keepStarts(Arrays.asList("true", "false"), args[3]);
+                } else {
+                    // /perms members set <permission> <true|false> <partial>
+                    return new ArrayList<>();
+                }
+            } else if (args[1].equals("unset")) {
+                if (args.length == 3) {
+                    // /perms members unset <partial>
+                    List<String> perms = new ArrayList<>();
+                    for (String s : SPSSpigot.plugin().perms.getMemberPerms().keySet())
+                        perms.add(s);
+                    return keepStarts(perms, args[2]);
+                } else {
+                    // perms members unset <permission> <partial>
+                    return new ArrayList<>();
+                }
+            } else if (args[1].equals("list")) {
+                // /perms members list <partial>
+                return new ArrayList<>();
+            } else {
+                // /perms members <INVALID> <...>
+                return new ArrayList<>();
+            }
         } else if (args[0].equals("rank")) {
             if (args.length == 2) {
                 // /perms rank <partial>
