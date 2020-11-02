@@ -27,6 +27,11 @@
       <option name="url" value="https://repo1.maven.org/maven2" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="upstream" />
+      <option name="name" value="upstream" />
+      <option name="url" value="http://ci.playmc.cc/plugin/repository/everything/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="jboss.community" />
       <option name="name" value="JBoss Community repository" />
       <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
@@ -35,6 +40,11 @@
       <option name="id" value="upstream" />
       <option name="name" value="upstream" />
       <option name="url" value="http://ci.nametagedit.com/plugin/repository/everything/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="alvinb-repo" />
+      <option name="name" value="alvinb-repo" />
+      <option name="url" value="http://repo.bringholm.com/" />
     </remote-repository>
   </component>
 </project>

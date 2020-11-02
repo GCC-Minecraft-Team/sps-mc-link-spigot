@@ -1,13 +1,15 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
-import com.nametagedit.plugin.NametagEdit;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import xyz.haoshoku.nick.api.NickAPI;
 
 public class JoinEvent implements Listener {
     @EventHandler
@@ -25,17 +27,19 @@ public class JoinEvent implements Listener {
             event.getPlayer().sendMessage(ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + "Connect to your SPS profile to play!");
             event.getPlayer().spigot().sendMessage(message);
 
-            // remove real nametag when unregistered
-            NametagEdit.getApi().clearNametag(event.getPlayer());
-            NametagEdit.getApi().setNametag(event.getPlayer(), "Unregistered Player", "");
+            Player player = event.getPlayer();
+            NickAPI.setSkin( player, player.getName() );
+            NickAPI.setUniqueId( player, player.getName() );
+            NickAPI.setGameProfileName( player, "Unregistered User" );
 
         } else {
             String newUser = ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + DatabaseLink.getSPSName(event.getPlayer().getUniqueId());
             event.setJoinMessage(newUser + " joined the server.");
 
-            // change nametag
-            NametagEdit.getApi().clearNametag(event.getPlayer());
-            NametagEdit.getApi().setNametag(event.getPlayer(), newUser, "");
+            Player player = event.getPlayer();
+            NickAPI.setSkin( player, player.getName() );
+            NickAPI.setUniqueId( player, player.getName() );
+            NickAPI.setGameProfileName( player, newUser );
 
         }
         SPSSpigot.plugin().perms.loadPermissions(event.getPlayer());
@@ -46,4 +50,5 @@ public class JoinEvent implements Listener {
         event.setQuitMessage("");
         SPSSpigot.plugin().perms.removeAttachment(event.getPlayer());
     }
+
 }

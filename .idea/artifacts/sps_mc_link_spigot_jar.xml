@@ -5,6 +5,7 @@
       <element id="module-output" name="sps-mc-link-spigot" />
       <element id="library" level="project" name="Maven: org.slf4j:slf4j-simple:1.8.0-beta4" />
       <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.30" />
+      <element id="file-copy" path="$PROJECT_DIR$/TestServer/plugins/NickAPI-v6.0.3.jar" />
     </root>
   </artifact>
 </component>
