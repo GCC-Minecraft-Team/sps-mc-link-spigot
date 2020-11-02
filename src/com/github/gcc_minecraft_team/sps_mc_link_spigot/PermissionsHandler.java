@@ -223,6 +223,17 @@ public class PermissionsHandler {
     }
 
     /**
+     * Gets the names of all {@link Rank}s known by this {@link PermissionsHandler}.
+     * @return A {@link Set} of the names of all known {@link Rank}s.
+     */
+    public Set<String> getRankNames() {
+        Set<String> names = new HashSet<>();
+        for (Rank rank : getRanks())
+            names.add(rank.getName());
+        return names;
+    }
+
+    /**
      * Adds a new {@link Rank} to this {@link PermissionsHandler}
      * @param rank The {@link Rank} to add.
      */

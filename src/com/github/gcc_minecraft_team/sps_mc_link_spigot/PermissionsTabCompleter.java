@@ -75,10 +75,7 @@ public class PermissionsTabCompleter implements TabCompleter {
             } else if (args[1].equals("delete")) {
                 if (args.length == 3) {
                     // /perms rank delete <partial>
-                    List<String> ranks = new ArrayList<>();
-                    for (Rank r : SPSSpigot.plugin().perms.getRanks())
-                        ranks.add(r.getName());
-                    return keepStarts(ranks, args[2]);
+                    return keepStarts(new ArrayList<>(SPSSpigot.plugin().perms.getRankNames()), args[2]);
                 } else {
                     // /perms rank delete <...> <partial>
                     return new ArrayList<>();
@@ -86,10 +83,7 @@ public class PermissionsTabCompleter implements TabCompleter {
             } else if (args[1].equals("list")) {
                 if (args.length == 3) {
                     // /perms rank list <partial>
-                    List<String> ranks = new ArrayList<>();
-                    for (Rank r : SPSSpigot.plugin().perms.getRanks())
-                        ranks.add(r.getName());
-                    return keepStarts(ranks, args[2]);
+                    return keepStarts(new ArrayList<>(SPSSpigot.plugin().perms.getRankNames()), args[2]);
                 } else {
                     // /perms rank list <...> <partial>
                     return new ArrayList<>();
@@ -97,10 +91,7 @@ public class PermissionsTabCompleter implements TabCompleter {
             } else if (args[1].equals("set")) {
                 if (args.length == 3) {
                     // /perms rank set <partial>
-                    List<String> ranks = new ArrayList<>();
-                    for (Rank r : SPSSpigot.plugin().perms.getRanks())
-                        ranks.add(r.getName());
-                    return keepStarts(ranks, args[2]);
+                    return keepStarts(new ArrayList<>(SPSSpigot.plugin().perms.getRankNames()), args[2]);
                 } else if (args.length == 4) {
                     // /perms rank set <rank> <partial>
                     List<String> perms = new ArrayList<>();
@@ -117,10 +108,7 @@ public class PermissionsTabCompleter implements TabCompleter {
             } else if (args[1].equals("unset")) {
                 if (args.length == 3) {
                     // /perms rank unset <partial>
-                    List<String> ranks = new ArrayList<>();
-                    for (Rank r : SPSSpigot.plugin().perms.getRanks())
-                        ranks.add(r.getName());
-                    return keepStarts(ranks, args[2]);
+                    return keepStarts(new ArrayList<>(SPSSpigot.plugin().perms.getRankNames()), args[2]);
                 } else if (args.length == 4) {
                     // /perms rank unset <rank> <partial>
                     Rank rank = SPSSpigot.plugin().perms.getRank(args[2]);
@@ -140,10 +128,7 @@ public class PermissionsTabCompleter implements TabCompleter {
             } else if (args[1].equals("color")) {
                 if (args.length == 3) {
                     // /perms rank color <partial>
-                    List<String> ranks = new ArrayList<>();
-                    for (Rank r : SPSSpigot.plugin().perms.getRanks())
-                        ranks.add(r.getName());
-                    return keepStarts(ranks, args[2]);
+                    return keepStarts(new ArrayList<>(SPSSpigot.plugin().perms.getRankNames()), args[2]);
                 } else if (args.length == 4) {
                     // /perms rank color <rank> <partial>
                     List<String> colorNames = new ArrayList<>();
@@ -165,11 +150,7 @@ public class PermissionsTabCompleter implements TabCompleter {
             } else if (args[1].equals("give")) {
                 if (args.length == 3) {
                     // /perms player give <partial>
-                    List<String> ranks = new ArrayList<>();
-                    for (Rank r : SPSSpigot.plugin().perms.getRanks()) {
-                        ranks.add(r.getName());
-                    }
-                    return keepStarts(ranks, args[2]);
+                    return keepStarts(new ArrayList<>(SPSSpigot.plugin().perms.getRankNames()), args[2]);
                 } else if (args.length == 4) {
                     // /perms player give <rank> <partial>
                     return null; // Player name
@@ -180,11 +161,7 @@ public class PermissionsTabCompleter implements TabCompleter {
             } else if (args[1].equals("remove")) {
                 if (args.length == 3) {
                     // /perms player remove <partial>
-                    List<String> ranks = new ArrayList<>();
-                    for (Rank r : SPSSpigot.plugin().perms.getRanks()) {
-                        ranks.add(r.getName());
-                    }
-                    return keepStarts(ranks, args[2]);
+                    return keepStarts(new ArrayList<>(SPSSpigot.plugin().perms.getRankNames()), args[2]);
                 } else if (args.length == 4) {
                     // /perms player remove <rank> <partial>
                     return null; // Player name

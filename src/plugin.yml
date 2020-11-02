@@ -10,9 +10,13 @@ commands:
   perms:
     description: Controls SPSMC's permissions systems.
     usage: "Usage: /<command> <members|rank|player|reload>"
+    permission: spsmc.perms
     alias: permissions
 
 permissions:
+  spsmc.perms:
+    description: Gives control over server permissions commands. Effectively op-level control.
+    default: op
   spsmc.basic.interact:
     description: Allows interaction with blocks and the air.
     default: true
