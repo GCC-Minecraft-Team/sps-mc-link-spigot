@@ -42,10 +42,15 @@ public class JoinEvent implements Listener {
                 Player player = event.getPlayer();
                 //NickAPI.setSkin( player, player.getName() );
                 //NickAPI.setUniqueId( player, player.getName() );
-                NickAPI.nick(player, "Player");
-                NickAPI.refreshPlayer(player);
 
-                player.sendTitle("Welcome to" + ChatColor.BLUE +"SPS MC!", "Please use the link in chat to link your account!", 10, 160, 10);;
+                Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), new Runnable() {
+                    public void run() {
+                        NickAPI.nick(player, "Player");
+                        NickAPI.refreshPlayer(player);
+                    }
+                }, 20);
+
+                player.sendTitle("Welcome to" + ChatColor.BLUE +" SPS MC!", "Please use the link in chat to link your account!", 10, 160, 10);;
 
             } else {
                 String userNoFormat = DatabaseLink.getSPSName(event.getPlayer().getUniqueId());
@@ -57,8 +62,12 @@ public class JoinEvent implements Listener {
                 Player player = event.getPlayer();
                 //NickAPI.setSkin( player, player.getName() );
                 //NickAPI.setUniqueId( player, player.getName() );
-                NickAPI.nick(player, userNoFormat.substring(0, maxLength));
-                NickAPI.refreshPlayer(player);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), new Runnable() {
+                    public void run() {
+                        NickAPI.nick(player, userNoFormat.substring(0, maxLength));
+                        NickAPI.refreshPlayer(player);
+                    }
+                }, 20);
             }
         }
     }

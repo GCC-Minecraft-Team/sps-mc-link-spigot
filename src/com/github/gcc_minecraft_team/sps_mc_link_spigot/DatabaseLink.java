@@ -186,6 +186,11 @@ public class DatabaseLink {
                 email +
                 ChatColor.BOLD.toString() + ChatColor.GREEN.toString() + " to the server! Your new username is: " +
                 ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + name);
+
+        // give starting boat
+        player.getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));
+
+        player.sendMessage("You've spawned in the lobby, please use the included " + ChatColor.BLUE +"Starting Boat" + ChatColor.WHITE + " to leave the island!");
     }
 
 }
