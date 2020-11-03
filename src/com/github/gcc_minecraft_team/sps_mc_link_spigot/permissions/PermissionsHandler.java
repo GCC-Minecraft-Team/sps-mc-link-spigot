@@ -18,10 +18,10 @@ import java.util.*;
 
 public class PermissionsHandler {
 
-    public static final String PERMFILE = "permsConfig.yml";
-    public static final String CFGMEMBERS = "members";
-    public static final String CFGRANKS = "ranks";
-    public static final String CFGPLAYERS = "player_ranks";
+    private static final String PERMFILE = "permsConfig.yml";
+    private static final String CFGMEMBERS = "members";
+    private static final String CFGRANKS = "ranks";
+    private static final String CFGPLAYERS = "player_ranks";
 
     private Map<Player, PermissionAttachment> players;
 

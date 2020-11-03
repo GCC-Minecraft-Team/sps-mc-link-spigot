@@ -8,6 +8,14 @@ author: GCC Minecraft Team
 depend: [NickAPI]
 
 commands:
+  claim:
+    description: Base command for the claim system.
+    usage: "Usage: /<command> <>"
+    permission: spsmc.claim
+  team:
+    description: Base command for the teams system.
+    usage: "Usage: /<command> <>"
+    permission: spsmc.team
   perms:
     description: Controls SPSMC's permissions systems.
     usage: "Usage: /<command> <members|rank|player|reload>"
@@ -16,10 +24,20 @@ commands:
   mod:
     description: Base command for SPSMC moderators
     usage: "Usage: /<command> <banSPS>"
+    permission: spsmc.mod
 
 permissions:
+  spsmc.claim:
+    description: Allows member claim commands.
+    default: true
+  spsmc.team:
+    description: Allows member team commands.
+    default: true
   spsmc.perms:
     description: Gives control over server permissions commands. Effectively op-level control.
+    default: op
+  spsmc.mod:
+    description: Gives control over moderation commands.
     default: op
   spsmc.basic.interact:
     description: Allows interaction with blocks and the air.

@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.*;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.*;
@@ -13,13 +14,14 @@ import java.util.logging.Logger;
 public class SPSSpigot extends JavaPlugin {
 
     public PermissionsHandler perms;
+    public ClaimHandler claims;
 
     @Override
     public void onEnable() {
         // Load plugin config
         PluginConfig.LoadConfig();
 
-        // Setup Databse
+        // Setup Database
         DatabaseLink.SetupDatabase();
 
         // Start listen server
@@ -31,8 +33,18 @@ public class SPSSpigot extends JavaPlugin {
         perms = new PermissionsHandler();
         getServer().getPluginManager().registerEvents(new PermissionsEvents(), this);
 
+        // Setup Claims
+        claims = new ClaimHandler();
+        getServer().getPluginManager().registerEvents(new ClaimEvents(), this);
+
         // register chat events
         getServer().getPluginManager().registerEvents(new ChatEvents(), this);
+
+        this.getCommand("claim").setExecutor(new ClaimCommands());
+        this.getCommand("claim").setTabCompleter(new ClaimTabCompleter());
+
+        this.getCommand("team").setExecutor(new TeamCommands());
+        this.getCommand("team").setTabCompleter(new TeamTabCompleter());
 
         this.getCommand("perms").setExecutor(new PermissionsCommands());
         this.getCommand("perms").setTabCompleter(new PermissionsTabCompleter());
@@ -72,6 +84,14 @@ public class SPSSpigot extends JavaPlugin {
      */
     public static PermissionsHandler perms() {
         return plugin().perms;
+    }
+
+    /**
+     * Convenience function to get the {@link ClaimHandler}.
+     * @return This plugin's {@link ClaimHandler}.
+     */
+    public static ClaimHandler claims() {
+        return plugin().claims;
     }
 
     /**
