@@ -99,8 +99,9 @@ public class DatabaseLink {
     }
 
     /**
-     * Checks if a player is banned
-     * @param uuid the minecraft UUID of the player to ban
+     * Checks if a player is banned.
+     * @param uuid The Minecraft {@link UUID} of the player to ban.
+     * @return {@code true} if the player is banned.
      **/
     public static Boolean getIsBanned(UUID uuid) {
         try {
@@ -111,8 +112,9 @@ public class DatabaseLink {
     }
 
     /**
-    * Bans a player using their SPS ID
-    * @param SPSuser the SPS username (without domain) 
+     * Bans a player using their SPS ID
+     * @param SPSuser The SPS username to ban without domain (e.g. 1absmith)
+     * @return {@code true} if the SPS ID was successfully banned.
     **/
     public static boolean banPlayer(String SPSuser) {
         String spsEmail = SPSuser + "@seattleschools.org";
@@ -143,10 +145,10 @@ public class DatabaseLink {
     }
 
     /**
-     * Registers a new player in the database
-     * @param uuid
-     * @param SPSid
-     * @param name
+     * Registers a new player in the database.
+     * @param uuid The Minecraft {@link UUID} of the player.
+     * @param SPSid The SPS ID of the player.
+     * @param name The new name of the player.
      **/
     public static void registerPlayer(String uuid, String SPSid, String name) {
         // set UUID and Name
@@ -180,17 +182,17 @@ public class DatabaseLink {
         NickAPI.refreshPlayer( player );
 
         // send a confirmation message
-        player.sendMessage(ChatColor.BOLD.toString() + ChatColor.GREEN.toString() +
-                "Sucessfully linked account " +
-                ChatColor.BOLD.toString() + ChatColor.GOLD.toString() +
-                email +
-                ChatColor.BOLD.toString() + ChatColor.GREEN.toString() + " to the server! Your new username is: " +
-                ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + name);
+        player.sendMessage(ChatColor.BOLD.toString() +
+                ChatColor.GREEN.toString() + "Successfully linked account " +
+                ChatColor.GOLD.toString() + email +
+                ChatColor.GREEN.toString() + " to the server! Your new username is: " +
+                ChatColor.GOLD.toString() + name);
 
         // give starting boat
         player.getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));
 
         player.sendMessage("You've spawned in the lobby, please use the included " + ChatColor.BLUE +"Starting Boat" + ChatColor.WHITE + " to leave the island!");
+
     }
 
 }
