@@ -58,7 +58,7 @@ public class Rank implements ConfigurationSerializable {
      */
     public void setPermission(String perm, boolean value) {
         perms.put(perm, value);
-        SPSSpigot.plugin().perms.saveFile();
+        SPSSpigot.perms().saveFile();
         updateRankHolders();
     }
 
@@ -77,7 +77,7 @@ public class Rank implements ConfigurationSerializable {
      */
     public void unsetPermission(String perm) {
         perms.remove(perm);
-        SPSSpigot.plugin().perms.saveFile();
+        SPSSpigot.perms().saveFile();
         updateRankHolders();
     }
 
@@ -111,7 +111,7 @@ public class Rank implements ConfigurationSerializable {
      */
     public void setColor(ChatColor color) {
         this.color = color;
-        SPSSpigot.plugin().perms.saveFile();
+        SPSSpigot.perms().saveFile();
     }
 
     /**
@@ -119,7 +119,7 @@ public class Rank implements ConfigurationSerializable {
      * @return A set of all UUIDs of players with this rank.
      */
     public Set<UUID> getRankHolders() {
-        return SPSSpigot.plugin().perms.getRankPlayers(this);
+        return SPSSpigot.perms().getRankPlayers(this);
     }
 
     /**
@@ -127,9 +127,9 @@ public class Rank implements ConfigurationSerializable {
      */
     private void updateRankHolders() {
         for (UUID uuid : getRankHolders()) {
-            Player player = SPSSpigot.plugin().getServer().getPlayer(uuid);
+            Player player = SPSSpigot.server().getPlayer(uuid);
             if (player != null)
-                SPSSpigot.plugin().perms.loadPermissions(player);
+                SPSSpigot.perms().loadPermissions(player);
         }
     }
 

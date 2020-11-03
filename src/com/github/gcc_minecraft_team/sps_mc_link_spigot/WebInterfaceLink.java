@@ -14,6 +14,7 @@ import io.javalin.Javalin;
 import io.jsonwebtoken.*;
 
 import java.util.Date;
+import java.util.logging.Level;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;
@@ -44,14 +45,14 @@ public class WebInterfaceLink {
 
         // Put the original class loader back where it was.
         Thread.currentThread().setContextClassLoader(classLoader);
-        System.out.println("Listening for web-app requests on port 8000!");
+        SPSSpigot.logger().log(Level.INFO, "Listening for web-app requests on port 8000!");
 
         // listen for post request from web app
         app.post("/registerPlayer", ctx -> {
-            System.out.println("request " + ctx.body());
+            SPSSpigot.logger().log(Level.INFO, "request " + ctx.body());
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode newUser = objectMapper.readTree(ctx.body());
-            System.out.println("request " + newUser.toString());
+            SPSSpigot.logger().log(Level.INFO, "request " + newUser.toString());
 
             String newUUID = null;
 
@@ -59,7 +60,7 @@ public class WebInterfaceLink {
             try {
                 newUUID = DecodeJWT(newUser.get("token").asText()).getId();
             } catch (JwtException exception) {
-                System.out.println("Something went wrong decoding a JSON web token");
+                SPSSpigot.logger().log(Level.SEVERE, "Something went wrong decoding a JSON web token");
             }
 
             // send response and load database data

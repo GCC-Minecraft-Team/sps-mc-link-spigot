@@ -38,7 +38,6 @@ public class PermissionsHandler {
 
         SPSSpigot.plugin().saveResource(PERMFILE, false);
         permsConfig = YamlConfiguration.loadConfiguration(new File(SPSSpigot.plugin().getDataFolder(), PERMFILE));
-        System.out.println(permsConfig.getValues(true));
         loadFile();
     }
 
@@ -167,7 +166,7 @@ public class PermissionsHandler {
     public void setMemberPerm(String perm, boolean value) {
         memberPerms.put(perm, value);
         saveFile();
-        for (Player player : players.keySet())
+        for (Player player : SPSSpigot.server().getOnlinePlayers())
             loadPermissions(player);
     }
 
@@ -189,7 +188,7 @@ public class PermissionsHandler {
     public boolean unsetMemberPerm(String perm) {
         boolean out = memberPerms.remove(perm);
         saveFile();
-        for (Player player : players.keySet())
+        for (Player player : SPSSpigot.server().getOnlinePlayers())
             loadPermissions(player);
         return out;
     }
@@ -254,8 +253,8 @@ public class PermissionsHandler {
     public boolean deleteRank(Rank rank) {
         for (Map.Entry<UUID, Set<Rank>> rankSet : playerRanks.entrySet()) {
             rankSet.getValue().remove(rank);
-            if (SPSSpigot.plugin().getServer().getOfflinePlayer(rankSet.getKey()).isOnline())
-                loadPermissions(SPSSpigot.plugin().getServer().getOfflinePlayer(rankSet.getKey()).getPlayer());
+            if (SPSSpigot.server().getOfflinePlayer(rankSet.getKey()).isOnline())
+                loadPermissions(SPSSpigot.server().getOfflinePlayer(rankSet.getKey()).getPlayer());
         }
         boolean out = ranks.remove(rank);
         saveFile();
@@ -276,8 +275,8 @@ public class PermissionsHandler {
             for (Rank r : remove) {
                 rankSet.getValue().remove(r);
             }
-            if (SPSSpigot.plugin().getServer().getOfflinePlayer(rankSet.getKey()).isOnline())
-                loadPermissions(SPSSpigot.plugin().getServer().getOfflinePlayer(rankSet.getKey()).getPlayer());
+            if (SPSSpigot.server().getOfflinePlayer(rankSet.getKey()).isOnline())
+                loadPermissions(SPSSpigot.server().getOfflinePlayer(rankSet.getKey()).getPlayer());
         }
         ArrayList<Rank> remove = new ArrayList<>();
         for (Rank r : ranks) {

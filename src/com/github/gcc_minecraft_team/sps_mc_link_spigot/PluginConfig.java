@@ -57,7 +57,7 @@ public class PluginConfig {
             }
             key = new String(chars);
             pluginCfg.set(JWTSECRET, key);
-            SPSSpigot.plugin().getLogger().log(Level.INFO, "Generated new JWT secret key: " + pluginCfg.get(JWTSECRET));
+            SPSSpigot.logger().log(Level.INFO, "Generated new JWT secret key: " + pluginCfg.get(JWTSECRET));
             try {
                 pluginCfg.save(new File(SPSSpigot.plugin().getDataFolder(), PLFILE));
             } catch (IOException e) {

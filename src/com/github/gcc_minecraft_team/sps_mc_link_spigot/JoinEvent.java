@@ -21,7 +21,7 @@ public class JoinEvent implements Listener {
         if (DatabaseLink.getIsBanned(event.getPlayer().getUniqueId())) {
             event.getPlayer().kickPlayer("The SPS account you linked has been banned! >:(");
         } else {
-            SPSSpigot.plugin().perms.loadPermissions(event.getPlayer());
+            SPSSpigot.perms().loadPermissions(event.getPlayer());
             event.getPlayer().sendMessage(PluginConfig.getPluginMOTD());
 
             if (!DatabaseLink.isRegistered(event.getPlayer().getUniqueId())) {
@@ -77,7 +77,7 @@ public class JoinEvent implements Listener {
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) {
         event.setQuitMessage("");
-        SPSSpigot.plugin().perms.removeAttachment(event.getPlayer());
+        SPSSpigot.perms().removeAttachment(event.getPlayer());
     }
 
 }

@@ -8,16 +8,18 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import xyz.haoshoku.nick.api.NickAPI;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.UUID;
 
 public class DatabaseLink {
@@ -40,8 +42,8 @@ public class DatabaseLink {
         // create config if it doesn't exist
         SPSSpigot.plugin().saveResource(DBFILE, false);
         dbConfig = YamlConfiguration.loadConfiguration(new File(SPSSpigot.plugin().getDataFolder(), DBFILE));
-        dbConfig.addDefault(CFGURI, new String());
-        dbConfig.addDefault(CFGDB, new String());
+        dbConfig.addDefault(CFGURI, "");
+        dbConfig.addDefault(CFGDB, "");
 
         // load config
         try {
@@ -60,7 +62,7 @@ public class DatabaseLink {
             mongoDatabase = mongoClient.getDatabase(dbName);
             userCol = mongoDatabase.getCollection("users");
         } catch(MongoException exception) {
-            System.out.println("Something went wrong connecting to the MongoDB database, is " + DBFILE + " set up correctly?");
+            SPSSpigot.logger().log(Level.SEVERE, "Something went wrong connecting to the MongoDB database, is " + DBFILE + " set up correctly?");
         }
     }
 
@@ -80,7 +82,7 @@ public class DatabaseLink {
                 return false;
             }
         } catch(MongoException exception) {
-            System.out.println("Couldn't check user from database! Error: " + exception.toString());
+            SPSSpigot.logger().log(Level.SEVERE, "Couldn't check user from database! Error: " + exception.toString());
             return false;
         }
     }
@@ -119,10 +121,10 @@ public class DatabaseLink {
     public static boolean banPlayer(String SPSuser) {
         String spsEmail = SPSuser + "@seattleschools.org";
 
-        System.out.println("Banning player with SPS email: " + spsEmail);
+        SPSSpigot.logger().log(Level.INFO, "Banning player with SPS email: " + spsEmail);
 
         BasicDBObject updateFields = new BasicDBObject();
-        updateFields.append("banned", new Boolean(true));
+        updateFields.append("banned", true);
         // set query
         BasicDBObject setQuery = new BasicDBObject();
         setQuery.append("$set", updateFields);
@@ -132,14 +134,14 @@ public class DatabaseLink {
             userCol.updateOne(new Document("oAuthEmail", spsEmail), setQuery);
 
             // kick them from the server
-            Bukkit.getPlayer(UUID.fromString(userCol.find(new Document("oAuthEmail", spsEmail)).first().getString("mcUUID"))).kickPlayer("Wooks wike uwu've bewn banned! UwU");
+            SPSSpigot.server().getPlayer(UUID.fromString(userCol.find(new Document("oAuthEmail", spsEmail)).first().getString("mcUUID"))).kickPlayer("Wooks wike uwu've bewn banned! UwU");
 
             return true;
         } catch (MongoException exception) {
-            System.out.println("Something went wrong banning a player!");
+            SPSSpigot.logger().log(Level.SEVERE, "Something went wrong banning a player!");
             return false;
         } catch (NullPointerException exception)  {
-            System.out.println("Something went wrong looking up a user to player!");
+            SPSSpigot.logger().log(Level.SEVERE, "Something went wrong looking up a user to player!");
             return false;
         }
     }
@@ -168,13 +170,13 @@ public class DatabaseLink {
         String email = userCol.find(new Document("oAuthId", SPSid)).first().getString("oAuthEmail");
 
         // get player
-        Player player = Bukkit.getPlayer(UUID.fromString(uuid));
+        Player player = SPSSpigot.server().getPlayer(UUID.fromString(uuid));
 
         // load permissions
-        SPSSpigot.plugin().perms.loadPermissions(player);
+        SPSSpigot.perms().loadPermissions(player);
 
         // set nametag
-        int maxLength = (name.length() < 15)?name.length():15;
+        int maxLength = Math.min(name.length(), 15);
 
         //NickAPI.setSkin( player, player.getName() );
         //NickAPI.setUniqueId( player, player.getName() );

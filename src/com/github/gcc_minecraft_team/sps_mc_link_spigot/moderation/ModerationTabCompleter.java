@@ -38,7 +38,7 @@ public class ModerationTabCompleter implements TabCompleter {
         } else if (args[0].equals("banSPS")) {
             if (args.length == 2) {
                 // /mod banSPS <partial>
-                return keepStarts(new ArrayList<String>(NickAPI.getNickedPlayers().values()), args[1]);
+                return keepStarts(new ArrayList<>(NickAPI.getNickedPlayers().values()), args[1]);
             }
         }
 

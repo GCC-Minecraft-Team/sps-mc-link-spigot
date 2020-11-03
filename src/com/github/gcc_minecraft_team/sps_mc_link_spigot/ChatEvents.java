@@ -1,6 +1,5 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,6 +9,8 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import javax.xml.crypto.Data;
+
+import java.util.logging.Level;
 
 public class ChatEvents implements Listener {
 
@@ -24,9 +25,9 @@ public class ChatEvents implements Listener {
 
             e.setCancelled(true); //cancel the event, so no message is sent (yet)
 
-            for (Player on : Bukkit.getOnlinePlayers()) { //loop threw all online players
+            for (Player on : SPSSpigot.server().getOnlinePlayers()) { //loop threw all online players
                 String newMessage = ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId()) + "]: " + ChatColor.WHITE + message.replaceAll(e.getPlayer().getDisplayName(), ""); //format the message
-                System.out.println(newMessage);
+                SPSSpigot.logger().log(Level.INFO, newMessage);
                 on.sendMessage(newMessage); //send the player the message
             }
         }
@@ -43,11 +44,11 @@ public class ChatEvents implements Listener {
 
         if (command.equalsIgnoreCase("list")) {
             e.setCancelled(true);
-            p.sendMessage(ChatColor.GOLD + "[SPS MC] There are " + Bukkit.getOnlinePlayers().stream().count() + " players out of " + Bukkit.getMaxPlayers() + " online!");
+            p.sendMessage(ChatColor.GOLD + "[SPS MC] There are " + SPSSpigot.server().getOnlinePlayers().stream().count() + " players out of " + SPSSpigot.server().getMaxPlayers() + " online!");
 
             // TODO: Check player ranks and list moderators, admins, etc.
             StringBuilder PlayerList = new StringBuilder();
-            for (Player player : Bukkit.getOnlinePlayers()) {
+            for (Player player : SPSSpigot.server().getOnlinePlayers()) {
                 PlayerList.append(DatabaseLink.getSPSName(player.getUniqueId()) + ", ");
             }
 

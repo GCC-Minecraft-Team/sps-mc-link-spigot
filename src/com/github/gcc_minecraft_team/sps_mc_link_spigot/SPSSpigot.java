@@ -2,8 +2,12 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationTabCompleter;
+import org.bukkit.Server;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SPSSpigot extends JavaPlugin {
 
@@ -37,7 +41,7 @@ public class SPSSpigot extends JavaPlugin {
 
         // Setup other stuff
         getServer().getPluginManager().registerEvents(new JoinEvent(), this);
-        System.out.println("SPS Spigot integration started.");
+        SPSSpigot.logger().log(Level.INFO, "SPS Spigot integration started.");
     }
 
     @Override
@@ -45,7 +49,35 @@ public class SPSSpigot extends JavaPlugin {
 
     }
 
+    /**
+     * Convenience function to get this {@link JavaPlugin}.
+     * @return This {@link JavaPlugin}.
+     */
     public static SPSSpigot plugin() {
         return JavaPlugin.getPlugin(SPSSpigot.class);
+    }
+
+    /**
+     * Convenience function to get the {@link Server}.
+     * @return This {@link Server}.
+     */
+    public static Server server() {
+        return plugin().getServer();
+    }
+
+    /**
+     * Convenience function to get the {@link PermissionsHandler}.
+     * @return This plugin's {@link PermissionsHandler}.
+     */
+    public static PermissionsHandler perms() {
+        return plugin().perms;
+    }
+
+    /**
+     * Convenience function to get the {@link Server}'s {@link Logger}.
+     * @return The {@link Server}'s {@link Logger}.
+     */
+    public static Logger logger() {
+        return plugin().getLogger();
     }
 }

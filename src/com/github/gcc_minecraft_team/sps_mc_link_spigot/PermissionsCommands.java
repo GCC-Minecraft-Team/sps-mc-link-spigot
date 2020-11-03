@@ -62,7 +62,7 @@ public class PermissionsCommands implements CommandExecutor {
                     return true;
                 } else {
                     // Parse arguments
-                    Permission perm = SPSSpigot.plugin().getServer().getPluginManager().getPermission(args[2]);
+                    Permission perm = SPSSpigot.server().getPluginManager().getPermission(args[2]);
                     Boolean bool = null;
                     if (args[3].equalsIgnoreCase("true"))
                         bool = true;
@@ -79,7 +79,7 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     } else {
                         // Set member perms
-                        SPSSpigot.plugin().perms.setMemberPerm(perm, bool);
+                        SPSSpigot.perms().setMemberPerm(perm, bool);
                         sender.sendMessage(ChatColor.GREEN + "Set permission node " + perm.getName() + " to " + bool + " for all members.");
                         return true;
                     }
@@ -91,7 +91,7 @@ public class PermissionsCommands implements CommandExecutor {
                     return true;
                 } else {
                     // Parse arguments
-                    Permission perm = SPSSpigot.plugin().getServer().getPluginManager().getPermission(args[2]);
+                    Permission perm = SPSSpigot.server().getPluginManager().getPermission(args[2]);
                     // Checks
                     if (perm == null) {
                         // Permission node not recognized
@@ -99,14 +99,14 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     } else {
                         // Set member perms
-                        SPSSpigot.plugin().perms.unsetMemberPerm(perm);
+                        SPSSpigot.perms().unsetMemberPerm(perm);
                         sender.sendMessage(ChatColor.GREEN + "Unset permission node " + perm.getName() + " to for all members.");
                         return true;
                     }
                 }
             } else if (args[1].equals("list")) {
                 // Send full list of permissions
-                sender.sendMessage(buildListBooleanText("MEMBERS", SPSSpigot.plugin().perms.getMemberPerms()));
+                sender.sendMessage(buildListBooleanText("MEMBERS", SPSSpigot.perms().getMemberPerms()));
                 return true;
             } else {
                 // args[1] is invalid
@@ -125,13 +125,13 @@ public class PermissionsCommands implements CommandExecutor {
                     // Or too many (multi-word rank name)
                     sender.sendMessage(ChatColor.RED + "Usage: /" + label + " rank create <rank>");
                     return true;
-                } else if (SPSSpigot.plugin().perms.getRank(args[2]) != null) {
+                } else if (SPSSpigot.perms().getRank(args[2]) != null) {
                     // A rank with this name already exists.
                     sender.sendMessage(ChatColor.RED + "The rank name '" + args[2] + "' is already used.");
                     return true;
                 } else {
                     // A valid new rank name is chosen.
-                    SPSSpigot.plugin().perms.addRank(new Rank(args[2]));
+                    SPSSpigot.perms().addRank(new Rank(args[2]));
                     sender.sendMessage(ChatColor.GREEN + "Created new rank '" + args[2] + "'!");
                     return true;
                 }
@@ -142,13 +142,13 @@ public class PermissionsCommands implements CommandExecutor {
                     // Or too many (multi-word rank name)
                     sender.sendMessage(ChatColor.RED + "Usage: /" + label + " rank delete <rank>");
                     return true;
-                } else if (SPSSpigot.plugin().perms.getRank(args[2]) == null) {
+                } else if (SPSSpigot.perms().getRank(args[2]) == null) {
                     // No rank with this name exists.
                     sender.sendMessage(ChatColor.RED + "The rank '" + args[2] + "' was not recognized.");
                     return true;
                 } else {
                     // A valid, existing rank is chosen.
-                    SPSSpigot.plugin().perms.deleteRank(args[2]);
+                    SPSSpigot.perms().deleteRank(args[2]);
                     sender.sendMessage(ChatColor.GREEN + "Deleted rank '" + args[2] + "'!");
                     return true;
                 }
@@ -160,10 +160,10 @@ public class PermissionsCommands implements CommandExecutor {
                     return true;
                 } else if (args.length == 2) {
                     // List all ranks
-                    sender.sendMessage(buildListText("RANKS", new ArrayList<>(SPSSpigot.plugin().perms.getRankNames())));
+                    sender.sendMessage(buildListText("RANKS", new ArrayList<>(SPSSpigot.perms().getRankNames())));
                     return true;
                 } else {
-                    Rank rank = SPSSpigot.plugin().perms.getRank(args[2]);
+                    Rank rank = SPSSpigot.perms().getRank(args[2]);
                     if (rank == null) {
                         // No rank with this name exists.
                         sender.sendMessage(ChatColor.RED + "The rank '" + args[2] + "' was not recognized.");
@@ -183,8 +183,8 @@ public class PermissionsCommands implements CommandExecutor {
                     return true;
                 } else {
                     // Get the values
-                    Rank rank = SPSSpigot.plugin().perms.getRank(args[2]);
-                    Permission perm = SPSSpigot.plugin().getServer().getPluginManager().getPermission(args[3]);
+                    Rank rank = SPSSpigot.perms().getRank(args[2]);
+                    Permission perm = SPSSpigot.server().getPluginManager().getPermission(args[3]);
                     Boolean bool = null;
                     if (args[4].equalsIgnoreCase("true"))
                         bool = true;
@@ -217,8 +217,8 @@ public class PermissionsCommands implements CommandExecutor {
                     return true;
                 } else {
                     // Get the values
-                    Rank rank = SPSSpigot.plugin().perms.getRank(args[2]);
-                    Permission perm = SPSSpigot.plugin().getServer().getPluginManager().getPermission(args[3]);
+                    Rank rank = SPSSpigot.perms().getRank(args[2]);
+                    Permission perm = SPSSpigot.server().getPluginManager().getPermission(args[3]);
                     if (rank == null) {
                         // Rank not recognized
                         sender.sendMessage(ChatColor.RED + "Rank '" + args[2] + "' was not recognized.");
@@ -242,7 +242,7 @@ public class PermissionsCommands implements CommandExecutor {
                     return true;
                 } else {
                     // There is a rank given; may or may not be a color specified.
-                    Rank rank = SPSSpigot.plugin().perms.getRank(args[2]);
+                    Rank rank = SPSSpigot.perms().getRank(args[2]);
                     if (rank == null) {
                         // Rank not recognized
                         sender.sendMessage(ChatColor.RED + "Rank '" + args[2] + "' was not recognized.");
@@ -287,13 +287,13 @@ public class PermissionsCommands implements CommandExecutor {
                 } else {
                     // There are a given rank and player name.
                     // Get rank - may be null if unrecognized.
-                    Rank rank = SPSSpigot.plugin().perms.getRank(args[2]);
+                    Rank rank = SPSSpigot.perms().getRank(args[2]);
                     // Get player - may be null if unrecognized (including offline).
                     StringBuilder playerName = new StringBuilder(args[3]);
                     for (int i = 4; i < args.length; i++) {
                         playerName.append(" ").append(args[i]);
                     }
-                    Player player = SPSSpigot.plugin().getServer().getPlayer(playerName.toString());
+                    Player player = SPSSpigot.server().getPlayer(playerName.toString());
                     if (rank == null) {
                         // No rank with this name exists.
                         sender.sendMessage(ChatColor.RED + "The rank '" + args[2] + "' was not recognized.");
@@ -304,7 +304,7 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     } else {
                         // We have a known player and rank.
-                        if (SPSSpigot.plugin().perms.givePlayerRank(player, rank)) {
+                        if (SPSSpigot.perms().givePlayerRank(player, rank)) {
                             // The player did not have the rank before and we gave them it.
                             sender.sendMessage(ChatColor.GREEN + "Gave rank '" + rank.getName() + "' to player '" + player.getName() + "'!");
                             return true;
@@ -324,13 +324,13 @@ public class PermissionsCommands implements CommandExecutor {
                 } else {
                     // There are a given rank and player name.
                     // Get rank - may be null if unrecognized.
-                    Rank rank = SPSSpigot.plugin().perms.getRank(args[2]);
+                    Rank rank = SPSSpigot.perms().getRank(args[2]);
                     // Get player - may be null if unrecognized (including offline).
                     StringBuilder playerName = new StringBuilder(args[3]);
                     for (int i = 4; i < args.length; i++) {
                         playerName.append(" ").append(args[i]);
                     }
-                    Player player = SPSSpigot.plugin().getServer().getPlayer(playerName.toString());
+                    Player player = SPSSpigot.server().getPlayer(playerName.toString());
                     if (rank == null) {
                         // No rank with this name exists.
                         sender.sendMessage(ChatColor.RED + "The rank '" + args[2] + "' was not recognized.");
@@ -341,7 +341,7 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     } else {
                         // We have a known player and rank.
-                        if (SPSSpigot.plugin().perms.removePlayerRank(player, rank)) {
+                        if (SPSSpigot.perms().removePlayerRank(player, rank)) {
                             // The player did have the rank before and we removed it.
                             sender.sendMessage(ChatColor.GREEN + "Removed rank '" + rank.getName() + "' from player '" + player.getName() + "'!");
                             return true;
@@ -363,7 +363,7 @@ public class PermissionsCommands implements CommandExecutor {
                     StringBuilder str = new StringBuilder(args[2]);
                     for (int i = 3; i < args.length; i++)
                         str.append(args[i]);
-                    Player player = SPSSpigot.plugin().getServer().getPlayer(str.toString());
+                    Player player = SPSSpigot.server().getPlayer(str.toString());
                     if (player == null) {
                         // Player not recognized
                         sender.sendMessage(ChatColor.RED + "Player '" + str + "' was not recognized.");
@@ -377,7 +377,7 @@ public class PermissionsCommands implements CommandExecutor {
                         else
                             items.add(ChatColor.ITALIC + "SPS profile unlinked");
                         // Player ranks
-                        for (Rank rank : SPSSpigot.plugin().perms.getPlayerRanks(player))
+                        for (Rank rank : SPSSpigot.perms().getPlayerRanks(player))
                             items.add(rank.getColor() + rank.getName());
                         // Generate text
                         sender.sendMessage(buildListText(player.getDisplayName(), items));
@@ -391,10 +391,10 @@ public class PermissionsCommands implements CommandExecutor {
             }
         } else if (args[0].equals("reload")) {
             // Reloads perms from file.
-            SPSSpigot.plugin().perms.loadFile();
+            SPSSpigot.perms().loadFile();
             // Update perms for everybody online
-            for (Player player : SPSSpigot.plugin().getServer().getOnlinePlayers())
-                SPSSpigot.plugin().perms.loadPermissions(player);
+            for (Player player : SPSSpigot.server().getOnlinePlayers())
+                SPSSpigot.perms().loadPermissions(player);
             sender.sendMessage(ChatColor.GREEN + "Reloaded permissions!");
             return true;
         } else {
