@@ -33,8 +33,19 @@ commands:
     description: Send a message to the mods
     usage: "Usage: /modmail <message>"
     permission: spsmc.modmail
+  spawn:
+    description: Teleports back to the spawn area
+    usage: "Usage: /spawn"
+    permission: spsmc.general
+  cancel:
+    description: Cancels teleportation
+    usage: "Usage: /cancel"
+    permission: spsmc.general
 
 permissions:
+  spsmc.general:
+    description: Allows member to use various utility commands
+    default: true
   spsmc.claim:
     description: Allows member claim commands.
     default: true
