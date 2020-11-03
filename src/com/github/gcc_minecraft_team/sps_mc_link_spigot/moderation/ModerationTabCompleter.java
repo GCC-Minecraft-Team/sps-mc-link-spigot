@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -38,7 +39,7 @@ public class ModerationTabCompleter implements TabCompleter {
         } else if (args[0].equals("banSPS")) {
             if (args.length == 2) {
                 // /mod banSPS <partial>
-                return keepStarts(new ArrayList<>(NickAPI.getNickedPlayers().values()), args[1]);
+                return keepStarts(new ArrayList<>(DatabaseLink.getAllSPSNames()), args[1]);
             }
         }
 

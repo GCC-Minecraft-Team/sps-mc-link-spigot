@@ -8,6 +8,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -19,6 +20,7 @@ import xyz.haoshoku.nick.api.NickAPI;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.UUID;
 
@@ -88,6 +90,32 @@ public class DatabaseLink {
     }
 
     /**
+     * Gets the MC names of all SPS users registered
+     * @return
+     */
+    public static ArrayList<String> getAllSPSNames() {
+        ArrayList<String> spsNames = new ArrayList<String>();
+        for(Document doc : userCol.find()) {
+            spsNames.add(doc.getString("mcName"));
+        }
+
+        return spsNames;
+    }
+
+    /**
+     * Gets Bukkit players for all SPS users registered
+     * @return
+     */
+    public static ArrayList<Player> getAllSPSPlayers() {
+        ArrayList<Player> spsPlayers = new ArrayList<Player>();
+        for(Document doc : userCol.find()) {
+            spsPlayers.add(SPSSpigot.server().getPlayer(doc.getString("mcUUID")));
+        }
+
+        return spsPlayers;
+    }
+
+    /**
      * Gets the SPS name for a Minecraft player.
      * @param uuid The {@link UUID} of the Minecraft player.
      * @return The SPS name of the player.
@@ -97,6 +125,20 @@ public class DatabaseLink {
             return userCol.find(new Document("mcUUID", uuid.toString())).first().getString("mcName");
         } else {
             return "Unregistered User";
+        }
+    }
+
+    /**
+     * gets the Bukkit player from an SPS username
+     * @param SPSName
+     * @return
+     */
+    public static Player getSPSPlayer(String SPSName) {
+        Player player = SPSSpigot.server().getPlayer(UUID.fromString(userCol.find(new Document("mcName", SPSName)).first().getString("mcUUID")));
+        if (player != null) {
+            return player;
+        } else {
+            return null;
         }
     }
 

@@ -8,7 +8,9 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
+import xyz.haoshoku.nick.api.NickAPI;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -295,7 +297,8 @@ public class PermissionsCommands implements CommandExecutor {
                     for (int i = 4; i < args.length; i++) {
                         playerName.append(" ").append(args[i]);
                     }
-                    Player player = SPSSpigot.server().getPlayer(playerName.toString());
+
+                    Player player = DatabaseLink.getSPSPlayer(playerName.toString());
                     if (rank == null) {
                         // No rank with this name exists.
                         sender.sendMessage(ChatColor.RED + "The rank '" + args[2] + "' was not recognized.");
@@ -308,11 +311,11 @@ public class PermissionsCommands implements CommandExecutor {
                         // We have a known player and rank.
                         if (SPSSpigot.perms().givePlayerRank(player, rank)) {
                             // The player did not have the rank before and we gave them it.
-                            sender.sendMessage(ChatColor.GREEN + "Gave rank '" + rank.getName() + "' to player '" + player.getName() + "'!");
+                            sender.sendMessage(ChatColor.GREEN + "Gave rank '" + rank.getName() + "' to player '" + NickAPI.getName(player) + "'!");
                             return true;
                         } else {
                             // The player already had the rank.
-                            sender.sendMessage(ChatColor.RED + "Player '" + player.getName() + "' already has rank '" + rank.getName() + "'.");
+                            sender.sendMessage(ChatColor.RED + "Player '" + NickAPI.getName(player) + "' already has rank '" + rank.getName() + "'.");
                             return true;
                         }
                     }
@@ -332,7 +335,7 @@ public class PermissionsCommands implements CommandExecutor {
                     for (int i = 4; i < args.length; i++) {
                         playerName.append(" ").append(args[i]);
                     }
-                    Player player = SPSSpigot.server().getPlayer(playerName.toString());
+                    Player player = DatabaseLink.getSPSPlayer(playerName.toString());
                     if (rank == null) {
                         // No rank with this name exists.
                         sender.sendMessage(ChatColor.RED + "The rank '" + args[2] + "' was not recognized.");
@@ -345,11 +348,11 @@ public class PermissionsCommands implements CommandExecutor {
                         // We have a known player and rank.
                         if (SPSSpigot.perms().removePlayerRank(player, rank)) {
                             // The player did have the rank before and we removed it.
-                            sender.sendMessage(ChatColor.GREEN + "Removed rank '" + rank.getName() + "' from player '" + player.getName() + "'!");
+                            sender.sendMessage(ChatColor.GREEN + "Removed rank '" + rank.getName() + "' from player '" + NickAPI.getName(player) + "'!");
                             return true;
                         } else {
                             // The player did not already have the rank.
-                            sender.sendMessage(ChatColor.RED + "Player '" + player.getName() + "' already did not have '" + rank.getName() + "'.");
+                            sender.sendMessage(ChatColor.RED + "Player '" + NickAPI.getName(player) + "' already did not have '" + rank.getName() + "'.");
                             return true;
                         }
                     }
@@ -365,7 +368,7 @@ public class PermissionsCommands implements CommandExecutor {
                     StringBuilder str = new StringBuilder(args[2]);
                     for (int i = 3; i < args.length; i++)
                         str.append(args[i]);
-                    Player player = SPSSpigot.server().getPlayer(str.toString());
+                    Player player = DatabaseLink.getSPSPlayer(str.toString());
                     if (player == null) {
                         // Player not recognized
                         sender.sendMessage(ChatColor.RED + "Player '" + str + "' was not recognized.");

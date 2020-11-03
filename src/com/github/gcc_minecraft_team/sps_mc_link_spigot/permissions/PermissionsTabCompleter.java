@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -154,7 +155,7 @@ public class PermissionsTabCompleter implements TabCompleter {
                     return keepStarts(new ArrayList<>(SPSSpigot.perms().getRankNames()), args[2]);
                 } else if (args.length == 4) {
                     // /perms player give <rank> <partial>
-                    return null; // Player name
+                    return keepStarts(new ArrayList<>(DatabaseLink.getAllSPSNames()), args[3]); // sps player name
                 } else {
                     // /perms player give <rank> <...> <partial>
                     return new ArrayList<>();
@@ -165,7 +166,7 @@ public class PermissionsTabCompleter implements TabCompleter {
                     return keepStarts(new ArrayList<>(SPSSpigot.perms().getRankNames()), args[2]);
                 } else if (args.length == 4) {
                     // /perms player remove <rank> <partial>
-                    return null; // Player name
+                    return keepStarts(new ArrayList<>(DatabaseLink.getAllSPSNames()), args[3]); // sps player name
                 } else {
                     // /perms player remove <rank> <...> <partial>
                     return new ArrayList<>();
@@ -173,7 +174,7 @@ public class PermissionsTabCompleter implements TabCompleter {
             } else if (args[1].equals("info")) {
                 if (args.length == 3) {
                     // /perms player info <partial>
-                    return null; // Player name
+                    return keepStarts(new ArrayList<>(DatabaseLink.getAllSPSNames()), args[2]); // sps player name
                 } else {
                     // /perms player info <...> <partial>
                     return new ArrayList<>();

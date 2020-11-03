@@ -17,7 +17,7 @@ public class ModerationCommands implements CommandExecutor {
         } else if (args[0].equals("banSPS")) {
             if (args.length == 1) {
                 // No arguments for /perms rank
-                sender.sendMessage(modPrefix + ChatColor.RED + "Usage: /" + label + " banSPS <sps username>");
+                sender.sendMessage(modPrefix + ChatColor.RED + "Usage: /" + label + " banSPS <player>");
                 return true;
             } else if (args.length == 2) {
                 sender.sendMessage(modPrefix + ChatColor.YELLOW + "Banning Account: " + args[1]);
