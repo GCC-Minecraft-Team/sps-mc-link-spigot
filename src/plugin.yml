@@ -25,6 +25,14 @@ commands:
     description: Base command for SPSMC moderators
     usage: "Usage: /<command> <banSPS>"
     permission: spsmc.mod
+  report:
+    description: Report a player for breaking the rules
+    usage: "Usage: /report <player> <message>"
+    permission: spsmc.report
+  modmail:
+    description: Send a message to the mods
+    usage: "Usage: /modmail <message>"
+    permission: spsmc.modmail
 
 permissions:
   spsmc.claim:
@@ -39,6 +47,12 @@ permissions:
   spsmc.mod:
     description: Gives control over moderation commands.
     default: op
+  spsmc.report:
+    description: Gives the player access to report other players to moderators
+    default: true
+  spsmc.modmail:
+    description: Gives the player access to send messages to moderators
+    default: true
   spsmc.basic.interact:
     description: Allows interaction with blocks and the air.
     default: true

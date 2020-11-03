@@ -1,3 +1,5 @@
 jwtSecret: ""
 webAppURL: ""
 pluginMOTD: ""
+reportWebhook: ""
+messageWebhook: ""

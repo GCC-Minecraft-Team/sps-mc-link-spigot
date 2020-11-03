@@ -14,6 +14,9 @@ public class PluginConfig {
     public static final String JWTSECRET = "jwtSecret";
     public static final String WEBAPPURL = "webAppURL";
     public static final String PLUGINMOTD = "pluginMOTD";
+    public static final String REPORTWEBHOOK = "reportWebhook";
+    public static final String MESSAGEWEBHOOK = "messageWebhook";
+
     private static FileConfiguration pluginCfg;
 
     /**
@@ -86,6 +89,30 @@ public class PluginConfig {
     public static String getPluginMOTD() {
         if (pluginCfg != null) {
             return (String) pluginCfg.get(PLUGINMOTD);
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Gets the plugin MOTD from {@value REPORTWEBHOOK} in {@value PLFILE}.
+     * @return The Report Webhook URL.
+     */
+    public static String GetReportWebhook() {
+        if (pluginCfg != null) {
+            return (String) pluginCfg.get(REPORTWEBHOOK);
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Gets the plugin MOTD from {@value MESSAGEWEBHOOK} in {@value PLFILE}.
+     * @return The Report Webhook URL.
+     */
+    public static String GetMessageWebhook() {
+        if (pluginCfg != null) {
+            return (String) pluginCfg.get(MESSAGEWEBHOOK);
         } else {
             return "";
         }

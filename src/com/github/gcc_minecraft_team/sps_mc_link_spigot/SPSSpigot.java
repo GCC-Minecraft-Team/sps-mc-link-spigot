@@ -1,6 +1,8 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.*;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.discord.DiscordCommands;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.discord.DiscordTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.*;
@@ -53,6 +55,15 @@ public class SPSSpigot extends JavaPlugin {
 
         this.getCommand("mod").setExecutor(new ModerationCommands());
         this.getCommand("mod").setTabCompleter(new ModerationTabCompleter());
+
+        DiscordCommands discordCommands = new DiscordCommands();
+        DiscordTabCompleter discordTabCompleter = new DiscordTabCompleter();
+
+        this.getCommand("report").setExecutor(discordCommands);
+        this.getCommand("report").setTabCompleter(discordTabCompleter);
+
+        this.getCommand("modmail").setExecutor(discordCommands);
+        this.getCommand("modmail").setTabCompleter(discordTabCompleter);
 
         // Setup other stuff
         getServer().getPluginManager().registerEvents(new JoinEvent(), this);
