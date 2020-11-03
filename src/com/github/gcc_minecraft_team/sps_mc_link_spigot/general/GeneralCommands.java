@@ -50,6 +50,7 @@ public class GeneralCommands implements CommandExecutor {
 
             // store task id in map for possible cancellation later
             teleportTaskIDMap.put(player.getUniqueId(), teleportTaskID);
+            return true;
 
         // Cancel Teleportation
         } else if (command.getName().equalsIgnoreCase("cancel")) {
@@ -61,6 +62,8 @@ public class GeneralCommands implements CommandExecutor {
                     sender.sendMessage(chatPrefix + "" + ChatColor.RED + "Teleportation Cancelled!");
                 }
             }
+
+            return true;
         }
 
         return false;
