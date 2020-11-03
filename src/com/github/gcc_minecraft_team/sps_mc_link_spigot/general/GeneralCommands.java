@@ -56,10 +56,12 @@ public class GeneralCommands implements CommandExecutor {
         } else if (command.getName().equalsIgnoreCase("cancel")) {
             if (noMoveAttach != null) {
                 noMoveAttach.remove();
-                if (teleportTaskIDMap.get(((Player) sender).getUniqueId()) != -33) {
-                    Bukkit.getScheduler().cancelTask(teleportTaskIDMap.get(((Player) sender).getUniqueId()));
-                    teleportTaskIDMap.remove(((Player) sender).getUniqueId());
-                    sender.sendMessage(chatPrefix + "" + ChatColor.RED + "Teleportation Cancelled!");
+                if (!teleportTaskIDMap.isEmpty()) {
+                    if (teleportTaskIDMap.get(((Player) sender).getUniqueId()) != -33) {
+                        Bukkit.getScheduler().cancelTask(teleportTaskIDMap.get(((Player) sender).getUniqueId()));
+                        teleportTaskIDMap.remove(((Player) sender).getUniqueId());
+                        sender.sendMessage(chatPrefix + "" + ChatColor.RED + "Teleportation Cancelled!");
+                    }
                 }
             }
 
