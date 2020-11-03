@@ -38,7 +38,7 @@ public class ChatEvents implements Listener {
     }
 
     /**
-     * Overrides ceratin bukkit commands with SPSMC versions
+     * Overrides certain bukkit commands with SPSMC versions
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerCommandPreProcess(PlayerCommandPreprocessEvent e) {
