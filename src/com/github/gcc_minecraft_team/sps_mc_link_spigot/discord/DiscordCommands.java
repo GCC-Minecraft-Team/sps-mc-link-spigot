@@ -23,7 +23,7 @@ public class DiscordCommands implements CommandExecutor {
 
         String senderName = DatabaseLink.getSPSName(((Player) commandSender).getUniqueId());
 
-        if(command.getName() == "report"){
+        if(command.getName().equalsIgnoreCase("report")){
             if(args.length < 2){
                 commandSender.sendMessage("Usage: /report <name> <message>");
                 return true;
@@ -53,7 +53,7 @@ public class DiscordCommands implements CommandExecutor {
 
             commandSender.sendMessage("Player reported!");
             return true;
-        } else if(command.getName() == "modmail"){
+        } else if(command.getName().equalsIgnoreCase("modmail")){
             if(args.length < 1){
                 commandSender.sendMessage("Usage: /modmail <message>");
                 return true;
