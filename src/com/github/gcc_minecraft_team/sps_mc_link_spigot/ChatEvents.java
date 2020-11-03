@@ -1,5 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.PermissionsHandler;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.Rank;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,6 +12,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import javax.xml.crypto.Data;
 
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class ChatEvents implements Listener {
@@ -26,7 +29,8 @@ public class ChatEvents implements Listener {
             e.setCancelled(true); //cancel the event, so no message is sent (yet)
 
             for (Player on : SPSSpigot.server().getOnlinePlayers()) { //loop threw all online players
-                String newMessage = ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId()) + "]: " + ChatColor.WHITE + message.replaceAll(e.getPlayer().getDisplayName(), ""); //format the message
+
+                String newMessage = ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId()) + "]" + SPSSpigot.GetRankTag(e.getPlayer()) + ": " + ChatColor.WHITE + message.replaceAll(e.getPlayer().getDisplayName(), ""); //format the message
                 SPSSpigot.logger().log(Level.INFO, newMessage);
                 on.sendMessage(newMessage); //send the player the message
             }
@@ -36,7 +40,6 @@ public class ChatEvents implements Listener {
     /**
      * Overrides ceratin bukkit commands with SPSMC versions
      */
-
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerCommandPreProcess(PlayerCommandPreprocessEvent e) {
         Player p = e.getPlayer();
@@ -44,15 +47,21 @@ public class ChatEvents implements Listener {
 
         if (command.equalsIgnoreCase("list")) {
             e.setCancelled(true);
-            p.sendMessage(ChatColor.GOLD + "[SPS MC] There are " + SPSSpigot.server().getOnlinePlayers().stream().count() + " players out of " + SPSSpigot.server().getMaxPlayers() + " online!");
+            p.sendMessage(ChatColor.GOLD + "[SPS MC] There are " + SPSSpigot.server().getOnlinePlayers().stream().count() + "/" + SPSSpigot.server().getMaxPlayers() + " online players!");
 
-            // TODO: Check player ranks and list moderators, admins, etc.
             StringBuilder PlayerList = new StringBuilder();
-            for (Player player : SPSSpigot.server().getOnlinePlayers()) {
-                PlayerList.append(DatabaseLink.getSPSName(player.getUniqueId()) + ", ");
+            for (Rank rank : SPSSpigot.perms().getRanks()) {
+                PlayerList.append(rank.getColor() + "" + ChatColor.BOLD + "~=[" + rank.getName() + "s]=~\n");
+                PlayerList.append(ChatColor.RESET);
+                for (UUID player : SPSSpigot.perms().getRankPlayers(rank)) {
+                    PlayerList.append(DatabaseLink.getSPSName(player) + " ");
+                }
+                PlayerList.append("\n \n");
             }
 
-            p.sendMessage( ChatColor.AQUA + "Members: " + PlayerList.substring(0, PlayerList.length() - 2));
+            PlayerList.append(ChatColor.WHITE);
+
+            p.sendMessage( ChatColor.BOLD + "Player List: \n \n" + PlayerList.toString());
         }
     }
 }

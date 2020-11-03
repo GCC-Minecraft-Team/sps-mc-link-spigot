@@ -4,8 +4,10 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.*;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.*;
+import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Level;
@@ -60,6 +62,23 @@ public class SPSSpigot extends JavaPlugin {
     @Override
     public void onDisable() {
 
+    }
+
+    /**
+     * Gets a chat friendly colored string of player ranks
+     * @param p player
+     * @return string with ranks
+     */
+    public static String GetRankTag(Player p) {
+        // set rank tag formatting
+        StringBuilder rankTag = new StringBuilder();
+        if (SPSSpigot.perms().getPlayerRanks(p).stream().count() > 0) {
+            for (Rank rank : SPSSpigot.perms().getPlayerRanks(p)) {
+                rankTag.append(rank.getColor() + "[" + rank.getName() +"]" + ChatColor.WHITE);
+            }
+        }
+
+        return rankTag.toString();
     }
 
     /**

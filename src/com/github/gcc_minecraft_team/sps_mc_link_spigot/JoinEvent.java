@@ -4,6 +4,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -39,9 +40,6 @@ public class JoinEvent implements Listener {
                 event.getPlayer().spigot().sendMessage(message);
 
                 Player player = event.getPlayer();
-                //NickAPI.setSkin( player, player.getName() );
-                //NickAPI.setUniqueId( player, player.getName() );
-
                 Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), new Runnable() {
                     public void run() {
                         NickAPI.nick(player, "Player");
@@ -52,15 +50,13 @@ public class JoinEvent implements Listener {
                 player.sendTitle("Welcome to" + ChatColor.BLUE +" SPS MC!", "Please use the link in chat to link your account!", 10, 160, 10);;
 
             } else {
-                String userNoFormat = DatabaseLink.getSPSName(event.getPlayer().getUniqueId());
+                String userNoFormat =  DatabaseLink.getSPSName(event.getPlayer().getUniqueId());
                 String newUser = ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + userNoFormat;
                 event.setJoinMessage(newUser + " joined the server.");
 
                 int maxLength = (userNoFormat.length() < 15) ? userNoFormat.length() : 15;
 
                 Player player = event.getPlayer();
-                //NickAPI.setSkin( player, player.getName() );
-                //NickAPI.setUniqueId( player, player.getName() );
                 Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), new Runnable() {
                     public void run() {
                         NickAPI.nick(player, userNoFormat.substring(0, maxLength));
