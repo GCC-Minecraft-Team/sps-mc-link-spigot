@@ -71,6 +71,10 @@
             <id>inventive-repo</id>
             <url>https://repo.inventivetalent.org/content/groups/public/</url>
         </repository>
+        <repository>
+            <id>Haoshoku-NickAPI</id>
+            <url>https://packagecloud.io/Haoshoku/NickAPI/maven2</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -115,6 +119,20 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>1.8.0-beta4</version>
+        </dependency>
+        <!--
+        <dependency>
+            <groupId>xyz.haoshoku.nick</groupId>
+            <artifactId>nickapi</artifactId>
+            <version>5.0.1-SNAPSHOT</version>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>xyz.haoshoku.nick</groupId>
+            <artifactId>nickapi</artifactId>
+            <version>5.0.1-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/TestServer/plugins/NickAPI-v6.0.3.jar</systemPath>
         </dependency>
     </dependencies>
 </project>

@@ -6,10 +6,10 @@ IF NOT EXIST TestServer\spigot.jar (
 
     cd ..
     mkdir TestServer
-    copy BuildTools\spigot-1.16.3.jar TestServer\spigot.jar
+    copy BuildTools\spigot-1.16.4.jar TestServer\spigot.jar
 
     cd TestServer
-    echo "eula=true">eula.txt
+    echo eula=true>eula.txt
     cd ..
 )
 

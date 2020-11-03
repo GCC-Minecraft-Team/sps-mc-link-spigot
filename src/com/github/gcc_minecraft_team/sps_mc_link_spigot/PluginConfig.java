@@ -6,6 +6,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
+import java.util.logging.Level;
 
 public class PluginConfig {
     public static final String PLFILE = "pluginConfig.yml";
@@ -15,13 +17,13 @@ public class PluginConfig {
     private static FileConfiguration pluginCfg;
 
     /**
-     * loads the plugin configuration file
+     * Loads the plugin's {@link FileConfiguration} from {@value PLFILE}.
      */
     public static void LoadConfig() {
         // create config if it doesn't exist
         SPSSpigot.plugin().saveResource(PLFILE, false);
         pluginCfg = YamlConfiguration.loadConfiguration(new File(SPSSpigot.plugin().getDataFolder(), PLFILE));
-        pluginCfg.addDefault(JWTSECRET, new String());
+        pluginCfg.addDefault(JWTSECRET, "");
 
         // load config
         try {
@@ -34,20 +36,40 @@ public class PluginConfig {
     // V get functions V
 
     /**
-     * gets the JWT secret from the plugin config file
-     * @return
+     * Gets the JWT secret from the {@value JWTSECRET} in {@value PLFILE} or randomly generates and saves one if it does not exist.
+     * @return The JWT secret key.
      */
     public static String GetJWTSecret() {
+        String key = "";
         if (pluginCfg != null) {
-            return (String) pluginCfg.get(JWTSECRET);
+            key = (String) pluginCfg.get(JWTSECRET);
         } else {
-            return "";
+            SPSSpigot.plugin().saveResource(PLFILE, false);
+            pluginCfg = YamlConfiguration.loadConfiguration(new File(SPSSpigot.plugin().getDataFolder(), PLFILE));
         }
+        // If the key doesn't exist, generate a random one.
+        if (key.equals("")) {
+            char[] chars = new char[16];
+            Random r = new Random();
+            for (int i = 0; i < 16; i++) {
+                // Start at index 32 and end at 126 to exclude non-printing characters (0-31, 127)
+                chars[i] = (char) (r.nextInt(127-32) + 32);
+            }
+            key = new String(chars);
+            pluginCfg.set(JWTSECRET, key);
+            SPSSpigot.plugin().getLogger().log(Level.INFO, "Generated new JWT secret key: " + pluginCfg.get(JWTSECRET));
+            try {
+                pluginCfg.save(new File(SPSSpigot.plugin().getDataFolder(), PLFILE));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return key;
     }
 
     /**
-     * gets the URL we should listen on for the web app
-     * @return
+     * Gets the URL we should listen on for the web app from {@value WEBAPPURL} in {@value PLFILE}.
+     * @return The URL to listen on for the web app.
      */
     public static String GetWebAppURL() {
         if (pluginCfg != null) {
@@ -58,8 +80,8 @@ public class PluginConfig {
     }
 
     /**
-     * gets the plugin MOTD
-     * @return
+     * Gets the plugin MOTD from {@value PLUGINMOTD} in {@value PLFILE}.
+     * @return The MOTD.
      */
     public static String getPluginMOTD() {
         if (pluginCfg != null) {

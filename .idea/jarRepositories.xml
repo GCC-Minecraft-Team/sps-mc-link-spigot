@@ -17,6 +17,11 @@
       <option name="url" value="https://hub.spigotmc.org/nexus/content/repositories/snapshots/" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="Haoshoku-NickAPI" />
+      <option name="name" value="Haoshoku-NickAPI" />
+      <option name="url" value="https://packagecloud.io/Haoshoku/NickAPI/maven2" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="inventive-repo" />
       <option name="name" value="inventive-repo" />
       <option name="url" value="https://repo.inventivetalent.org/content/groups/public/" />
