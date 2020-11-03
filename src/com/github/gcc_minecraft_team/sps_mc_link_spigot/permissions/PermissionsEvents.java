@@ -1,4 +1,4 @@
-package com.github.gcc_minecraft_team.sps_mc_link_spigot;
+package com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

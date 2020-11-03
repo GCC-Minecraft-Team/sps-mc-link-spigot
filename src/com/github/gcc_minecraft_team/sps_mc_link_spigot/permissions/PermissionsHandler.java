@@ -1,5 +1,7 @@
-package com.github.gcc_minecraft_team.sps_mc_link_spigot;
+package com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.MemorySection;
