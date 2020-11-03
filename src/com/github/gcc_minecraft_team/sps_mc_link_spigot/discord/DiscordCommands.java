@@ -18,7 +18,7 @@ public class DiscordCommands implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if(!(commandSender instanceof Player)){
             commandSender.sendMessage("This command can only be ran as a player!");
-            return false;
+            return true;
         }
 
         String senderName = DatabaseLink.getSPSName(((Player) commandSender).getUniqueId());
@@ -26,12 +26,12 @@ public class DiscordCommands implements CommandExecutor {
         if(command.getName() == "report"){
             if(args.length < 2){
                 commandSender.sendMessage("Usage: /report <name> <message>");
-                return false;
+                return true;
             }
 
             if(DatabaseLink.getSPSPlayer(args[0]) == null){
                 commandSender.sendMessage("Invalid Player");
-                return false;
+                return true;
             }
             String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 
@@ -56,7 +56,7 @@ public class DiscordCommands implements CommandExecutor {
         } else if(command.getName() == "modmail"){
             if(args.length < 1){
                 commandSender.sendMessage("Usage: /modmail <message>");
-                return false;
+                return true;
             }
 
             String message = String.join(" ", args);

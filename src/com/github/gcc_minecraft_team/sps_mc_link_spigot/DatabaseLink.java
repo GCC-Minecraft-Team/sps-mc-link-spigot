@@ -116,6 +116,21 @@ public class DatabaseLink {
     }
 
     /**
+     * Gets the SPS Names of all players currently on the server
+     * @return
+     */
+    public static ArrayList<String> getPlayerNames(){
+        ArrayList<String> names = new ArrayList<String>();
+        for(Player p : SPSSpigot.server().getOnlinePlayers()){
+            String name = getSPSName(p.getUniqueId());
+            if(name == "Unregistered User") continue;
+            names.add(name);
+        }
+
+        return names;
+    }
+
+    /**
      * Gets the SPS name for a Minecraft player.
      * @param uuid The {@link UUID} of the Minecraft player.
      * @return The SPS name of the player.

@@ -28,7 +28,7 @@ public class DiscordTabCompleter implements TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if(args.length == 1){
-            return keepStarts(DatabaseLink.getAllSPSNames(), args[0]);
+            return keepStarts(DatabaseLink.getPlayerNames(), args[0]);
         }
 
         return new ArrayList<>();
