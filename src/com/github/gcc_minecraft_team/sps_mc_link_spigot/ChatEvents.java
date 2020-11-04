@@ -24,19 +24,22 @@ public class ChatEvents implements Listener {
 
     /**
      * Fires when someone send a message in chat
+     * 
      * @param e The {@link AsyncPlayerChatEvent}.
      */
     @EventHandler
-    public void onChat(AsyncPlayerChatEvent e){
+    public void onChat(AsyncPlayerChatEvent e) {
         if (DatabaseLink.isRegistered(e.getPlayer().getUniqueId())) {
-            String message = e.getMessage(); //get the message
+            String message = e.getMessage(); // get the message
 
             e.setCancelled(true); // Cancel the event, so no message is sent (yet)
 
-            for (Player on : SPSSpigot.server().getOnlinePlayers()) { //loop through all online players
-                String newMessage = ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId()) + "]" + SPSSpigot.GetRankTag(e.getPlayer()) + ": " + ChatColor.WHITE + message.replaceAll(e.getPlayer().getDisplayName(), ""); //format the message
+            for (Player on : SPSSpigot.server().getOnlinePlayers()) { // loop through all online players
+                String newMessage = ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId())
+                        + "]" + SPSSpigot.GetRankTag(e.getPlayer()) + ": " + ChatColor.WHITE
+                        + message.replaceAll(e.getPlayer().getDisplayName(), ""); // format the message
                 SPSSpigot.logger().log(Level.INFO, newMessage);
-                on.sendMessage(newMessage); //send the player the message
+                on.sendMessage(newMessage); // send the player the message
             }
         }
     }
@@ -50,11 +53,14 @@ public class ChatEvents implements Listener {
 
         if (command.equalsIgnoreCase("list")) {
             e.setCancelled(true);
-            e.getPlayer().sendMessage(ChatColor.GOLD + "[SPS MC] There are " + SPSSpigot.server().getOnlinePlayers().size() + "/" + SPSSpigot.server().getMaxPlayers() + " online players!");
+            e.getPlayer()
+                    .sendMessage(ChatColor.GOLD + "[SPS MC] There are " + SPSSpigot.server().getOnlinePlayers().size()
+                            + "/" + SPSSpigot.server().getMaxPlayers() + " online players!");
 
             StringBuilder str = new StringBuilder(ChatColor.BOLD + "Player List: \n\n");
             for (Rank rank : SPSSpigot.perms().getRanks()) {
-                str.append(rank.getColor()).append(ChatColor.BOLD).append("~=[").append(rank.getName()).append("s]=~\n").append(ChatColor.RESET);
+                str.append(rank.getColor()).append(ChatColor.BOLD).append("~=[").append(rank.getName()).append("s]=~\n")
+                        .append(ChatColor.RESET);
                 for (UUID player : SPSSpigot.perms().getRankPlayers(rank)) {
                     if (SPSSpigot.server().getOfflinePlayer(player).isOnline())
                         str.append(DatabaseLink.getSPSName(player)).append(" ");
@@ -69,20 +75,23 @@ public class ChatEvents implements Listener {
             if (e.getPlayer().isOp() == false) {
                 e.setCancelled(true);
                 StringBuilder helpList = new StringBuilder();
-                for(Plugin plugin : Bukkit.getPluginManager().getPlugins()){
-                    if(plugin.getName().equals(SPSSpigot.plugin().getName())){
+                for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
+                    if (plugin.getName().equals(SPSSpigot.plugin().getName())) {
                         List<Command> commandList = PluginCommandYamlParser.parse(plugin);
-                        helpList.append(ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "::[" + plugin.getName() + "]::\n" + ChatColor.RESET);
-                        for(int i = 0; i < commandList.size(); i++){
+                        helpList.append(ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "::[" + plugin.getName() + "]::\n"
+                                + ChatColor.RESET);
+                        for (int i = 0; i < commandList.size(); i++) {
                             if (e.getPlayer().hasPermission(commandList.get(i).getPermission())) {
-                                helpList.append("\n" + ChatColor.GOLD + commandList.get(i).getName() + ChatColor.WHITE + "  -  " + commandList.get(i).getDescription() + "\n");
+                                helpList.append("\n" + ChatColor.GOLD + commandList.get(i).getName() + ChatColor.WHITE
+                                        + "  -  " + commandList.get(i).getDescription() + "\n");
                             }
                         }
                         helpList.append("\n");
                     }
                 }
 
-                e.getPlayer().sendMessage(ChatColor.AQUA + "[SPS MC] Commands List:\n" + ChatColor.RESET + helpList.toString());
+                e.getPlayer().sendMessage(
+                        ChatColor.AQUA + "[SPS MC] Commands List:\n" + ChatColor.RESET + helpList.toString());
             }
         }
     }
