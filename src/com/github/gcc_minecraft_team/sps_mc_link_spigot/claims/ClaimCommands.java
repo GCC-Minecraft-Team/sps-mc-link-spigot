@@ -1,9 +1,11 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.PluginConfig;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -28,6 +30,15 @@ public class ClaimCommands implements CommandExecutor {
             Chunk chunk = player.getLocation().getChunk();
             if (args[0].equalsIgnoreCase("chunk")) {
                 UUID owner = SPSSpigot.claims().getChunkOwner(chunk);
+
+                Location pLoc = player.getLocation();
+                Double zdist = pLoc.getZ() - player.getWorld().getSpawnLocation().getZ();
+                Double xdist = pLoc.getX() - player.getWorld().getSpawnLocation().getX();
+                if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
+                    sender.sendMessage(ChatColor.RED + "You can't claim chunks in spawn!");
+                    return true;
+                }
+
                 if (owner != null) {
                     // Chunk is already claimed.
                     sender.sendMessage(ChatColor.RED + "You cannot claim this chunk. It is already claimed by " + DatabaseLink.getSPSName(owner));

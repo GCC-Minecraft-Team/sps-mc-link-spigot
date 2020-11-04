@@ -12,6 +12,7 @@ import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -93,6 +94,10 @@ public class DatabaseLink {
         }
     }
 
+    /***
+     * Creates a Team in the mongodb database
+     * @param team
+     */
     public static void createTeam(Team team) {
         // set UUID and Name
         Document teamDoc = new Document();
@@ -220,7 +225,10 @@ public class DatabaseLink {
             userCol.updateOne(new Document("oAuthEmail", spsEmail), setQuery);
 
             // kick them from the server
-            SPSSpigot.server().getPlayer(UUID.fromString(userCol.find(new Document("oAuthEmail", spsEmail)).first().getString("mcUUID"))).kickPlayer("Wooks wike uwu've bewn banned! UwU");
+            OfflinePlayer oplayer = SPSSpigot.server().getOfflinePlayer(UUID.fromString(userCol.find(new Document("oAuthEmail", spsEmail)).first().getString("mcUUID")));
+            if (oplayer.isOnline()) {
+                oplayer.getPlayer().kickPlayer("Wooks wike uwu've bewn banned! UwU");
+            }
 
             return true;
         } catch (MongoException exception) {
@@ -275,6 +283,10 @@ public class DatabaseLink {
                 ChatColor.GOLD.toString() + email +
                 ChatColor.GREEN.toString() + " to the server! Your new username is: " +
                 ChatColor.GOLD.toString() + name);
+
+        if (getIsBanned(UUID.fromString(uuid))) {
+            player.kickPlayer("The SPS account you linked has been banned!");
+        }
 
         // give starting boat
         player.getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));

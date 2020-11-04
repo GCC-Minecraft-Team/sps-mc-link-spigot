@@ -86,7 +86,7 @@ public class PluginConfig {
      * Gets the plugin MOTD from {@value PLUGINMOTD} in {@value PLFILE}.
      * @return The MOTD.
      */
-    public static String getPluginMOTD() {
+    public static String GetPluginMOTD() {
         if (pluginCfg != null) {
             return (String) pluginCfg.get(PLUGINMOTD);
         } else {

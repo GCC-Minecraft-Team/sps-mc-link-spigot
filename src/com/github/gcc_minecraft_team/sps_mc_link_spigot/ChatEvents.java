@@ -54,14 +54,16 @@ public class ChatEvents implements Listener {
                 PlayerList.append(rank.getColor() + "" + ChatColor.BOLD + "~=[" + rank.getName() + "s]=~\n");
                 PlayerList.append(ChatColor.RESET);
                 for (UUID player : SPSSpigot.perms().getRankPlayers(rank)) {
-                    PlayerList.append(DatabaseLink.getSPSName(player) + " ");
+                    if (SPSSpigot.server().getPlayer(player).isOnline()) {
+                        PlayerList.append(DatabaseLink.getSPSName(player) + " ");
+                    }
                 }
                 PlayerList.append("\n \n");
             }
 
             PlayerList.append(ChatColor.WHITE);
 
-            p.sendMessage( ChatColor.BOLD + "Player List: \n \n" + PlayerList.toString());
+            p.sendMessage( ChatColor.BOLD + "Online Staff List: \n \n" + PlayerList.toString());
         }
     }
 }

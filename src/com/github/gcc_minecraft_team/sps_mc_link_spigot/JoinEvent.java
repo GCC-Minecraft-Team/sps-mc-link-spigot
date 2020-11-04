@@ -4,7 +4,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,7 +23,7 @@ public class JoinEvent implements Listener {
             event.getPlayer().kickPlayer("The SPS account you linked has been banned! >:(");
         } else {
             SPSSpigot.perms().loadPermissions(event.getPlayer());
-            event.getPlayer().sendMessage(PluginConfig.getPluginMOTD());
+            event.getPlayer().sendMessage(PluginConfig.GetPluginMOTD());
 
             if (!DatabaseLink.isRegistered(event.getPlayer().getUniqueId())) {
                 event.setJoinMessage("A player is joining the server!");
