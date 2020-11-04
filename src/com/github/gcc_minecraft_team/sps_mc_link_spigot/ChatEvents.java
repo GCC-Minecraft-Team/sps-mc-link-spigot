@@ -74,24 +74,28 @@ public class ChatEvents implements Listener {
             // if the player is not an op, show the custom help message
             if (e.getPlayer().isOp() == false) {
                 e.setCancelled(true);
-                StringBuilder helpList = new StringBuilder();
+                e.getPlayer().sendMessage(ChatColor.AQUA + "[SPS MC] Commands List:\n" + ChatColor.RESET);
                 for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
-                    if (plugin.getName().equals(SPSSpigot.plugin().getName())) {
-                        List<Command> commandList = PluginCommandYamlParser.parse(plugin);
-                        helpList.append(ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "::[" + plugin.getName() + "]::\n"
-                                + ChatColor.RESET);
-                        for (int i = 0; i < commandList.size(); i++) {
-                            if (e.getPlayer().hasPermission(commandList.get(i).getPermission())) {
-                                helpList.append("\n" + ChatColor.GOLD + commandList.get(i).getName() + ChatColor.WHITE
-                                        + "  -  " + commandList.get(i).getDescription() + "\n");
-                            }
+                    StringBuilder helpList = new StringBuilder();
+                    List<Command> commandList = PluginCommandYamlParser.parse(plugin);
+                    for (int i = 0; i < commandList.size(); i++) {
+                        if (commandList.get(i).getPermission() != null && e.getPlayer().hasPermission(commandList.get(i).getPermission())) {
+                            commandList.remove(i);
                         }
-                        helpList.append("\n");
                     }
-                }
 
-                e.getPlayer().sendMessage(
-                        ChatColor.AQUA + "[SPS MC] Commands List:\n" + ChatColor.RESET + helpList.toString());
+                    if (commandList.size() > 0) {
+                        helpList.append(ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "::[" + plugin.getName() + "]::"
+                                + ChatColor.RESET);
+                    }
+
+                    for (int i = 0; i < commandList.size(); i++) {
+                        helpList.append("\n" + ChatColor.GOLD + commandList.get(i).getName() + ChatColor.WHITE
+                                + "  -  " + commandList.get(i).getDescription() + "\n");
+                    }
+                    helpList.append("\n");
+                    e.getPlayer().sendMessage(helpList.toString() + "\n");
+                }
             }
         }
     }
