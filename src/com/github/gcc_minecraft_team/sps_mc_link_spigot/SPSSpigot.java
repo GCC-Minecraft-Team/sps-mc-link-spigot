@@ -92,8 +92,8 @@ public class SPSSpigot extends JavaPlugin {
     public static String GetRankTag(Player p) {
         // set rank tag formatting
         StringBuilder rankTag = new StringBuilder();
-        if (SPSSpigot.perms().getPlayerRanks(p).stream().count() > 0) {
-            for (Rank rank : SPSSpigot.perms().getPlayerRanks(p)) {
+        if (SPSSpigot.perms().getPlayerRanks(p.getUniqueId()).size() > 0) {
+            for (Rank rank : SPSSpigot.perms().getPlayerRanks(p.getUniqueId())) {
                 rankTag.append(rank.getColor() + "[" + rank.getName() +"]" + ChatColor.WHITE);
             }
         }

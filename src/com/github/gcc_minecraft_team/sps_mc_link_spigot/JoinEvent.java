@@ -14,8 +14,8 @@ import xyz.haoshoku.nick.api.NickAPI;
 public class JoinEvent implements Listener {
 
     /**
-     * Fired on player join
-     * @param event
+     * Fired on player join.
+     * @param event The {@link PlayerJoinEvent}.
      */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {

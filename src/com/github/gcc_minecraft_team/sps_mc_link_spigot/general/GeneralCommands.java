@@ -1,6 +1,5 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.general;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -9,6 +8,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,19 +17,19 @@ import java.util.UUID;
 public class GeneralCommands implements CommandExecutor {
 
     private static PermissionAttachment noMoveAttach;
-    private static Map<UUID, Integer> teleportTaskIDMap = new HashMap<UUID, Integer>();
+    private static Map<UUID, Integer> teleportTaskIDMap = new HashMap<>();
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         String chatPrefix = ChatColor.AQUA + "[SPSMC Server]: " + ChatColor.WHITE;
 
-        if(!(sender instanceof Player)){
+        if (!(sender instanceof Player)){
             sender.sendMessage("This command can only be ran as a player!");
             return false;
         }
 
         // Teleports player back to spawn
-        if(command.getName().equalsIgnoreCase("spawn")) {
+        if (command.getName().equalsIgnoreCase("spawn")) {
 
             int teleportTaskID = -33;
 
@@ -64,10 +64,9 @@ public class GeneralCommands implements CommandExecutor {
                     }
                 }
             }
-
             return true;
+        } else {
+            return false;
         }
-
-        return false;
     }
 }

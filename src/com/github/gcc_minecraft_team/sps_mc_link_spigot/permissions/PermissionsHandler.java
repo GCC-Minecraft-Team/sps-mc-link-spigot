@@ -2,7 +2,6 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -11,6 +10,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class PermissionsHandler {
 
     private Map<Player, PermissionAttachment> players;
 
-    private Map<String, Boolean> memberPerms;
+    private Map<Permission, Boolean> memberPerms;
 
     private Set<Rank> ranks;
     private Map<UUID, Set<Rank>> playerRanks;
@@ -48,7 +49,10 @@ public class PermissionsHandler {
      */
     public void saveFile() {
         // Save members
-        permsConfig.set(CFGMEMBERS, memberPerms);
+        Map<String, Boolean> strMemPerms = new HashMap<>();
+        for (Map.Entry<Permission, Boolean> perm : memberPerms.entrySet())
+            strMemPerms.put(perm.getKey().getName(), perm.getValue());
+        permsConfig.set(CFGMEMBERS, strMemPerms);
         // Save ranks
         permsConfig.set(CFGRANKS, new ArrayList<>(ranks));
         // Serialize player ranks to only store UUID String and rank names rather than their entire objects
@@ -79,8 +83,11 @@ public class PermissionsHandler {
         // Deserialize member perms
         memberPerms = new HashMap<>();
         MemorySection objMembers = (MemorySection) permsConfig.get(CFGMEMBERS);
-        for (String perm : objMembers.getKeys(false))
-            memberPerms.put(perm, objMembers.getBoolean(perm));
+        for (String perm : objMembers.getKeys(false)) {
+            Permission permObj = SPSSpigot.server().getPluginManager().getPermission(perm);
+            if (permObj != null)
+                memberPerms.put(permObj, objMembers.getBoolean(perm));
+        }
         // Deserialize ranks
         ranks = new HashSet<>((List<Rank>) permsConfig.getList(CFGRANKS));
         // Deserialize player ranks
@@ -104,7 +111,7 @@ public class PermissionsHandler {
      * @param player The {@link Player} whose {@link PermissionsHandler} should be deleted.
      * @return {@code true} if something was changed ({@code false} just means there was nothing to delete)
      */
-    public boolean removeAttachment(Player player) {
+    public boolean removeAttachment(@NotNull Player player) {
         if (players.containsKey(player)) {
             PermissionAttachment attach = players.get(player);
             players.remove(player);
@@ -116,30 +123,24 @@ public class PermissionsHandler {
 
     /**
      * Only finds whether or not a permission is set for members.
-     * @param perm The fully qualified name of the permission node to check.
-     * @return {@code true} if the permission node is set for members.
+     * @param perm The {@link Permission} node to check.
+     * @return {@code true} if the {@link Permission} node is set for members.
      */
-    public boolean isMemberPermSet(String perm) {
+    public boolean isMemberPermSet(@NotNull Permission perm) {
         return memberPerms.containsKey(perm);
     }
 
     /**
      * Only finds whether or not a permission is set for members.
-     * @param perm The {@link Permission} node to check.
-     * @return {@code true} if the {@link Permission} node is set for members.
-     */
-    public boolean isMemberPermSet(Permission perm) {
-        return isMemberPermSet(perm.getName());
-    }
-
-    /**
-     * Finds what a given permission is set to for members.
      * @param perm The fully qualified name of the permission node to check.
-     * @return The value of the permission node.
-     * @throws NullPointerException If the permission node is unset.
+     * @return {@code true} if the permission node is set for members.
      */
-    public boolean getMemberPerm(String perm) {
-        return memberPerms.get(perm);
+    public boolean isMemberPermSet(@NotNull String perm) {
+        Permission permObj = SPSSpigot.server().getPluginManager().getPermission(perm);
+        if (permObj != null)
+            return isMemberPermSet(perm);
+        else
+            return false;
     }
 
     /**
@@ -148,28 +149,31 @@ public class PermissionsHandler {
      * @return The value of the {@link Permission} node.
      * @throws NullPointerException If the {@link Permission} node is unset.
      */
-    public boolean getMemberPerm(Permission perm) {
-        return getMemberPerm(perm.getName());
+    public boolean getMemberPerm(@NotNull Permission perm) {
+        return memberPerms.get(perm);
+    }
+
+    /**
+     * Finds what a given permission is set to for members.
+     * @param perm The fully qualified name of the permission node to check.
+     * @return The value of the permission node.
+     * @throws NullPointerException If the permission node is unset.
+     */
+    public boolean getMemberPerm(@NotNull String perm) {
+        Permission permObj = SPSSpigot.server().getPluginManager().getPermission(perm);
+        if (permObj != null)
+            return getMemberPerm(permObj);
+        else
+            return false;
     }
 
     /**
      * Gets the values of all set permission nodes for members.
      * @return A map containing the fully qualified names of each permission node and the value they are set to.
      */
-    public Map<String, Boolean> getMemberPerms() {
-        return memberPerms;
-    }
-
-    /**
-     * Sets the value of a given permission node.
-     * @param perm The fully qualified name of the permission node to be set.
-     * @param value The value to set.
-     */
-    public void setMemberPerm(String perm, boolean value) {
-        memberPerms.put(perm, value);
-        saveFile();
-        for (Player player : SPSSpigot.server().getOnlinePlayers())
-            loadPermissions(player);
+    @NotNull
+    public Map<Permission, Boolean> getMemberPerms() {
+        return Collections.unmodifiableMap(memberPerms);
     }
 
     /**
@@ -177,17 +181,31 @@ public class PermissionsHandler {
      * @param perm The {@link Permission} node to be set.
      * @param value The value to set.
      */
-    public void setMemberPerm(Permission perm, boolean value) {
-        // Saving occurs in the called method.
-        setMemberPerm(perm.getName(), value);
+    public void setMemberPerm(@NotNull Permission perm, boolean value) {
+        memberPerms.put(perm, value);
+        saveFile();
+        for (Player player : SPSSpigot.server().getOnlinePlayers())
+            loadPermissions(player);
     }
 
     /**
-     * Unsets a given permission node. This removes the node from the list, effectively making membership neither give nor deny the permission.
-     * @param perm The fully qualified name of the permission node to unset.
-     * @return {@code true} if something was changed ({@code false} means the permission node was already unset).
+     * Sets the value of a given permission node.
+     * @param perm The fully qualified name of the permission node to be set.
+     * @param value The value to set.
      */
-    public boolean unsetMemberPerm(String perm) {
+    public void setMemberPerm(@NotNull String perm, boolean value) {
+        // Saving occurs in the called method.
+        Permission permObj = SPSSpigot.server().getPluginManager().getPermission(perm);
+        if (permObj != null)
+            setMemberPerm(permObj, value);
+    }
+
+    /**
+     * Unsets a given {@link Permission} node. This removes the node from the list, effectively making membership neither give nor deny the {@link Permission}.
+     * @param perm The {@link Permission} node to unset.
+     * @return {@code true} if something was changed ({@code false} means the {@link Permission} node was already unset).
+     */
+    public boolean unsetMemberPerm(@NotNull Permission perm) {
         boolean out = memberPerms.remove(perm);
         saveFile();
         for (Player player : SPSSpigot.server().getOnlinePlayers())
@@ -196,13 +214,17 @@ public class PermissionsHandler {
     }
 
     /**
-     * Unsets a given {@link Permission} node. This removes the node from the list, effectively making membership neither give nor deny the {@link Permission}.
-     * @param perm The {@link Permission} node to unset.
-     * @return {@code true} if something was changed ({@code false} means the {@link Permission} node was already unset).
+     * Unsets a given permission node. This removes the node from the list, effectively making membership neither give nor deny the permission.
+     * @param perm The fully qualified name of the permission node to unset.
+     * @return {@code true} if something was changed ({@code false} means the permission node was already unset).
      */
-    public boolean unsetMemberPerm(Permission perm) {
+    public boolean unsetMemberPerm(@NotNull String perm) {
         // Saving occurs in the called method.
-        return unsetMemberPerm(perm.getName());
+        Permission permObj = SPSSpigot.server().getPluginManager().getPermission(perm);
+        if (permObj != null)
+            return unsetMemberPerm(permObj);
+        else
+            return false;
     }
 
     /**
@@ -210,7 +232,8 @@ public class PermissionsHandler {
      * @param name The name to search for.
      * @return The {@link Rank} with the given name, or {@code null} if no {@link Rank} is found by that name.
      */
-    public Rank getRank(String name) {
+    @Nullable
+    public Rank getRank(@NotNull String name) {
         for (Rank r : ranks) {
             if (name.equalsIgnoreCase(r.getName()))
                 return r;
@@ -220,16 +243,18 @@ public class PermissionsHandler {
 
     /**
      * Gets all {@link Rank}s known by this {@link PermissionsHandler}.
-     * @return A {@link Set} of all {@link Rank}s.
+     * @return An unmodifiable {@link Set} of all {@link Rank}s.
      */
+    @NotNull
     public Set<Rank> getRanks() {
-        return ranks;
+        return Collections.unmodifiableSet(ranks);
     }
 
     /**
      * Gets the names of all {@link Rank}s known by this {@link PermissionsHandler}.
      * @return A {@link Set} of the names of all known {@link Rank}s.
      */
+    @NotNull
     public Set<String> getRankNames() {
         Set<String> names = new HashSet<>();
         for (Rank rank : getRanks())
@@ -241,7 +266,7 @@ public class PermissionsHandler {
      * Adds a new {@link Rank} to this {@link PermissionsHandler}
      * @param rank The {@link Rank} to add.
      */
-    public void addRank(Rank rank) {
+    public void addRank(@NotNull Rank rank) {
         if (getRank(rank.getName()) == null)
             ranks.add(rank);
         saveFile();
@@ -252,11 +277,12 @@ public class PermissionsHandler {
      * @param rank The {@link Rank} to delete.
      * @return {@code true} if this {@link PermissionsHandler} was changed. Ignores changes to individual players (they should have the same result).
      */
-    public boolean deleteRank(Rank rank) {
+    public boolean deleteRank(@NotNull Rank rank) {
         for (Map.Entry<UUID, Set<Rank>> rankSet : playerRanks.entrySet()) {
             rankSet.getValue().remove(rank);
-            if (SPSSpigot.server().getOfflinePlayer(rankSet.getKey()).isOnline())
-                loadPermissions(SPSSpigot.server().getOfflinePlayer(rankSet.getKey()).getPlayer());
+            Player player = SPSSpigot.server().getPlayer(rankSet.getKey());
+            if (player != null)
+                loadPermissions(player);
         }
         boolean out = ranks.remove(rank);
         saveFile();
@@ -267,7 +293,7 @@ public class PermissionsHandler {
      * Deletes a {@link Rank} from this {@link PermissionsHandler} and for all players, both online and offline, based on the name.
      * @param name The name of the {@link Rank} to be deleted.
      */
-    public void deleteRank(String name) {
+    public void deleteRank(@NotNull String name) {
         for (Map.Entry<UUID, Set<Rank>> rankSet : playerRanks.entrySet()) {
             ArrayList<Rank> remove = new ArrayList<>();
             for (Rank r : rankSet.getValue()) {
@@ -277,8 +303,9 @@ public class PermissionsHandler {
             for (Rank r : remove) {
                 rankSet.getValue().remove(r);
             }
-            if (SPSSpigot.server().getOfflinePlayer(rankSet.getKey()).isOnline())
-                loadPermissions(SPSSpigot.server().getOfflinePlayer(rankSet.getKey()).getPlayer());
+            Player player = SPSSpigot.server().getPlayer(rankSet.getKey());
+            if (player != null)
+                loadPermissions(player);
         }
         ArrayList<Rank> remove = new ArrayList<>();
         for (Rank r : ranks) {
@@ -292,12 +319,13 @@ public class PermissionsHandler {
 
     /**
      * Gets all the {@link Rank}s held by a given player.
-     * @param player The player to check.
-     * @return The {@link Set} of {@link Rank}s held by the player.
+     * @param player The {@link UUID} of the player to check.
+     * @return An unmodifiable {@link Set} of {@link Rank}s held by the player.
      */
-    public Set<Rank> getPlayerRanks(OfflinePlayer player) {
-        if (playerRanks.containsKey(player.getUniqueId()))
-            return playerRanks.get(player.getUniqueId());
+    @NotNull
+    public Set<Rank> getPlayerRanks(@NotNull UUID player) {
+        if (playerRanks.containsKey(player))
+            return Collections.unmodifiableSet(playerRanks.get(player));
         else
             return new HashSet<>();
     }
@@ -307,7 +335,8 @@ public class PermissionsHandler {
      * @param rank The {@link Rank} to check.
      * @return A {@link Set} of the {@link UUID}s of the players that hold the {@link Rank}.
      */
-    public Set<UUID> getRankPlayers(Rank rank) {
+    @NotNull
+    public Set<UUID> getRankPlayers(@NotNull Rank rank) {
         Set<UUID> uuids = new HashSet<>();
         for (Map.Entry<UUID, Set<Rank>> player : playerRanks.entrySet())
             if (player.getValue().contains(rank))
@@ -317,49 +346,50 @@ public class PermissionsHandler {
 
     /**
      * Gets whether or not a player has a given {@link Rank}.
-     * @param player The player to check.
+     * @param player The {@link UUID} of the player to check.
      * @param rank The {@link Rank} to check.
      * @return {@code true} if the given player has the given {@link Rank}.
      */
-    public boolean hasPlayerRank(OfflinePlayer player, Rank rank) {
-        return playerRanks.containsKey(player.getUniqueId()) && playerRanks.get(player.getUniqueId()).contains(rank);
+    public boolean hasPlayerRank(@NotNull UUID player, @NotNull Rank rank) {
+        return playerRanks.containsKey(player) && playerRanks.get(player).contains(rank);
     }
 
     /**
      * Gets whether or not a player has the known {@link Rank} found by its name.
-     * @param player The player to check.
+     * @param player The {@link UUID} of the player to check.
      * @param rank The name of the {@link Rank} to check.
      * @return {@code true} if the given player has the known {@link Rank} of the given name ({@code false} if no {@link Rank} exists by the given name).
      */
-    public boolean hasPlayerRank(OfflinePlayer player, String rank) {
+    public boolean hasPlayerRank(@NotNull UUID player, @NotNull String rank) {
         Rank rObj = getRank(rank);
         return rObj != null && hasPlayerRank(player, rObj);
     }
 
     /**
      * Gives a {@link Rank} to a specified player.
-     * @param player The player to give the {@link Rank}.
+     * @param player The {@link UUID} of the player to give the {@link Rank}.
      * @param rank The {@link Rank} to give.
      * @return {@code true} if the {@link Rank} was given ({@code false} means the player already had the {@link Rank}).
      */
-    public boolean givePlayerRank(OfflinePlayer player, Rank rank) {
-        if (!playerRanks.containsKey(player.getUniqueId()))
-            playerRanks.put(player.getUniqueId(), new HashSet<>());
-        boolean out = playerRanks.get(player.getUniqueId()).add(rank);
+    public boolean givePlayerRank(@NotNull UUID player, @NotNull Rank rank) {
+        if (!playerRanks.containsKey(player))
+            playerRanks.put(player, new HashSet<>());
+        boolean out = playerRanks.get(player).add(rank);
         saveFile();
-        if (player.isOnline())
-            loadPermissions(player.getPlayer());
+        Player p = SPSSpigot.server().getPlayer(player);
+        if (p != null)
+            loadPermissions(p);
         return out;
     }
 
     /**
      * Gives a rank to a specified player.
-     * @param player The player to give the rank.
+     * @param player The {@link UUID} of the player to give the rank.
      * @param rank The name of the {@link Rank} to give.
      * @return {@code true} if the rank was given ({@code false} means the player already had the rank).
      * @throws IllegalArgumentException If the {@link Rank} was not found by the given name.
      */
-    public boolean givePlayerRank(OfflinePlayer player, String rank) {
+    public boolean givePlayerRank(@NotNull UUID player, @NotNull String rank) {
         Rank rankObj = getRank(rank);
         if (rankObj == null)
             throw new IllegalArgumentException("Permissions rank '" + rank + "' was not recognized.");
@@ -369,30 +399,31 @@ public class PermissionsHandler {
 
     /**
      * Removes a {@link Rank} from a specified player.
-     * @param player The player to remove the {@link Rank} from.
+     * @param player The {@link UUID} of the player to remove the {@link Rank} from.
      * @param rank The {@link Rank} to remove.
      * @return {@code true} if the {@link Rank} was removed ({@code false} means the player already did not have the {@link Rank}).
      */
-    public boolean removePlayerRank(OfflinePlayer player, Rank rank) {
-        if (!playerRanks.containsKey(player.getUniqueId())) {
+    public boolean removePlayerRank(@NotNull UUID player, @NotNull Rank rank) {
+        if (!playerRanks.containsKey(player)) {
             return false;
         } else {
-            boolean out = playerRanks.get(player.getUniqueId()).remove(rank);
+            boolean out = playerRanks.get(player).remove(rank);
             saveFile();
-            if (player.isOnline())
-                loadPermissions(player.getPlayer());
+            Player p = SPSSpigot.server().getPlayer(player);
+            if (p != null)
+                loadPermissions(p);
             return out;
         }
     }
 
     /**
      * Removes a rank from a specified player.
-     * @param player The player to remove the rank from.
+     * @param player The {@link UUID} of the player to remove the rank from.
      * @param rank The name of the {@link Rank} to remove.
      * @return {@code true} if the rank was removed ({@code false} means the player already did not have the rank).
      * @throws IllegalArgumentException If the {@link Rank} was not found by the given name.
      */
-    public boolean removePlayerRank(OfflinePlayer player, String rank) {
+    public boolean removePlayerRank(@NotNull UUID player, @NotNull String rank) {
         // Doesn't work if there is a rank with the same name but is different in this player's list. This should never happen.
         Rank rankObj = getRank(rank);
         if (rankObj == null)
@@ -405,7 +436,7 @@ public class PermissionsHandler {
      * Updates the permissions for the given {@link Player}.
      * @param player The {@link Player} to update permissions for.
      */
-    public void loadPermissions(Player player) {
+    public void loadPermissions(@NotNull Player player) {
         if (players.containsKey(player)) {
             players.get(player).remove();
         }
@@ -415,11 +446,11 @@ public class PermissionsHandler {
             for (PermissionAttachmentInfo perm : player.getEffectivePermissions())
                 a.setPermission(perm.getPermission(), false);
         else
-            for (Map.Entry<String, Boolean> perm : memberPerms.entrySet())
+            for (Map.Entry<Permission, Boolean> perm : memberPerms.entrySet())
                 a.setPermission(perm.getKey(), perm.getValue());
         // Add perms for each rank
-        for (Rank rank : getPlayerRanks(player))
-            for (Map.Entry<String, Boolean> perm : rank.getPerms().entrySet())
+        for (Rank rank : getPlayerRanks(player.getUniqueId()))
+            for (Map.Entry<Permission, Boolean> perm : rank.getPerms().entrySet())
                 a.setPermission(perm.getKey(), perm.getValue());
 
         players.put(player, a);

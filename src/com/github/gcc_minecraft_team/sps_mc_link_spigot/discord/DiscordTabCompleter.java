@@ -1,7 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.discord;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -9,12 +8,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class DiscordTabCompleter implements TabCompleter {
 
-    public static List<String> keepStarts(List<String> list, String prefix) {
+    @NotNull
+    public static List<String> keepStarts(@NotNull List<String> list, @NotNull String prefix) {
         List<String> newList = new ArrayList<>();
         for (String str : list) {
             if (str.toLowerCase().startsWith(prefix.toLowerCase()))

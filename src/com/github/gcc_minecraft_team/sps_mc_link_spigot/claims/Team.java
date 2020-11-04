@@ -14,7 +14,7 @@ public class Team implements ConfigurationSerializable {
     private Set<UUID> members;
     private UUID leader;
 
-    public Team(String name, UUID leader) {
+    public Team(@NotNull String name, @NotNull UUID leader) {
         this.name = name;
         this.leader = leader;
         members = new HashSet<>();
@@ -25,6 +25,7 @@ public class Team implements ConfigurationSerializable {
      * Getter for the {@link Team}'s name.
      * @return This {@link Team}'s name.
      */
+    @NotNull
     public String getName() {
         return name;
     }
@@ -33,6 +34,7 @@ public class Team implements ConfigurationSerializable {
      * Getter for the {@link Team}'s members. READ ONLY.
      * @return An unmodifiable {@link Set} of members' {@link UUID}s.
      */
+    @NotNull
     public Set<UUID> getMembers() {
         return Collections.unmodifiableSet(members);
     }
@@ -41,6 +43,7 @@ public class Team implements ConfigurationSerializable {
      * Gets all known members of this {@link Team} sorted alphabetically.
      * @return A sorted {@link List} of members' names.
      */
+    @NotNull
     public List<String> getMemberNames() {
         List<String> names = new ArrayList<>();
         for (UUID uuid : members)
@@ -53,7 +56,7 @@ public class Team implements ConfigurationSerializable {
      * @param player The {@link UUID} of the member to check.
      * @return {@code true} if the player is a member.
      */
-    public boolean isMember(UUID player) {
+    public boolean isMember(@NotNull UUID player) {
         return members.contains(player);
     }
 
@@ -62,7 +65,7 @@ public class Team implements ConfigurationSerializable {
      * @param player The {@link OfflinePlayer} to check.
      * @return {@code true} if the player is a member.
      */
-    public boolean isMember(OfflinePlayer player) {
+    public boolean isMember(@NotNull OfflinePlayer player) {
         return isMember(player.getUniqueId());
     }
 
@@ -71,7 +74,7 @@ public class Team implements ConfigurationSerializable {
      * @param player The {@link UUID} of the player to add.
      * @return {@code true} if successful.
      */
-    public boolean addMember(UUID player) {
+    public boolean addMember(@NotNull UUID player) {
         if (SPSSpigot.claims().getPlayerTeam(player) == null) {
             boolean out = members.add(player);
             SPSSpigot.claims().saveFile();
@@ -87,7 +90,7 @@ public class Team implements ConfigurationSerializable {
      * @param player The {@link OfflinePlayer} to add.
      * @return {@code true} if successful.
      */
-    public boolean addMember(OfflinePlayer player) {
+    public boolean addMember(@NotNull OfflinePlayer player) {
         return addMember(player.getUniqueId());
     }
 
@@ -96,7 +99,7 @@ public class Team implements ConfigurationSerializable {
      * @param player The {@link UUID} of the player to remove.
      * @return {@code true} if successful.
      */
-    public boolean removeMember(UUID player) {
+    public boolean removeMember(@NotNull UUID player) {
         if (player.equals(leader)) {
             if (members.size() == 1) {
                 // Delete the team
@@ -117,7 +120,7 @@ public class Team implements ConfigurationSerializable {
      * @param player The {@link OfflinePlayer} to remove.
      * @return {@code true} if successful.
      */
-    public boolean removeMember(OfflinePlayer player) {
+    public boolean removeMember(@NotNull OfflinePlayer player) {
         return removeMember(player.getUniqueId());
     }
 
@@ -125,6 +128,7 @@ public class Team implements ConfigurationSerializable {
      * Gets the leader.
      * @return The {@link UUID} of the leader.
      */
+    @NotNull
     public UUID getLeader() {
         return leader;
     }
@@ -134,7 +138,7 @@ public class Team implements ConfigurationSerializable {
      * @param newLeader The {@link UUID} of the new leader. The new leader must be a player.
      * @return {@code true} if successfully changed the leader.
      */
-    public boolean changeLeader(UUID newLeader) {
+    public boolean changeLeader(@NotNull UUID newLeader) {
         if (isMember(newLeader)) {
             leader = newLeader;
             SPSSpigot.claims().saveFile();
@@ -149,7 +153,7 @@ public class Team implements ConfigurationSerializable {
     private static final String MEMBERSKEY = "members";
     private static final String LEADERKEY = "leader";
 
-    public Team(Map<String, Object> map) {
+    public Team(@NotNull Map<String, Object> map) {
         // Get name
         this.name = (String) map.get(NAMEKEY);
         // Get members

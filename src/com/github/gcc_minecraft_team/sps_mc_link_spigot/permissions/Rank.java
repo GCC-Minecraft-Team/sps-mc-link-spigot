@@ -17,7 +17,7 @@ import java.util.*;
 public class Rank implements ConfigurationSerializable {
 
     private final String name;
-    private HashMap<String, Boolean> perms;
+    private HashMap<Permission, Boolean> perms;
     private ChatColor color;
 
     public Rank(String name) {
@@ -30,17 +30,9 @@ public class Rank implements ConfigurationSerializable {
      *
      * @return This {@link Rank}'s name.
      */
+    @NotNull
     public String getName() {
         return this.name;
-    }
-
-    /**
-     * Checks whether or not this {@link Rank} has a permission node set to {@code true}.
-     * @param perm Fully qualified name of the {@link Permission} to check.
-     * @return The value of the permission if set for this {@link Rank}; {@code false} if unset.
-     */
-    public boolean hasPermission(String perm) {
-        return perms.containsKey(perm) && perms.get(perm);
     }
 
     /**
@@ -48,8 +40,31 @@ public class Rank implements ConfigurationSerializable {
      * @param perm The {@link Permission} node to check.
      * @return The value of the {@link Permission} if set for this {@link Rank}; {@code false} if unset.
      */
-    public boolean hasPermission(Permission perm) {
-        return hasPermission(perm.getName());
+    public boolean hasPermission(@NotNull Permission perm) {
+        return perms.containsKey(perm) && perms.get(perm);
+    }
+
+    /**
+     * Checks whether or not this {@link Rank} has a permission node set to {@code true}.
+     * @param perm Fully qualified name of the {@link Permission} to check.
+     * @return The value of the permission if set for this {@link Rank}; {@code false} if unset.
+     */
+    public boolean hasPermission(@NotNull String perm) {
+        Permission permObj = SPSSpigot.server().getPluginManager().getPermission(perm);
+        if (permObj != null)
+            return hasPermission(permObj);
+        else
+            return false;
+    }
+    /**
+     * Sets the value of a {@link Permission} node for this {@link Rank}.
+     * @param perm The {@link Permission} node to set the value of.
+     * @param value The value to set.
+     */
+    public void setPermission(@NotNull Permission perm, boolean value) {
+        perms.put(perm, value);
+        SPSSpigot.perms().saveFile();
+        updateRankHolders();
     }
 
     /**
@@ -57,51 +72,46 @@ public class Rank implements ConfigurationSerializable {
      * @param perm The fully qualified name of the permission node to set the value of.
      * @param value The value to set.
      */
-    public void setPermission(String perm, boolean value) {
-        perms.put(perm, value);
-        SPSSpigot.perms().saveFile();
-        updateRankHolders();
-    }
-
-    /**
-     * Sets the value of a {@link Permission} node for this {@link Rank}.
-     * @param perm The {@link Permission} node to set the value of.
-     * @param value The value to set.
-     */
-    public void setPermission(Permission perm, boolean value) {
-        setPermission(perm.getName(), value);
-    }
-
-    /**
-     * Unsets a permission node for this {@link Rank}. This removes the node from the list, effectively making the {@link Rank} neither give nor actively deny the permission.
-     * @param perm The fully qualified name of the permission node to unset.
-     */
-    public void unsetPermission(String perm) {
-        perms.remove(perm);
-        SPSSpigot.perms().saveFile();
-        updateRankHolders();
+    public void setPermission(@NotNull String perm, boolean value) {
+        Permission permObj = SPSSpigot.server().getPluginManager().getPermission(perm);
+        if (permObj != null)
+            setPermission(permObj, value);
     }
 
     /**
      * Unsets a {@link Permission} node for this {@link Rank}. This removes the node from the list, effectively making the {@link Rank} neither give nor actively deny the {@link Permission}.
      * @param perm The {@link Permission} node to unset.
      */
-    public void unsetPermission(Permission perm) {
-        unsetPermission(perm.getName());
+    public void unsetPermission(@NotNull Permission perm) {
+        perms.remove(perm);
+        SPSSpigot.perms().saveFile();
+        updateRankHolders();
+    }
+
+    /**
+     * Unsets a permission node for this {@link Rank}. This removes the node from the list, effectively making the {@link Rank} neither give nor actively deny the permission.
+     * @param perm The fully qualified name of the permission node to unset.
+     */
+    public void unsetPermission(@NotNull String perm) {
+        Permission permObj = SPSSpigot.server().getPluginManager().getPermission(perm);
+        if (permObj != null)
+            unsetPermission(permObj);
     }
 
     /**
      * Gets the values of all set permission nodes.
-     * @return A map containing the fully qualified names of each permission node and the value they are set to.
+     * @return An unmodifiable {@link Map} containing the fully qualified names of each permission node and the value they are set to.
      */
-    public Map<String, Boolean> getPerms() {
-        return perms;
+    @NotNull
+    public Map<Permission, Boolean> getPerms() {
+        return Collections.unmodifiableMap(perms);
     }
 
     /**
      * Gets the color for this {@link Rank}
      * @return The color of this {@link Rank}.
      */
+    @NotNull
     public ChatColor getColor() {
         return this.color;
     }
@@ -110,7 +120,7 @@ public class Rank implements ConfigurationSerializable {
      * Sets the color for this {@link Rank}.
      * @param color The color to set.
      */
-    public void setColor(ChatColor color) {
+    public void setColor(@NotNull ChatColor color) {
         this.color = color;
         SPSSpigot.perms().saveFile();
     }
@@ -119,6 +129,7 @@ public class Rank implements ConfigurationSerializable {
      * Convenience method that calls {@link PermissionsHandler#getRankPlayers(Rank)}
      * @return A set of all UUIDs of players with this rank.
      */
+    @NotNull
     public Set<UUID> getRankHolders() {
         return SPSSpigot.perms().getRankPlayers(this);
     }
@@ -139,9 +150,14 @@ public class Rank implements ConfigurationSerializable {
     private static final String PERMSKEY = "perms";
     private static final String COLORKEY = "color";
 
-    public Rank(Map<String, Object> map) {
+    public Rank(@NotNull Map<String, Object> map) {
         this((String) map.get(NAMEKEY));
-        this.perms = (HashMap<String, Boolean>) map.get(PERMSKEY);
+        Map<String, Boolean> permStrs = (HashMap<String, Boolean>) map.get(PERMSKEY);
+        for (Map.Entry<String, Boolean> permStr : permStrs.entrySet()) {
+            Permission perm = SPSSpigot.server().getPluginManager().getPermission(permStr.getKey());
+            if (perm != null)
+                this.perms.put(perm, permStr.getValue());
+        }
         // Try and get the color from the string; default to white if not recognized.
         try {
             this.color = ChatColor.valueOf(((String) map.get(COLORKEY)).strip().replace(" ", "_").toUpperCase());
@@ -155,7 +171,10 @@ public class Rank implements ConfigurationSerializable {
     public Map<String, Object> serialize() {
         HashMap<String, Object> map = new HashMap<>();
         map.put(NAMEKEY, this.name);
-        map.put(PERMSKEY, this.perms);
+        Map<String, Boolean> permStrs = new HashMap<>();
+        for (Map.Entry<Permission, Boolean> perm : this.perms.entrySet())
+            permStrs.put(perm.getKey().getName(), perm.getValue());
+        map.put(PERMSKEY, permStrs);
         map.put(COLORKEY, this.color.name());
         return map;
     }

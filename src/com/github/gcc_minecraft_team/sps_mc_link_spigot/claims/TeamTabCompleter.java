@@ -13,7 +13,8 @@ import java.util.List;
 
 public class TeamTabCompleter implements TabCompleter {
 
-    public static List<String> keepStarts(List<String> list, String prefix) {
+    @NotNull
+    public static List<String> keepStarts(@NotNull List<String> list, @NotNull String prefix) {
         List<String> newList = new ArrayList<>();
         for (String str : list) {
             if (str.toLowerCase().startsWith(prefix.toLowerCase()))

@@ -12,12 +12,11 @@ import java.security.Key;
 
 import io.javalin.Javalin;
 import io.jsonwebtoken.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
+import java.util.UUID;
 import java.util.logging.Level;
-
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.Claims;
 
 public class WebInterfaceLink {
 
@@ -54,11 +53,11 @@ public class WebInterfaceLink {
             JsonNode newUser = objectMapper.readTree(ctx.body());
             SPSSpigot.logger().log(Level.INFO, "request " + newUser.toString());
 
-            String newUUID = null;
+            UUID newUUID = null;
 
             // try to decode JWT
             try {
-                newUUID = DecodeJWT(newUser.get("token").asText()).getId();
+                newUUID = UUID.fromString(DecodeJWT(newUser.get("token").asText()).getId());
             } catch (JwtException exception) {
                 SPSSpigot.logger().log(Level.SEVERE, "Something went wrong decoding a JSON web token");
             }
@@ -75,7 +74,7 @@ public class WebInterfaceLink {
         });
     }
 
-    public static String CreateJWT(String id, String issuer, String subject, long ttlMillis) {
+    public static String CreateJWT(@NotNull String id, @NotNull String issuer, @NotNull String subject, long ttlMillis) {
 
         //The JWT signature algorithm we will be using to sign the token
         SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
@@ -105,7 +104,7 @@ public class WebInterfaceLink {
         return builder.compact();
     }
 
-    public static Claims DecodeJWT(String jwt) {
+    public static Claims DecodeJWT(@NotNull String jwt) {
         //This line will throw an exception if it is not a signed JWS (as expected)
         Claims claims = Jwts.parser()
                 .setSigningKey(DatatypeConverter.parseBase64Binary(PluginConfig.GetJWTSecret()))

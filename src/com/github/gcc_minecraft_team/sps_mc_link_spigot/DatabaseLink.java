@@ -9,7 +9,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -18,12 +17,14 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.haoshoku.nick.api.NickAPI;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.UUID;
 
@@ -78,16 +79,10 @@ public class DatabaseLink {
      * @param uuid The {@link UUID} of the player to check.
      * @return {@code true} if the player is registered.
      */
-    public static boolean isRegistered(UUID uuid) {
+    public static boolean isRegistered(@NotNull UUID uuid) {
         try {
             // check if player is registered
-            if (userCol.countDocuments(new Document("mcUUID", uuid.toString())) == 1) {
-                // player has registered
-                return true;
-            } else {
-                // player hasn't registered
-                return false;
-            }
+            return userCol.countDocuments(new Document("mcUUID", uuid.toString())) == 1;
         } catch(MongoException exception) {
             SPSSpigot.logger().log(Level.SEVERE, "Couldn't check user from database! Error: " + exception.toString());
             return false;
@@ -98,7 +93,7 @@ public class DatabaseLink {
      * Creates a Team in the mongodb database
      * @param team
      */
-    public static void createTeam(Team team) {
+    public static void createTeam(@NotNull Team team) {
         // set UUID and Name
         Document teamDoc = new Document();
         teamDoc.append("teamName", team.getName());
@@ -111,42 +106,42 @@ public class DatabaseLink {
 
     /**
      * Gets the MC names of all SPS users registered
-     * @return
+     * @return A {@link List} of all the names.
      */
-    public static ArrayList<String> getAllSPSNames() {
-        ArrayList<String> spsNames = new ArrayList<String>();
+    @NotNull
+    public static List<String> getAllSPSNames() {
+        List<String> spsNames = new ArrayList<String>();
         for(Document doc : userCol.find()) {
             spsNames.add(doc.getString("mcName"));
         }
-
         return spsNames;
     }
 
     /**
-     * Gets Bukkit players for all SPS users registered
-     * @return
+     * Gets the {@link UUID}s of all SPS users registered.
+     * @return A {@link List} of all players' {@link UUID}s.
      */
-    public static ArrayList<Player> getAllSPSPlayers() {
-        ArrayList<Player> spsPlayers = new ArrayList<Player>();
-        for(Document doc : userCol.find()) {
-            spsPlayers.add(SPSSpigot.server().getPlayer(doc.getString("mcUUID")));
+    @NotNull
+    public static List<UUID> getAllSPSPlayers() {
+        List<UUID> spsPlayers = new ArrayList<>();
+        for (Document doc : userCol.find()) {
+            spsPlayers.add(UUID.fromString(doc.getString("mcUUID")));
         }
-
         return spsPlayers;
     }
 
     /**
-     * Gets the SPS Names of all players currently on the server
-     * @return
+     * Gets the SPS Names of all players currently on the server.
+     * @return A {@link List} of all online players' names.
      */
-    public static ArrayList<String> getPlayerNames(){
-        ArrayList<String> names = new ArrayList<String>();
-        for(Player p : SPSSpigot.server().getOnlinePlayers()){
+    @NotNull
+    public static List<String> getPlayerNames(){
+        List<String> names = new ArrayList<>();
+        for (Player p : SPSSpigot.server().getOnlinePlayers()){
             String name = getSPSName(p.getUniqueId());
-            if(name == "Unregistered User") continue;
-            names.add(name);
+            if (!name.equals("Unregistered User"))
+                names.add(name);
         }
-
         return names;
     }
 
@@ -155,7 +150,8 @@ public class DatabaseLink {
      * @param uuid The {@link UUID} of the Minecraft player.
      * @return The SPS name of the player.
      */
-    public static String getSPSName(UUID uuid) {
+    @NotNull
+    public static String getSPSName(@NotNull UUID uuid) {
         if (isRegistered(uuid)) {
             return userCol.find(new Document("mcUUID", uuid.toString())).first().getString("mcName");
         } else {
@@ -169,7 +165,7 @@ public class DatabaseLink {
      * @return The {@link UUID} of the Minecraft player if they are linked and online, otherwise {@code null}.
      */
     @Nullable
-    public static UUID getSPSUUID(String SPSName) {
+    public static UUID getSPSUUID(@NotNull String SPSName) {
         Document result = userCol.find(new Document("mcName", SPSName)).first();
         if (result != null)
             return UUID.fromString(result.getString("mcUUID"));
@@ -183,7 +179,7 @@ public class DatabaseLink {
      * @return The {@link Player} if they are linked and online, otherwise {@code null}.
      */
     @Nullable
-    public static Player getSPSPlayer(String SPSName) {
+    public static Player getSPSPlayer(@NotNull String SPSName) {
         UUID uuid = getSPSUUID(SPSName);
         if (uuid != null)
             return SPSSpigot.server().getPlayer(uuid);
@@ -196,7 +192,7 @@ public class DatabaseLink {
      * @param uuid The Minecraft {@link UUID} of the player to ban.
      * @return {@code true} if the player is banned.
      **/
-    public static Boolean getIsBanned(UUID uuid) {
+    public static boolean getIsBanned(@NotNull UUID uuid) {
         try {
             return userCol.find(new Document("mcUUID", uuid.toString())).first().getBoolean("banned");
         } catch (Exception exception) {
@@ -206,11 +202,11 @@ public class DatabaseLink {
 
     /**
      * Bans a player using their SPS ID
-     * @param SPSuser The SPS username to ban without domain (e.g. 1absmith)
+     * @param SPSUser The SPS username to ban without domain (e.g. 1absmith)
      * @return {@code true} if the SPS ID was successfully banned.
     **/
-    public static boolean banPlayer(String SPSuser) {
-        String spsEmail = SPSuser + "@seattleschools.org";
+    public static boolean banPlayer(@NotNull String SPSUser) {
+        String spsEmail = SPSUser + "@seattleschools.org";
 
         SPSSpigot.logger().log(Level.INFO, "Banning player with SPS email: " + spsEmail);
 
@@ -246,7 +242,7 @@ public class DatabaseLink {
      * @param SPSid The SPS ID of the player.
      * @param name The new name of the player.
      **/
-    public static void registerPlayer(String uuid, String SPSid, String name) {
+    public static void registerPlayer(@NotNull UUID uuid, @NotNull String SPSid, @NotNull String name) {
         // set UUID and Name
         BasicDBObject updateFields = new BasicDBObject();
         updateFields.append("mcUUID", uuid);
@@ -264,7 +260,7 @@ public class DatabaseLink {
         String email = userCol.find(new Document("oAuthId", SPSid)).first().getString("oAuthEmail");
 
         // get player
-        Player player = SPSSpigot.server().getPlayer(UUID.fromString(uuid));
+        Player player = SPSSpigot.server().getPlayer(uuid);
 
         // load permissions
         SPSSpigot.perms().loadPermissions(player);
@@ -284,7 +280,7 @@ public class DatabaseLink {
                 ChatColor.GREEN.toString() + " to the server! Your new username is: " +
                 ChatColor.GOLD.toString() + name);
 
-        if (getIsBanned(UUID.fromString(uuid))) {
+        if (getIsBanned(uuid)) {
             player.kickPlayer("The SPS account you linked has been banned!");
         }
 

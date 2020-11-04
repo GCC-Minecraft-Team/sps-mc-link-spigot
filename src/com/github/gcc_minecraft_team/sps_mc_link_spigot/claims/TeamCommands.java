@@ -24,7 +24,7 @@ public class TeamCommands implements CommandExecutor {
     public static String buildListText(String title, List<String> items) {
         StringBuilder str = new StringBuilder(ChatColor.BOLD + "====[" + title.strip() + ChatColor.RESET + ChatColor.BOLD + "]====\n");
         for (String item : items) {
-            str.append(ChatColor.RESET + item.strip() + "\n");
+            str.append(ChatColor.RESET).append(item.strip()).append("\n");
         }
         return str.toString();
     }

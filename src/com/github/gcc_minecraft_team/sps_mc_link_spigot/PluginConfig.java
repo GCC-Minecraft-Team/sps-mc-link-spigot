@@ -3,6 +3,7 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +43,7 @@ public class PluginConfig {
      * Gets the JWT secret from the {@value JWTSECRET} in {@value PLFILE} or randomly generates and saves one if it does not exist.
      * @return The JWT secret key.
      */
+    @NotNull
     public static String GetJWTSecret() {
         String key = "";
         if (pluginCfg != null) {

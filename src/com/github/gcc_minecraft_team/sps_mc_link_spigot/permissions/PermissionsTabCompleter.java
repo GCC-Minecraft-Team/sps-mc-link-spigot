@@ -7,6 +7,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.permissions.Permission;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +16,8 @@ import java.util.List;
 
 public class PermissionsTabCompleter implements TabCompleter {
 
-    public static List<String> keepStarts(List<String> list, String prefix) {
+    @NotNull
+    public static List<String> keepStarts(@NotNull List<String> list, @NotNull String prefix) {
         List<String> newList = new ArrayList<>();
         for (String str : list) {
             if (str.toLowerCase().startsWith(prefix.toLowerCase()))
@@ -25,7 +28,8 @@ public class PermissionsTabCompleter implements TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+    @Nullable
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         // /perms a.k.a. /permissions
         if (args.length == 1) {
             // /perms <partial>
@@ -52,8 +56,8 @@ public class PermissionsTabCompleter implements TabCompleter {
                 if (args.length == 3) {
                     // /perms members unset <partial>
                     List<String> perms = new ArrayList<>();
-                    for (String s : SPSSpigot.perms().getMemberPerms().keySet())
-                        perms.add(s);
+                    for (Permission s : SPSSpigot.perms().getMemberPerms().keySet())
+                        perms.add(s.getName());
                     return keepStarts(perms, args[2]);
                 } else {
                     // perms members unset <permission> <partial>
@@ -118,10 +122,10 @@ public class PermissionsTabCompleter implements TabCompleter {
                         return new ArrayList<>();
                     } else {
                         // Get all the permissions that are set for this rank.
-                        List<String> perms = new ArrayList<>();
-                        for (String s : rank.getPerms().keySet())
-                            perms.add(s);
-                        return keepStarts(perms, args[3]);
+                        List<String> permStrs = new ArrayList<>();
+                        for (Permission perm : rank.getPerms().keySet())
+                            permStrs.add(perm.getName());
+                        return keepStarts(permStrs, args[3]);
                     }
                 } else {
                     // perms rank unset <rank> <permission> <partial>

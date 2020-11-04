@@ -8,10 +8,11 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
+import org.jetbrains.annotations.NotNull;
 import xyz.haoshoku.nick.api.NickAPI;
 
-import javax.xml.crypto.Data;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,10 +24,11 @@ public class PermissionsCommands implements CommandExecutor {
      * @param items A {@link List} of the items to include.
      * @return A multi-line text representation of the list.
      */
-    public static String buildListText(String title, List<String> items) {
+    @NotNull
+    public static String buildListText(@NotNull String title, @NotNull List<String> items) {
         StringBuilder str = new StringBuilder(ChatColor.BOLD + "====[" + title.strip() + ChatColor.RESET + ChatColor.BOLD + "]====\n");
         for (String item : items) {
-            str.append(ChatColor.RESET + item.strip() + "\n");
+            str.append(ChatColor.RESET).append(item.strip()).append("\n");
         }
         return str.toString();
     }
@@ -37,7 +39,8 @@ public class PermissionsCommands implements CommandExecutor {
      * @param items A {@link Map} of the items to include and their boolean values.
      * @return A multi-line text representation of the list.
      */
-    public static String buildListBooleanText(String title, Map<String, Boolean> items) {
+    @NotNull
+    public static String buildListBooleanText(@NotNull String title, @NotNull Map<String, Boolean> items) {
         List<String> strItems = new ArrayList<>();
         for (Map.Entry<String, Boolean> item : items.entrySet()) {
             if (item.getValue())
@@ -49,7 +52,7 @@ public class PermissionsCommands implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         // /perms a.k.a. /permissions
         if (args.length == 0) {
             // No arguments
@@ -110,7 +113,10 @@ public class PermissionsCommands implements CommandExecutor {
                 }
             } else if (args[1].equals("list")) {
                 // Send full list of permissions
-                sender.sendMessage(buildListBooleanText("MEMBERS", SPSSpigot.perms().getMemberPerms()));
+                Map<String, Boolean> perms = new HashMap<>();
+                for (Map.Entry<Permission, Boolean> p : SPSSpigot.perms().getMemberPerms().entrySet())
+                    perms.put(p.getKey().getName(), p.getValue());
+                sender.sendMessage(buildListBooleanText("MEMBERS", perms));
                 return true;
             } else {
                 // args[1] is invalid
@@ -175,7 +181,10 @@ public class PermissionsCommands implements CommandExecutor {
                     } else {
                         // A valid, existing rank is chosen.
                         // TODO: Make this in alphabetical order
-                        sender.sendMessage(buildListBooleanText(rank.getColor() + rank.getName(), rank.getPerms()));
+                        Map<String, Boolean> permStrs = new HashMap<>();
+                        for (Map.Entry<Permission, Boolean> perm : rank.getPerms().entrySet())
+                            permStrs.put(perm.getKey().getName(), perm.getValue());
+                        sender.sendMessage(buildListBooleanText(rank.getColor() + rank.getName(), permStrs));
                         return true;
                     }
                 }
@@ -276,7 +285,6 @@ public class PermissionsCommands implements CommandExecutor {
                 sender.sendMessage(ChatColor.RED + "Usage: /" + label + " rank <create|delete|list|set|unset|color>");
                 return true;
             }
-
         } else if (args[0].equals("player")) {
             if (args.length == 1) {
                 // No arguments for /perms player
@@ -292,7 +300,7 @@ public class PermissionsCommands implements CommandExecutor {
                     // There are a given rank and player name.
                     // Get rank - may be null if unrecognized.
                     Rank rank = SPSSpigot.perms().getRank(args[2]);
-                    // Get player - may be null if unrecognized (including offline).
+                    // Get player - may be null if unrecognized.
                     StringBuilder playerName = new StringBuilder(args[3]);
                     for (int i = 4; i < args.length; i++) {
                         playerName.append(" ").append(args[i]);
@@ -309,7 +317,7 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     } else {
                         // We have a known player and rank.
-                        if (SPSSpigot.perms().givePlayerRank(player, rank)) {
+                        if (SPSSpigot.perms().givePlayerRank(player.getUniqueId(), rank)) {
                             // The player did not have the rank before and we gave them it.
                             sender.sendMessage(ChatColor.GREEN + "Gave rank '" + rank.getName() + "' to player '" + NickAPI.getName(player) + "'!");
                             return true;
@@ -346,7 +354,7 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     } else {
                         // We have a known player and rank.
-                        if (SPSSpigot.perms().removePlayerRank(player, rank)) {
+                        if (SPSSpigot.perms().removePlayerRank(player.getUniqueId(), rank)) {
                             // The player did have the rank before and we removed it.
                             sender.sendMessage(ChatColor.GREEN + "Removed rank '" + rank.getName() + "' from player '" + NickAPI.getName(player) + "'!");
                             return true;
@@ -382,10 +390,10 @@ public class PermissionsCommands implements CommandExecutor {
                         else
                             items.add(ChatColor.ITALIC + "SPS profile unlinked");
                         // Player ranks
-                        for (Rank rank : SPSSpigot.perms().getPlayerRanks(player))
+                        for (Rank rank : SPSSpigot.perms().getPlayerRanks(player.getUniqueId()))
                             items.add(rank.getColor() + rank.getName());
                         // Generate text
-                        sender.sendMessage(buildListText(player.getDisplayName(), items));
+                        sender.sendMessage(buildListText(NickAPI.getName(player), items));
                         return true;
                     }
                 }
@@ -405,7 +413,7 @@ public class PermissionsCommands implements CommandExecutor {
         } else if (args[0].equals("devreg")) {
             try {
                 Player player = SPSSpigot.server().getPlayer(args[1]);
-                DatabaseLink.registerPlayer(player.getUniqueId().toString(), "test", "test");
+                DatabaseLink.registerPlayer(player.getUniqueId(), "test", "test");
                 return true;
             } catch (Exception e) {
                 sender.sendMessage("oops");
