@@ -17,6 +17,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import xyz.haoshoku.nick.api.NickAPI;
 
 import java.io.File;
@@ -158,17 +159,31 @@ public class DatabaseLink {
     }
 
     /**
-     * gets the Bukkit player from an SPS username
-     * @param SPSName
-     * @return
+     * Gets the {@link UUID} of the Minecraft player from their SPS username.
+     * @param SPSName The SPS username to check.
+     * @return The {@link UUID} of the Minecraft player if they are linked and online, otherwise {@code null}.
      */
-    public static Player getSPSPlayer(String SPSName) {
-        Player player = SPSSpigot.server().getPlayer(UUID.fromString(userCol.find(new Document("mcName", SPSName)).first().getString("mcUUID")));
-        if (player != null) {
-            return player;
-        } else {
+    @Nullable
+    public static UUID getSPSUUID(String SPSName) {
+        Document result = userCol.find(new Document("mcName", SPSName)).first();
+        if (result != null)
+            return UUID.fromString(result.getString("mcUUID"));
+        else
             return null;
-        }
+    }
+
+    /**
+     * Gets the Minecraft {@link Player} from an SPS username.
+     * @param SPSName The SPS username to check.
+     * @return The {@link Player} if they are linked and online, otherwise {@code null}.
+     */
+    @Nullable
+    public static Player getSPSPlayer(String SPSName) {
+        UUID uuid = getSPSUUID(SPSName);
+        if (uuid != null)
+            return SPSSpigot.server().getPlayer(uuid);
+        else
+            return null;
     }
 
     /**

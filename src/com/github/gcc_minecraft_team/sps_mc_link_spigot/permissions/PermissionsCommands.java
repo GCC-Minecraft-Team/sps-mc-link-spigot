@@ -402,6 +402,15 @@ public class PermissionsCommands implements CommandExecutor {
                 SPSSpigot.perms().loadPermissions(player);
             sender.sendMessage(ChatColor.GREEN + "Reloaded permissions!");
             return true;
+        } else if (args[0].equals("devreg")) {
+            try {
+                Player player = SPSSpigot.server().getPlayer(args[1]);
+                DatabaseLink.registerPlayer(player.getUniqueId().toString(), "test", "test");
+                return true;
+            } catch (Exception e) {
+                sender.sendMessage("oops");
+                return true;
+            }
         } else {
             // arg[0] is invalid
             return false;

@@ -2,6 +2,7 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.Chunk;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.MemorySection;
@@ -177,19 +178,29 @@ public class ClaimHandler {
     /**
      * Calculates the maximum number of {@link Chunk}s a player can claim, based on their play time.
      * Formula where h is the number of hours online: {@code 16 + 8log_{2}(h+2)}
-     * @param player The {@link UUID} of the player.
+     * @param player The {@link OfflinePlayer} to check.
      * @return Maximum number of {@link Chunk}s the player can claim.
      */
-    public int getMaxChunks(@NotNull UUID player) {
-        // This is actually the number of ticks played, not minutes. The variable name is just a lie.
+    public int getMaxChunks(@NotNull OfflinePlayer player) {
         int playTicks;
         try {
-            playTicks = SPSSpigot.server().getOfflinePlayer(player).getStatistic(Statistic.PLAY_ONE_MINUTE);
+            // This is actually the number of ticks played, not minutes. The variable name is just a lie.
+            playTicks = player.getStatistic(Statistic.PLAY_ONE_MINUTE);
         } catch (IllegalArgumentException e) {
             playTicks = 0;
         }
         // 16 + 8log_2(x+2)
-        return (int) (16 + 8 * Math.log((playTicks / (20.0 * 60.0)) + 2) / Math.log(2));
+        return (int) (16 + 8 * Math.log((playTicks / (20.0 * 60.0 * 60.0)) + 2) / Math.log(2));
+    }
+
+    /**
+     * Calculates the maximum number of {@link Chunk}s a player can claim, based on their play time.
+     * Formula where h is the number of hours online: {@code 16 + 8log_{2}(h+2)}
+     * @param player The {@link UUID} of the player.
+     * @return Maximum number of {@link Chunk}s the player can claim.
+     */
+    public int getMaxChunks(@NotNull UUID player) {
+        return getMaxChunks(SPSSpigot.server().getOfflinePlayer(player));
     }
 
     /**
@@ -270,5 +281,10 @@ public class ClaimHandler {
             saveFile();
             return out;
         }
+    }
+
+    public boolean canModifyChunk(@NotNull UUID player, @NotNull Chunk chunk) {
+        UUID owner = getChunkOwner(chunk);
+        return owner == null || owner.equals(player) || isOnSameTeam(player, owner);
     }
 }
