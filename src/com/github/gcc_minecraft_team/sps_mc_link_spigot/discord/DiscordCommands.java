@@ -41,7 +41,7 @@ public class DiscordCommands implements CommandExecutor {
                 webhook.addEmbed(new DiscordWebhook.EmbedObject()
                         .addField("Reporter", senderName, true)
                         .addField("Reported", args[0], true)
-                        .addField("Reason", message, true)
+                        .addField("Reason", message, false)
                 );
 
                 try {
@@ -65,8 +65,8 @@ public class DiscordCommands implements CommandExecutor {
                 DiscordWebhook webhook = new DiscordWebhook(PluginConfig.GetMessageWebhook());
                 webhook.setUsername("Modmail");
                 webhook.addEmbed(new DiscordWebhook.EmbedObject()
-                        .addField("Sender", senderName, true)
-                        .addField("Message", message, true)
+                        .addField("Sender", senderName, false)
+                        .addField("Message", message, false)
                 );
 
                 try {
