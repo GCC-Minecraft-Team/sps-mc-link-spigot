@@ -79,7 +79,7 @@ public class ChatEvents implements Listener {
                     StringBuilder helpList = new StringBuilder();
                     List<Command> commandList = PluginCommandYamlParser.parse(plugin);
                     for (int i = 0; i < commandList.size(); i++) {
-                        if (commandList.get(i).getPermission() != null && e.getPlayer().hasPermission(commandList.get(i).getPermission())) {
+                        if (commandList.get(i).getPermission() == null || !e.getPlayer().hasPermission(commandList.get(i).getPermission())) {
                             commandList.remove(i);
                         }
                     }
