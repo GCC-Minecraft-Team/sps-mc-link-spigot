@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -16,6 +17,7 @@ public class Team implements ConfigurationSerializable {
     public Team(String name, UUID leader) {
         this.name = name;
         this.leader = leader;
+        members = new HashSet<>();
         members.add(leader);
     }
 
@@ -33,6 +35,17 @@ public class Team implements ConfigurationSerializable {
      */
     public Set<UUID> getMembers() {
         return Collections.unmodifiableSet(members);
+    }
+
+    /**
+     * Gets all known members of this {@link Team} sorted alphabetically.
+     * @return A sorted {@link List} of members' names.
+     */
+    public List<String> getMemberNames() {
+        List<String> names = new ArrayList<>();
+        for (UUID uuid : members)
+            names.add(DatabaseLink.getSPSName(uuid));
+        return names;
     }
 
     /**
@@ -87,6 +100,7 @@ public class Team implements ConfigurationSerializable {
         if (player.equals(leader)) {
             if (members.size() == 1) {
                 // Delete the team
+                SPSSpigot.claims().deleteTeam(this);
                 SPSSpigot.claims().saveFile();
                 return true;
             } else {

@@ -39,6 +39,8 @@ public class SPSSpigot extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PermissionsEvents(), this);
 
         // Setup Claims
+        ConfigurationSerialization.registerClass(Team.class);
+
         claims = new ClaimHandler();
         getServer().getPluginManager().registerEvents(new ClaimEvents(), this);
 

@@ -70,6 +70,7 @@ public class ClaimHandler {
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
+        System.out.println(claimsConfig.getValues(true));
         // Load Teams
         List<Object> teamObjList = (List<Object>) claimsConfig.getList(CFGTEAMS);
         teams = new HashSet<>();
@@ -94,6 +95,18 @@ public class ClaimHandler {
     @NotNull
     public Set<Team> getTeams() {
         return Collections.unmodifiableSet(teams);
+    }
+
+    /**
+     * Gets the names of all known {@link Team}s.
+     * @return A {@link Set} of {@link Team} names.
+     */
+    @NotNull
+    public Set<String> getTeamNames() {
+        Set<String> names = new HashSet<>();
+        for (Team t : teams)
+            names.add(t.getName());
+        return names;
     }
 
     /**
