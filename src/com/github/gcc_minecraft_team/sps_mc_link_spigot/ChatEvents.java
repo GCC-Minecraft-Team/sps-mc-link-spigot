@@ -1,14 +1,22 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.Rank;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.PluginCommandYamlParser;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.plugin.Plugin;
 
+import javax.xml.crypto.Data;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -54,6 +62,28 @@ public class ChatEvents implements Listener {
                 str.append("\n\n");
             }
             e.getPlayer().sendMessage(str.toString());
+
+        } else if (command.equalsIgnoreCase("help")) {
+
+            // if the player is not an op, show the custom help message
+            if (e.getPlayer().isOp() == false) {
+                e.setCancelled(true);
+                StringBuilder helpList = new StringBuilder();
+                for(Plugin plugin : Bukkit.getPluginManager().getPlugins()){
+                    if(plugin.getName().equals(SPSSpigot.plugin().getName())){
+                        List<Command> commandList = PluginCommandYamlParser.parse(plugin);
+                        helpList.append(ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "::[" + plugin.getName() + "]::\n" + ChatColor.RESET);
+                        for(int i = 0; i < commandList.size(); i++){
+                            if (e.getPlayer().hasPermission(commandList.get(i).getPermission())) {
+                                helpList.append("\n" + ChatColor.GOLD + commandList.get(i).getName() + ChatColor.WHITE + "  -  " + commandList.get(i).getDescription() + "\n");
+                            }
+                        }
+                        helpList.append("\n");
+                    }
+                }
+
+                e.getPlayer().sendMessage(ChatColor.AQUA + "[SPS MC] Commands List:\n" + ChatColor.RESET + helpList.toString());
+            }
         }
     }
 }
