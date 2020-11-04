@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoClient;
@@ -36,6 +37,7 @@ public class DatabaseLink {
     private static MongoDatabase mongoDatabase;
 
     private static MongoCollection<Document> userCol;
+    private static MongoCollection<Document> teamCol;
 
     /**
      * Creates a connection to the MongoDB database
@@ -63,6 +65,7 @@ public class DatabaseLink {
             mongoClient = MongoClients.create(connectionString);
             mongoDatabase = mongoClient.getDatabase(dbName);
             userCol = mongoDatabase.getCollection("users");
+            teamCol = mongoDatabase.getCollection("teams");
         } catch(MongoException exception) {
             SPSSpigot.logger().log(Level.SEVERE, "Something went wrong connecting to the MongoDB database, is " + DBFILE + " set up correctly?");
         }
@@ -87,6 +90,17 @@ public class DatabaseLink {
             SPSSpigot.logger().log(Level.SEVERE, "Couldn't check user from database! Error: " + exception.toString());
             return false;
         }
+    }
+
+    public static void createTeam(Team team) {
+        // set UUID and Name
+        Document teamDoc = new Document();
+        teamDoc.append("teamName", team.getName());
+        teamDoc.append("teamLeader", team.getLeader());
+        teamDoc.append("teamMembers", team.getMembers());
+
+        // update in the database
+        teamCol.insertOne(teamDoc);
     }
 
     /**
