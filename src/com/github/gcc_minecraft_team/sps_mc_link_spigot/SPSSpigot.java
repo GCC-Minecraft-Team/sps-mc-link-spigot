@@ -101,6 +101,18 @@ public class SPSSpigot extends JavaPlugin {
         return rankTag.toString();
     }
 
+    public static String GetRankTagNoFormat(Player p) {
+        // set rank tag without color formatting
+        StringBuilder rankTag = new StringBuilder();
+        if (SPSSpigot.perms().getPlayerRanks(p.getUniqueId()).size() > 0) {
+            for (Rank rank : SPSSpigot.perms().getPlayerRanks(p.getUniqueId())) {
+                rankTag.append("[" + rank.getName() +"]");
+            }
+        }
+
+        return rankTag.toString();
+    }
+
     /**
      * Convenience function to get this {@link JavaPlugin}.
      * @return This {@link JavaPlugin}.

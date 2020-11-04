@@ -17,6 +17,7 @@ public class PluginConfig {
     public static final String PLUGINMOTD = "pluginMOTD";
     public static final String REPORTWEBHOOK = "reportWebhook";
     public static final String MESSAGEWEBHOOK = "messageWebhook";
+    public static final String CHATWEBHOOK = "chatWebhook";
 
     private static FileConfiguration pluginCfg;
 
@@ -97,7 +98,7 @@ public class PluginConfig {
     }
 
     /**
-     * Gets the plugin MOTD from {@value REPORTWEBHOOK} in {@value PLFILE}.
+     * Gets the plugin webhook from {@value REPORTWEBHOOK} in {@value PLFILE}.
      * @return The Report Webhook URL.
      */
     public static String GetReportWebhook() {
@@ -109,12 +110,24 @@ public class PluginConfig {
     }
 
     /**
-     * Gets the plugin MOTD from {@value MESSAGEWEBHOOK} in {@value PLFILE}.
+     * Gets the plugin webhook from {@value MESSAGEWEBHOOK} in {@value PLFILE}.
      * @return The Report Webhook URL.
      */
     public static String GetMessageWebhook() {
         if (pluginCfg != null) {
             return (String) pluginCfg.get(MESSAGEWEBHOOK);
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Gets the plugin webhook from {@value CHATWEBHOOK} in {@value PLFILE}.
+     * @return The Report Webhook URL.
+     */
+    public static String GetChatWebhook() {
+        if (pluginCfg != null) {
+            return (String) pluginCfg.get(CHATWEBHOOK);
         } else {
             return "";
         }

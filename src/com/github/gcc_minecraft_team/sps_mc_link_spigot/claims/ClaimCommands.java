@@ -34,7 +34,7 @@ public class ClaimCommands implements CommandExecutor {
                 Double zdist = pLoc.getZ() - player.getWorld().getSpawnLocation().getZ();
                 Double xdist = pLoc.getX() - player.getWorld().getSpawnLocation().getX();
                 if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
-                    sender.sendMessage(ChatColor.RED + "You can't claim chunks in spawn!");
+                    sender.sendMessage(ChatColor.RED + "You can't claim chunks in spawn! Try moving further away from the starting area!");
                     return true;
                 }
 

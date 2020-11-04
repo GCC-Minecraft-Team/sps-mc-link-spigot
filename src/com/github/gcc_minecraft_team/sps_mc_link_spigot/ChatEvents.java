@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.discord.DiscordWebhook;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.Rank;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -12,10 +13,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.Plugin;
+import xyz.haoshoku.nick.api.NickAPI;
 
 import javax.xml.crypto.Data;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -34,12 +38,31 @@ public class ChatEvents implements Listener {
 
             e.setCancelled(true); // Cancel the event, so no message is sent (yet)
 
+            String newMessage = ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId())
+                    + "]" + SPSSpigot.GetRankTag(e.getPlayer()) + ": " + ChatColor.WHITE
+                    + message.replaceAll(e.getPlayer().getDisplayName(), ""); // format the message
+
             for (Player on : SPSSpigot.server().getOnlinePlayers()) { // loop through all online players
-                String newMessage = ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId())
-                        + "]" + SPSSpigot.GetRankTag(e.getPlayer()) + ": " + ChatColor.WHITE
-                        + message.replaceAll(e.getPlayer().getDisplayName(), ""); // format the message
                 SPSSpigot.logger().log(Level.INFO, newMessage);
                 on.sendMessage(newMessage); // send the player the message
+            }
+
+            // send messages to a discord channel
+            if (!PluginConfig.GetChatWebhook().equals("")) {
+                DiscordWebhook webhook = new DiscordWebhook(PluginConfig.GetChatWebhook());
+                StringBuilder discordName = new StringBuilder();
+                discordName.append(SPSSpigot.plugin().GetRankTagNoFormat(e.getPlayer()) + " ");
+                discordName.append(NickAPI.getName(e.getPlayer()));
+
+                webhook.setUsername(discordName.toString());
+                String discordMsg = message.replaceAll(e.getPlayer().getDisplayName(), "");
+                webhook.setContent(discordMsg);
+
+                try {
+                    webhook.execute();
+                } catch (IOException exception) {
+                    exception.printStackTrace();
+                }
             }
         }
     }
