@@ -53,8 +53,7 @@ public class ChatEvents implements Listener {
 
         if (command.equalsIgnoreCase("list")) {
             e.setCancelled(true);
-            e.getPlayer()
-                    .sendMessage(ChatColor.GOLD + "[SPS MC] There are " + SPSSpigot.server().getOnlinePlayers().size()
+            e.getPlayer().sendMessage(ChatColor.GOLD + "[SPS MC] There are " + SPSSpigot.server().getOnlinePlayers().size()
                             + "/" + SPSSpigot.server().getMaxPlayers() + " online players!");
 
             StringBuilder str = new StringBuilder(ChatColor.BOLD + "Player List: \n\n");
@@ -71,30 +70,24 @@ public class ChatEvents implements Listener {
 
         } else if (command.equalsIgnoreCase("help")) {
 
-            // if the player is not an op, show the custom help message
-            if (e.getPlayer().isOp() == false) {
+            // TODO show some minecraft commands as well like "/list"
+            // if the player does not have a rank, show the custom help message
+            if (SPSSpigot.perms().getPlayerRanks(e.getPlayer().getUniqueId()).isEmpty()) {
                 e.setCancelled(true);
                 e.getPlayer().sendMessage(ChatColor.AQUA + "[SPS MC] Commands List:\n" + ChatColor.RESET);
                 for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
-                    StringBuilder helpList = new StringBuilder();
-                    List<Command> commandList = PluginCommandYamlParser.parse(plugin);
-                    for (int i = 0; i < commandList.size(); i++) {
-                        if (commandList.get(i).getPermission() == null || !e.getPlayer().hasPermission(commandList.get(i).getPermission())) {
-                            commandList.remove(i);
+                    if (plugin.getName().equals(SPSSpigot.plugin().getName())) {
+                        StringBuilder helpList = new StringBuilder();
+                        List<Command> commandList = PluginCommandYamlParser.parse(plugin);
+                        for (int i = 0; i < commandList.size(); i++) {
+                            if (e.getPlayer().hasPermission(commandList.get(i).getPermission())) {
+                                helpList.append("\n" + ChatColor.GOLD + commandList.get(i).getName() + ChatColor.WHITE
+                                        + "  -  " + commandList.get(i).getDescription() + "\n");
+                            }
                         }
+                        helpList.append("\n");
+                        e.getPlayer().sendMessage(helpList.toString());
                     }
-
-                    if (commandList.size() > 0) {
-                        helpList.append(ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "::[" + plugin.getName() + "]::"
-                                + ChatColor.RESET);
-                    }
-
-                    for (int i = 0; i < commandList.size(); i++) {
-                        helpList.append("\n" + ChatColor.GOLD + commandList.get(i).getName() + ChatColor.WHITE
-                                + "  -  " + commandList.get(i).getDescription() + "\n");
-                    }
-                    helpList.append("\n");
-                    e.getPlayer().sendMessage(helpList.toString() + "\n");
                 }
             }
         }
