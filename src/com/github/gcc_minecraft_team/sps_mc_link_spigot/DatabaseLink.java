@@ -245,7 +245,7 @@ public class DatabaseLink {
     public static void registerPlayer(@NotNull UUID uuid, @NotNull String SPSid, @NotNull String name) {
         // set UUID and Name
         BasicDBObject updateFields = new BasicDBObject();
-        updateFields.append("mcUUID", uuid);
+        updateFields.append("mcUUID", uuid.toString());
         updateFields.append("mcName", name);
         updateFields.append( "banned", false);
 
