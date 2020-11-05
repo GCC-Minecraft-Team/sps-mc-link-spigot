@@ -2,7 +2,11 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Chunk;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -28,9 +32,9 @@ public class ClaimEvents implements Listener {
             UUID toOwner = SPSSpigot.claims().getChunkOwner(to);
             if (toOwner == null) {
                 if (fromOwner != null)
-                    event.getPlayer().sendTitle("", ChatColor.DARK_GREEN.toString() + "Entered wilderness", 8, 60, 12);
+                    event.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder().color(ChatColor.DARK_GREEN).append("Entering Wilderness.").create());
             } else {
-                event.getPlayer().sendTitle("", "Entered " + DatabaseLink.getSPSName(toOwner) + "'s claim", 8, 60, 12);
+                event.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder("Entering " + DatabaseLink.getSPSName(toOwner) + "'s Claim.").create());
             }
         }
     }

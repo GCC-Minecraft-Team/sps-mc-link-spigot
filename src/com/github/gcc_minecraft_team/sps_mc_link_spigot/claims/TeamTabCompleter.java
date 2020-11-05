@@ -1,15 +1,18 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class TeamTabCompleter implements TabCompleter {
 
@@ -29,7 +32,7 @@ public class TeamTabCompleter implements TabCompleter {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 1) {
             // /team <partial>
-            return keepStarts(Arrays.asList("create", "join", "leave", "list"), args[0]);
+            return keepStarts(Arrays.asList("create", "join", "leave", "list", "requests"), args[0]);
         } else if (args[0].equals("create")) {
             // /team create <...partial>
             return new ArrayList<>();
@@ -50,6 +53,58 @@ public class TeamTabCompleter implements TabCompleter {
                 return keepStarts(new ArrayList<>(SPSSpigot.claims().getTeamNames()), args[1]);
             } else {
                 // /team list <team> <partial>
+                return new ArrayList<>();
+            }
+        } else if (args[0].equals("requests")) {
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                Team team = SPSSpigot.claims().getPlayerTeam(player.getUniqueId());
+                if (args.length == 2) {
+                    // /team requests <partial>
+                    return keepStarts(Arrays.asList("list", "accept", "deny"), args[1]);
+                } else if (args[1].equals("list")) {
+                    // /team requests list <...partial>
+                    return new ArrayList<>();
+                } else if (args[1].equals("accept")) {
+                    if (args.length == 3) {
+                        // /team requests accept <partial>
+                        if (team != null && team.getLeader().equals(player.getUniqueId())) {
+                            // Player is the leader of team
+                            List<String> names = new ArrayList<>();
+                            for (UUID uuid : SPSSpigot.claims().getTeamJoinRequests(team))
+                                names.add(DatabaseLink.getSPSName(uuid));
+                            return keepStarts(names, args[2]);
+                        } else {
+                            // Player is not on a team or is not the leader
+                            return new ArrayList<>();
+                        }
+                    } else {
+                        // /team requests accept <name> <...partial>
+                        return new ArrayList<>();
+                    }
+                } else if (args[1].equals("deny")) {
+                    if (args.length == 3) {
+                        // /team requests deny <partial>
+                        if (team != null && team.getLeader().equals(player.getUniqueId())) {
+                            // Player is the leader of team
+                            List<String> names = new ArrayList<>();
+                            for (UUID uuid : SPSSpigot.claims().getTeamJoinRequests(team))
+                                names.add(DatabaseLink.getSPSName(uuid));
+                            return keepStarts(names, args[2]);
+                        } else {
+                            // Player is not on a team or is not the leader
+                            return new ArrayList<>();
+                        }
+                    } else {
+                        // /team requests deny <name> <...partial>
+                        return new ArrayList<>();
+                    }
+                } else {
+                    // /team requests <INVALID>
+                    return new ArrayList<>();
+                }
+            } else {
+                // Not a player
                 return new ArrayList<>();
             }
         } else {

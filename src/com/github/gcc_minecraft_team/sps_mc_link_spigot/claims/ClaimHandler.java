@@ -23,15 +23,18 @@ public class ClaimHandler {
 
     private Set<Team> teams;
     private Map<UUID, Set<Chunk>> claims;
+    private Map<UUID, Team> joinRequests;
 
     public ClaimHandler() {
         teams = new HashSet<>();
         claims = new HashMap<>();
+        joinRequests = new HashMap<>();
 
         SPSSpigot.plugin().saveResource(CLAIMSFILE, false);
         claimsConfig = YamlConfiguration.loadConfiguration(new File(SPSSpigot.plugin().getDataFolder(), CLAIMSFILE));
+        claimsConfig.addDefault(CFGTEAMS, new ArrayList<Team>());
+        claimsConfig.addDefault(CFGCLAIMS, new HashMap<String, ArrayList<HashMap<String, Integer>>>());
         loadFile();
-        System.out.println(claims);
     }
 
     /**
@@ -70,7 +73,6 @@ public class ClaimHandler {
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
-        System.out.println(claimsConfig.getValues(true));
         // Load Teams
         List<Object> teamObjList = (List<Object>) claimsConfig.getList(CFGTEAMS);
         teams = new HashSet<>();
@@ -157,6 +159,14 @@ public class ClaimHandler {
      */
     public void deleteTeam(@NotNull Team team) {
         teams.remove(team);
+        // Delete all join requests for this team
+        Set<UUID> remove = new HashSet<>();
+        for (Map.Entry<UUID, Team> request : joinRequests.entrySet()) {
+            if (request.getValue() == team)
+                remove.add(request.getKey());
+        }
+        for (UUID request : remove)
+            joinRequests.remove(request);
         saveFile();
     }
 
@@ -186,6 +196,77 @@ public class ClaimHandler {
     public boolean isOnSameTeam(@NotNull UUID player1, @NotNull UUID player2) {
         Team team = getPlayerTeam(player1);
         return team != null && team.isMember(player2);
+    }
+
+    /**
+     * Adds a new join request, replacing a previous one if it existed.
+     * @param player The {@link UUID} of the player requesting to join.
+     * @param team The {@link Team} to which the request is addressed.
+     * @return The previously requested {@link Team} that was replaced, or {@code null} if none was previously requested.
+     * @throws IllegalStateException If the player is already on a team.
+     */
+    @Nullable
+    public Team newJoinRequest(@NotNull UUID player, @NotNull Team team) {
+        if (getPlayerTeam(player) != null)
+            throw new IllegalStateException("Cannot create join request for player (UUID: " + player.toString() + ") because they are already on a team.");
+        // Get the previous team - will be null if none found.
+        Team old = joinRequests.get(player);
+        joinRequests.put(player, team);
+        return old;
+    }
+
+    /**
+     * Cancels a join request.
+     * @param player The {@link UUID} of the player whose request should be canceled.
+     * @return The {@link Team} the player was requesting, or {@code null} if none were requested (meaning this call did nothing).
+     */
+    @Nullable
+    public Team cancelJoinRequest(@NotNull UUID player) {
+        Team team = joinRequests.get(player);
+        if (team != null)
+            joinRequests.remove(player);
+        return team;
+    }
+
+    /**
+     * Fulfills a join request, adding the player to the {@link Team}.
+     * @param player The {@link UUID} of the player whose request should be fulfilled.
+     * @return The {@link Team} that the player was added to, or {@code null} if no request was found.
+     * @throws IllegalStateException If the player was already on a team.
+     */
+    @Nullable
+    public Team fulfillJoinRequest(@NotNull UUID player) {
+        if (getPlayerTeam(player) != null)
+            throw new IllegalStateException("Cannot fulfill a join request for player (UUID: " + player.toString() + ") because they are already on a team.");
+        Team team = joinRequests.get(player);
+        if (team != null)
+            team.addMember(player);
+        return team;
+    }
+
+    /**
+     * Gets the specified player's join request target.
+     * @param player The {@link UUID} of the player to search for.
+     * @return The {@link Team} requested, or {@code null} if no request was found.
+     */
+    @Nullable
+    public Team getJoinRequest(@NotNull UUID player) {
+        return joinRequests.get(player);
+    }
+
+    /**
+     * Gets all the join request addressed to a specified {@link Team}.
+     * @param team The {@link Team} to search for.
+     * @return A {@link Set} of the {@link UUID}s of the players with join requests addressed to the {@link Team}.
+     */
+    @NotNull
+    public Set<UUID> getTeamJoinRequests(@NotNull Team team) {
+        Set<UUID> requests = new HashSet<>();
+        for (Map.Entry<UUID, Team> req : joinRequests.entrySet()) {
+            if (req.getValue() == team)
+                requests.add(req.getKey());
+        }
+        return requests;
     }
 
     /**

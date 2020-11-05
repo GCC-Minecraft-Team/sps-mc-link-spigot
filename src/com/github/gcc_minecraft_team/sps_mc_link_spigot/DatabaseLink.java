@@ -162,7 +162,7 @@ public class DatabaseLink {
     /**
      * Gets the {@link UUID} of the Minecraft player from their SPS username.
      * @param SPSName The SPS username to check.
-     * @return The {@link UUID} of the Minecraft player if they are linked and online, otherwise {@code null}.
+     * @return The {@link UUID} of the Minecraft player if they are linked, otherwise {@code null}.
      */
     @Nullable
     public static UUID getSPSUUID(@NotNull String SPSName) {

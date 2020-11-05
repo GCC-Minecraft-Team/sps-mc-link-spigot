@@ -29,6 +29,11 @@ public class PluginConfig {
         SPSSpigot.plugin().saveResource(PLFILE, false);
         pluginCfg = YamlConfiguration.loadConfiguration(new File(SPSSpigot.plugin().getDataFolder(), PLFILE));
         pluginCfg.addDefault(JWTSECRET, "");
+        pluginCfg.addDefault(WEBAPPURL, "");
+        pluginCfg.addDefault(PLUGINMOTD, "");
+        pluginCfg.addDefault(REPORTWEBHOOK, "");
+        pluginCfg.addDefault(MESSAGEWEBHOOK, "");
+        pluginCfg.addDefault(CHATWEBHOOK, "");
 
         // load config
         try {

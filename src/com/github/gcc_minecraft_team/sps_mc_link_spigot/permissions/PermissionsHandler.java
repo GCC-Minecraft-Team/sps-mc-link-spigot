@@ -41,6 +41,9 @@ public class PermissionsHandler {
 
         SPSSpigot.plugin().saveResource(PERMFILE, false);
         permsConfig = YamlConfiguration.loadConfiguration(new File(SPSSpigot.plugin().getDataFolder(), PERMFILE));
+        permsConfig.addDefault(CFGMEMBERS, new HashMap<String, Boolean>());
+        permsConfig.addDefault(CFGRANKS, new ArrayList<Rank>());
+        permsConfig.addDefault(CFGPLAYERS, new HashMap<String, ArrayList<String>>());
         loadFile();
     }
 
