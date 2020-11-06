@@ -7,6 +7,7 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.general.GeneralCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.*;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapEvents;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -46,6 +47,9 @@ public class SPSSpigot extends JavaPlugin {
 
         // register chat events
         getServer().getPluginManager().registerEvents(new ChatEvents(), this);
+
+        // map events
+        getServer().getPluginManager().registerEvents(new MapEvents(), this);
 
         this.getCommand("claim").setExecutor(new ClaimCommands());
         this.getCommand("claim").setTabCompleter(new ClaimTabCompleter());
