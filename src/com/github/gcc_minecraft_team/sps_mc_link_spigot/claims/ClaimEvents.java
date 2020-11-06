@@ -8,20 +8,37 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Chunk;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockDamageEvent;
-import org.bukkit.event.block.BlockIgniteEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTakeLecternBookEvent;
 
-import java.util.UUID;
+import java.util.*;
 
 public class ClaimEvents implements Listener {
+
+    List<Material> interactExceptions = Arrays.asList(
+            // Doors (not iron)
+            Material.OAK_DOOR, Material.BIRCH_DOOR, Material.SPRUCE_DOOR, Material.JUNGLE_DOOR,
+            Material.DARK_OAK_DOOR, Material.ACACIA_DOOR, Material.CRIMSON_DOOR, Material.WARPED_DOOR,
+            // Trapdoors (not iron)
+            Material.OAK_TRAPDOOR, Material.BIRCH_TRAPDOOR, Material.SPRUCE_TRAPDOOR, Material.JUNGLE_TRAPDOOR,
+            Material.DARK_OAK_TRAPDOOR, Material.ACACIA_TRAPDOOR, Material.CRIMSON_TRAPDOOR, Material.WARPED_TRAPDOOR,
+            // Fence gates
+            Material.OAK_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.SPRUCE_FENCE_GATE, Material.JUNGLE_FENCE_GATE,
+            Material.DARK_OAK_FENCE_GATE, Material.ACACIA_FENCE_GATE, Material.CRIMSON_FENCE_GATE, Material.WARPED_FENCE_GATE,
+            // Crafting tables without inventories
+            Material.CRAFTING_TABLE, Material.ENCHANTING_TABLE, Material.STONECUTTER,
+            Material.CARTOGRAPHY_TABLE, Material.LOOM, Material.SMITHING_TABLE,
+            // Ender chest
+            Material.ENDER_CHEST);
 
     @EventHandler
     public void onPlayerMoveEvent(PlayerMoveEvent event) {
@@ -42,7 +59,8 @@ public class ClaimEvents implements Listener {
     // Claim modification
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.hasBlock()) {
+        // Exceptions:
+        if (event.hasBlock() && !interactExceptions.contains(event.getClickedBlock().getType())) {
             Chunk chunk = event.getClickedBlock().getChunk();
             if (!SPSSpigot.claims().canModifyChunk(event.getPlayer().getUniqueId(), chunk))
                 event.setCancelled(true);
@@ -105,5 +123,77 @@ public class ClaimEvents implements Listener {
         Chunk chunk = event.getLectern().getChunk();
         if (!SPSSpigot.claims().canModifyChunk(event.getPlayer().getUniqueId(), chunk))
             event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onBlockPistonExtendEvent(BlockPistonExtendEvent event) {
+        UUID piston = SPSSpigot.claims().getChunkOwner(event.getBlock().getChunk());
+        Set<Chunk> moveCurrent = new HashSet<>();
+        for (Block block : event.getBlocks()) {
+            moveCurrent.add(block.getChunk());
+        }
+        Set<Chunk> moveTarget = new HashSet<>();
+        for (Block block : event.getBlocks()) {
+            moveTarget.add(block.getRelative(event.getDirection()).getChunk());
+        }
+        for (Chunk chunk : moveCurrent) {
+            if (!SPSSpigot.claims().canModifyChunk(piston, chunk)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+        for (Chunk chunk : moveTarget) {
+            if (!SPSSpigot.claims().canModifyChunk(piston, chunk)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onBlockPistonRetractEvent(BlockPistonRetractEvent event) {
+        UUID piston = SPSSpigot.claims().getChunkOwner(event.getBlock().getChunk());
+        Set<Chunk> moveCurrent = new HashSet<>();
+        for (Block block : event.getBlocks()) {
+            moveCurrent.add(block.getChunk());
+        }
+        Set<Chunk> moveTarget = new HashSet<>();
+        for (Block block : event.getBlocks()) {
+            moveTarget.add(block.getRelative(event.getDirection()).getChunk());
+        }
+        for (Chunk chunk : moveCurrent) {
+            if (!SPSSpigot.claims().canModifyChunk(piston, chunk)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+        for (Chunk chunk : moveTarget) {
+            if (!SPSSpigot.claims().canModifyChunk(piston, chunk)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onBlockSpreadEvent(BlockSpreadEvent event) {
+        // Only CLAIMS (and you) can prevent forest fires!
+        if (event.getBlock().getType().equals(Material.FIRE)) {
+            if (!SPSSpigot.claims().canModifyChunk(SPSSpigot.claims().getChunkOwner(event.getSource().getChunk()), event.getBlock().getChunk())) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onEntityExplodeEvent(EntityExplodeEvent event) {
+        // Stop TNT explosions from breaking claimed blocks
+        if (!event.getEntityType().isAlive()) {
+            for (int i = event.blockList().size() - 1; i >= 0; i--) {
+                if (SPSSpigot.claims().getChunkOwner(event.blockList().get(i).getChunk()) != null) {
+                    event.blockList().remove(i);
+                }
+            }
+        }
     }
 }

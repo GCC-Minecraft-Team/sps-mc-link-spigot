@@ -377,8 +377,20 @@ public class ClaimHandler {
         }
     }
 
-    public boolean canModifyChunk(@NotNull UUID player, @NotNull Chunk chunk) {
+    /**
+     * Checks whether a player is allowed to modify a chunk. If player is null, then only chunks that are unclaimed are allowed. This is to allow events that are related to unclaimed blocks.
+     * @param player The {@link UUID} of the player to check, or {@code null} if relating to unclaimed blocks.
+     * @param chunk The {@link Chunk} to check claims on.
+     * @return Whether the player is allowed to modify the {@link Chunk}.
+     */
+    public boolean canModifyChunk(@Nullable UUID player, @NotNull Chunk chunk) {
         UUID owner = getChunkOwner(chunk);
-        return owner == null || owner.equals(player) || isOnSameTeam(player, owner);
+        if (player == null) {
+            // This means the check is probably on a non-player, unclaimed block
+            return owner == null;
+        } else {
+            // We're just checking a player's permission in a chunk.
+            return owner == null || owner.equals(player) || isOnSameTeam(player, owner);
+        }
     }
 }
