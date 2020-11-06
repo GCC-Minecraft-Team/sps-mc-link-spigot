@@ -6,10 +6,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommandYamlParser;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.Plugin;
@@ -64,6 +67,20 @@ public class ChatEvents implements Listener {
                     exception.printStackTrace();
                 }
             }
+        }
+    }
+
+    /**
+     * overrides death messages
+     * @param event
+     */
+    @EventHandler
+    public void onDeath(PlayerDeathEvent event) {
+        Entity causeEntity = event.getEntity().getLastDamageCause().getEntity();
+        if (causeEntity instanceof Player) {
+            event.setDeathMessage(ChatColor.DARK_PURPLE + "[" + NickAPI.getName(event.getEntity()) + "] Was killed by " + NickAPI.getName((Player) causeEntity));
+        } else {
+            event.setDeathMessage(ChatColor.DARK_PURPLE + "[" + NickAPI.getName(event.getEntity()) + "] Was killed by " + causeEntity.getName());
         }
     }
 
