@@ -1,26 +1,20 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import org.bukkit.Chunk;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Statistic;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.MemorySection;
+import fr.mrmicky.fastboard.FastBoard;
+import net.md_5.bungee.api.ChatColor;
+import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 public class ClaimHandler {
-    private static final String CLAIMSFILE = "claimsConfig.yml";
-    private static final String CFGTEAMS = "teams";
-    private static final String CFGCLAIMS = "claims";
-    private FileConfiguration claimsConfig;
-
     private Set<Team> teams;
     private Map<UUID, Set<Chunk>> claims;
     private Map<UUID, Team> joinRequests;
@@ -29,64 +23,37 @@ public class ClaimHandler {
         teams = new HashSet<>();
         claims = new HashMap<>();
         joinRequests = new HashMap<>();
-
-        SPSSpigot.plugin().saveResource(CLAIMSFILE, false);
-        claimsConfig = YamlConfiguration.loadConfiguration(new File(SPSSpigot.plugin().getDataFolder(), CLAIMSFILE));
-        claimsConfig.addDefault(CFGTEAMS, new ArrayList<Team>());
-        claimsConfig.addDefault(CFGCLAIMS, new HashMap<String, ArrayList<HashMap<String, Integer>>>());
-        loadFile();
+        loadFromDatabase();
     }
 
     /**
-     * Saves data from this {@link ClaimHandler} to {@value CLAIMSFILE};
+     * Saves data from this {@link ClaimHandler} to database
      */
-    public void saveFile() {
-        // Save teams
-        claimsConfig.set(CFGTEAMS, new ArrayList<>(teams));
-        // Save claims
-        Map<String, List<Map<String, Integer>>> serialClaims = new HashMap<>();
-        for (Map.Entry<UUID, Set<Chunk>> player : claims.entrySet()) {
-            List<Map<String, Integer>> chunks = new ArrayList<>();
-            for (Chunk c : player.getValue()) {
-                Map<String, Integer> chunkMap = new HashMap<>();
-                chunkMap.put("x", c.getX());
-                chunkMap.put("z", c.getZ());
-                chunks.add(chunkMap);
-            }
-            serialClaims.put(player.getKey().toString(), chunks);
-        }
-        claimsConfig.set(CFGCLAIMS, serialClaims);
-
-        try {
-            claimsConfig.save(new File(SPSSpigot.plugin().getDataFolder(), CLAIMSFILE));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void saveCurrentClaims() {
+        DatabaseLink.saveClaims(claims);
     }
 
     /**
-     * Loads data for this {@link ClaimHandler} from {@value CLAIMSFILE};
+     * Loads data for this {@link ClaimHandler} from the database
      */
-    public void loadFile() {
-        try {
-            claimsConfig.load(new File(SPSSpigot.plugin().getDataFolder(), CLAIMSFILE));
-        } catch (IOException | InvalidConfigurationException e) {
-            e.printStackTrace();
-        }
-        // Load Teams
-        List<Object> teamObjList = (List<Object>) claimsConfig.getList(CFGTEAMS);
-        teams = new HashSet<>();
-        for (Object teamObj : teamObjList)
-            teams.add((Team) teamObj);
-        // Load claims
-        claims = new HashMap<>();
-        MemorySection claimMem = (MemorySection) claimsConfig.get(CFGCLAIMS);
-        for (String player : claimMem.getKeys(false)) {
-            Set<Chunk> chunks = new HashSet<>();
-            for (Map<?, ?> chunkMap : claimMem.getMapList(player)) {
-                chunks.add(SPSSpigot.server().getWorlds().get(0).getChunkAt((int) chunkMap.get("x"), (int) chunkMap.get("z")));
-            }
-            claims.put(UUID.fromString(player), chunks);
+    public void loadFromDatabase() {
+        teams = DatabaseLink.getTeams();
+        claims = DatabaseLink.getClaims();
+    }
+
+    /**
+     * checks to see if a {@link Player} is within spawn protection
+     * @param player
+     * @return
+     */
+    public boolean checkInSpawn(Player player) {
+        Location pLoc = player.getLocation();
+        Double zdist = pLoc.getZ() - player.getWorld().getSpawnLocation().getZ();
+        Double xdist = pLoc.getX() - player.getWorld().getSpawnLocation().getX();
+        if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -146,8 +113,8 @@ public class ClaimHandler {
     public boolean addTeam(@NotNull Team team) {
         if (getTeam(team.getName()) == null && getPlayerTeam(team.getLeader()) == null) {
             boolean out = teams.add(team);
-            saveFile();
-            return out;
+            DatabaseLink.addTeam(team);
+            return true;
         } else {
             return false;
         }
@@ -167,7 +134,7 @@ public class ClaimHandler {
         }
         for (UUID request : remove)
             joinRequests.remove(request);
-        saveFile();
+        DatabaseLink.removeTeam(team);
     }
 
     /**
@@ -181,8 +148,8 @@ public class ClaimHandler {
             // No team by this name exists.
             return false;
         } else {
-            deleteTeam(team);
-            saveFile();
+            deleteTeam(teamObj);
+            DatabaseLink.removeTeam(teamObj);
             return true;
         }
     }
@@ -317,8 +284,10 @@ public class ClaimHandler {
     @Nullable
     public UUID getChunkOwner(@NotNull Chunk chunk) {
         for (Map.Entry<UUID, Set<Chunk>> players : claims.entrySet()) {
-            if (players.getValue().contains(chunk)) {
-                return players.getKey();
+            for (Chunk c : players.getValue()) {
+                if (c.getX() == chunk.getX() && c.getZ() == chunk.getZ()) {
+                    return players.getKey();
+                }
             }
         }
         return null;
@@ -355,11 +324,36 @@ public class ClaimHandler {
                 claims.put(player, new HashSet<>());
             }
             boolean out = claims.get(player).add(chunk);
-            saveFile();
             return out;
         }
     }
 
+    /**
+     * Claims a list of {@link Chunk}s for a given player
+     * @param player The {@link UUID} of the player.
+     * @param chunks The list of {@link Chunk}s to be claimed.
+     * @return {@code true} if successful. This means the {@link Chunk}s are not already claimed, and the player is not exceeding their claim limit.
+     */
+    public boolean claimChunkList(@NotNull UUID player, @NotNull ArrayList<Chunk> chunks) {
+        boolean out = false;
+        for (Chunk chunk : chunks) {
+            if (getChunkOwner(chunk) != null) {
+                // Ensure the chunk isn't claimed
+                return false;
+            } else if (getChunkCount(player) >= getMaxChunks(player)) {
+                // Ensure this won't put the player over their claim limit
+                return false;
+            } else {
+                if (!claims.containsKey(player)) {
+                    claims.put(player, new HashSet<>());
+                }
+                out = claims.get(player).add(chunk);
+            }
+        }
+
+        saveCurrentClaims();
+        return out;
+    }
 
     /**
      * Unclaims a {@link Chunk}.
@@ -371,10 +365,33 @@ public class ClaimHandler {
         if (owner == null) {
             return false;
         } else {
-            boolean out = claims.get(owner).remove(chunk);
-            saveFile();
-            return out;
+            claims.get(owner).forEach((x) -> {
+                if (x.getX() == chunk.getX() && x.getZ() == chunk.getZ()) {
+                    claims.get(owner).remove(x);
+                }
+            });
+            saveCurrentClaims();
+            return true;
         }
+    }
+
+    /**
+     * Unclaims multiple {@link Chunk}s.
+     * @param chunks The {@link Chunk}s to be unclaimed.
+     * @return {@code true} if successful; {@code false} if already not claimed.
+     */
+    public boolean unclaimChunkList(@NotNull ArrayList<Chunk> chunks) {
+        boolean out = false;
+        for (Chunk chunk : chunks) {
+            UUID owner = getChunkOwner(chunk);
+            if (owner == null) {
+                return false;
+            } else {
+                out = claims.get(owner).remove(chunk);
+                saveCurrentClaims();
+            }
+        }
+        return out;
     }
 
     /**
@@ -391,6 +408,72 @@ public class ClaimHandler {
         } else {
             // We're just checking a player's permission in a chunk.
             return owner == null || owner.equals(player) || isOnSameTeam(player, owner);
+        }
+    }
+
+    /**
+     * updates the claim map in the scoreboard
+     * @param player
+     */
+    public void updateClaimMap(Player player) {
+        FastBoard board = SPSSpigot.plugin().boards.get(player.getUniqueId());
+        if (board != null && board.isDeleted() == false) {
+            // map
+            String[] rows = new String[7];
+            ArrayList<Chunk> ownedChunks = new ArrayList<Chunk>();
+
+            for (int z = -3; z <= 3; z++) {
+                StringBuilder bRow = new StringBuilder();
+
+                for (int x = -3; x <= 3; x++) {
+
+                    // get the surrounding chunks
+                    Chunk cChunk = SPSSpigot.server().getWorlds().get(0).getChunkAt(((int) player.getLocation().getX() / 16) + -x, ((int) player.getLocation().getZ() / 16) + z);
+                    UUID cChunkOwner = SPSSpigot.claims().getChunkOwner(cChunk);
+
+                    if (cChunkOwner != null) {
+                        if (cChunkOwner.equals(player.getUniqueId())) {
+                            ownedChunks.add(cChunk);
+                        }
+                    }
+
+                    if (x == 0 && z == 0) {
+                        bRow.append(ChatColor.BLUE + "Ⓟ");
+                    } else {
+                        // check for the spawn protection zone
+                        if (!SPSSpigot.claims().checkInSpawn(player)) {
+                            if (cChunkOwner != null) {
+                                if (cChunkOwner.equals(player.getUniqueId())) {
+                                    bRow.append(ChatColor.GREEN + "█"); // owned chunk
+                                } else {
+                                    if (SPSSpigot.claims().getPlayerTeam(player.getUniqueId()).getMembers().contains(cChunkOwner)) {
+                                        bRow.append(ChatColor.AQUA +  "▒"); // owned by other players on team
+                                    } else {
+                                        bRow.append(ChatColor.RED + "▒"); // owned by other player not on team
+                                    }
+                                }
+                            } else {
+                                bRow.append(ChatColor.GRAY + "▒"); // unowned
+                            }
+                        } else {
+                            bRow.append(ChatColor.RED + "ⓢ"); // spawn
+                        }
+                    }
+                }
+
+                rows[z + 3] = bRow.toString();
+            }
+
+            // update the board
+            board.updateLines(
+                    rows[0],
+                    rows[1],
+                    rows[2],
+                    rows[3],
+                    rows[4],
+                    rows[5],
+                    rows[6]
+            );
         }
     }
 }

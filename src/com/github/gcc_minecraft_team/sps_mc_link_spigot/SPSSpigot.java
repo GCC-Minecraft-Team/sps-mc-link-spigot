@@ -8,12 +8,19 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationCom
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.*;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapEvents;
+import fr.mrmicky.fastboard.FastBoard;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitScheduler;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,6 +28,7 @@ public class SPSSpigot extends JavaPlugin {
 
     public PermissionsHandler perms;
     public ClaimHandler claims;
+    public final Map<UUID, FastBoard> boards = new HashMap<>();
 
     @Override
     public void onEnable() {
@@ -51,8 +59,14 @@ public class SPSSpigot extends JavaPlugin {
         // map events
         getServer().getPluginManager().registerEvents(new MapEvents(), this);
 
-        this.getCommand("claim").setExecutor(new ClaimCommands());
-        this.getCommand("claim").setTabCompleter(new ClaimTabCompleter());
+        ClaimCommands claimCommands = new ClaimCommands();
+        ClaimTabCompleter claimTabCompleter = new ClaimTabCompleter();
+
+        this.getCommand("claim").setExecutor(claimCommands);
+        this.getCommand("claim").setTabCompleter(claimTabCompleter);
+
+        this.getCommand("unclaim").setExecutor(claimCommands);
+        this.getCommand("unclaim").setTabCompleter(claimTabCompleter);
 
         this.getCommand("team").setExecutor(new TeamCommands());
         this.getCommand("team").setTabCompleter(new TeamTabCompleter());
@@ -81,6 +95,8 @@ public class SPSSpigot extends JavaPlugin {
         // Setup other stuff
         getServer().getPluginManager().registerEvents(new JoinEvent(), this);
         SPSSpigot.logger().log(Level.INFO, "SPS Spigot integration started.");
+
+        System.out.println("==[SPS MC INITIALIZED SUCCESSFULLY]==");
     }
 
     @Override
@@ -115,6 +131,41 @@ public class SPSSpigot extends JavaPlugin {
         }
 
         return rankTag.toString();
+    }
+
+    public static String getCardinalDirection(Player player) {
+        double rotation = (player.getLocation().getYaw() - 180) % 360;
+        if (rotation < 0) {
+            rotation += 360.0;
+        }
+        if (0 <= rotation && rotation < 22.5) {
+            return "N";
+        } else if (22.5 <= rotation && rotation < 67.5) {
+            return "NE";
+        } else if (67.5 <= rotation && rotation < 112.5) {
+            return "E";
+        } else if (112.5 <= rotation && rotation < 157.5) {
+            return "SE";
+        } else if (157.5 <= rotation && rotation < 202.5) {
+            return "S";
+        } else if (202.5 <= rotation && rotation < 247.5) {
+            return "SW";
+        } else if (247.5 <= rotation && rotation < 292.5) {
+            return "W";
+        } else if (292.5 <= rotation && rotation < 337.5) {
+            return "NW";
+        } else if (337.5 <= rotation && rotation < 360.0) {
+            return "N";
+        } else {
+            return null;
+        }
+    }
+
+    public static void showBoard(Player player) {
+        // create the board
+        FastBoard board = new FastBoard(player);
+        board.updateTitle(net.md_5.bungee.api.ChatColor.BOLD + "[N]");
+        SPSSpigot.plugin().boards.put(player.getUniqueId(), board);
     }
 
     /**

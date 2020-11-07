@@ -2,6 +2,7 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
+import fr.mrmicky.fastboard.FastBoard;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -10,6 +11,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.Location;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,7 +21,9 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTakeLecternBookEvent;
+import xyz.haoshoku.nick.api.NickAPI;
 
+import javax.xml.crypto.Data;
 import java.util.*;
 
 public class ClaimEvents implements Listener {
@@ -42,18 +46,8 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onPlayerMoveEvent(PlayerMoveEvent event) {
-        Chunk from = event.getFrom().getChunk();
-        Chunk to = event.getTo().getChunk();
-        if (!to.equals(from)) {
-            UUID fromOwner = SPSSpigot.claims().getChunkOwner(from);
-            UUID toOwner = SPSSpigot.claims().getChunkOwner(to);
-            if (toOwner == null) {
-                if (fromOwner != null)
-                    event.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder().color(ChatColor.DARK_GREEN).append("Entering Wilderness.").create());
-            } else {
-                event.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder("Entering " + DatabaseLink.getSPSName(toOwner) + "'s Claim.").create());
-            }
-        }
+
+
     }
 
     // Claim modification

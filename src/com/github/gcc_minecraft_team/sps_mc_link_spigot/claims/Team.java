@@ -2,6 +2,7 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
@@ -10,15 +11,27 @@ import java.util.*;
 
 public class Team implements ConfigurationSerializable {
 
-    private final String name;
-    private Set<UUID> members;
-    private UUID leader;
+    @BsonProperty(value = "name")
+    public String name;
+    @BsonProperty(value = "members")
+    public Set<UUID> members;
+    @BsonProperty(value = "leader")
+    public UUID leader;
+
+    public Team() { }
 
     public Team(@NotNull String name, @NotNull UUID leader) {
         this.name = name;
         this.leader = leader;
         members = new HashSet<>();
         members.add(leader);
+    }
+
+    public Team(@NotNull String name, @NotNull Set<UUID> members, @NotNull UUID leader) {
+        this.name = name;
+        this.leader = leader;
+        this.members = new HashSet<>();
+        this.members = members;
     }
 
     /**
@@ -77,7 +90,7 @@ public class Team implements ConfigurationSerializable {
     public boolean addMember(@NotNull UUID player) {
         if (SPSSpigot.claims().getPlayerTeam(player) == null) {
             boolean out = members.add(player);
-            SPSSpigot.claims().saveFile();
+            DatabaseLink.updateTeam(this);
             return out;
         } else {
             // Player is already on a team.
@@ -104,14 +117,14 @@ public class Team implements ConfigurationSerializable {
             if (members.size() == 1) {
                 // Delete the team
                 SPSSpigot.claims().deleteTeam(this);
-                SPSSpigot.claims().saveFile();
+                DatabaseLink.updateTeam(this);
                 return true;
             } else {
                 return false;
             }
         }
         boolean out = members.remove(player);
-        SPSSpigot.claims().saveFile();
+        DatabaseLink.updateTeam(this);
         return out;
     }
 
@@ -141,7 +154,7 @@ public class Team implements ConfigurationSerializable {
     public boolean changeLeader(@NotNull UUID newLeader) {
         if (isMember(newLeader)) {
             leader = newLeader;
-            SPSSpigot.claims().saveFile();
+            DatabaseLink.updateTeam(this);
             return true;
         } else {
             return false;

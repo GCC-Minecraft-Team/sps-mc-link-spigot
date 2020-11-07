@@ -26,11 +26,17 @@ public class ClaimTabCompleter implements TabCompleter {
     @Nullable
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if (args.length == 1) {
-            // /claim <partial>
-            return keepStarts(Arrays.asList("chunk", "unchunk"), args[0]);
+        if (command.getName().equalsIgnoreCase("unclaim")) {
+            return new ArrayList<>();
+        } else if (command.getName().equalsIgnoreCase("claim")) {
+            if (args.length == 1) {
+                // /claim <partial>
+                return keepStarts(Arrays.asList("chunk", "unchunk"), args[0]);
+            } else {
+                // /claim <...>
+                return new ArrayList<>();
+            }
         } else {
-            // /claim <...>
             return new ArrayList<>();
         }
     }

@@ -9,8 +9,12 @@ depend: [NickAPI]
 
 commands:
   claim:
-    description: Base command for the claim system.
-    usage: "Usage: /<command> <chunk|unchunk>"
+    description: Base command for the claim system. Claims area around player.
+    usage: "Usage: /<command> <chunk|unchunk|show|hide>"
+    permission: spsmc.claim
+  unclaim:
+    description: Un-claims area around player.
+    usage: "Usage /unclaim"
     permission: spsmc.claim
   team:
     description: Base command for the teams system.
