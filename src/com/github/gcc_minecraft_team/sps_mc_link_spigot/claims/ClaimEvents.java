@@ -19,6 +19,7 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTakeLecternBookEvent;
@@ -51,6 +52,21 @@ public class ClaimEvents implements Listener {
 
     }
 
+    @EventHandler
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event)
+    {
+        if (SPSSpigot.claims().checkInSpawn(event.getPlayer())) {
+            if(
+                    !event.isCancelled()
+                            && event.getRightClicked() instanceof ItemFrame
+                            && !((ItemFrame)event.getRightClicked()).getItem().getType().equals(Material.AIR) //we dont need to prevent put items into the empty item frame (thats out of scope of this plugin)
+            )
+            {
+                event.setCancelled(true);
+            }
+        }
+    }
+
     // Claim modification
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
@@ -64,8 +80,10 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onEntitySpawn(EntitySpawnEvent event) {
-        if (SPSSpigot.claims().checkEntityInSpawn(event.getEntity())) {
-            event.setCancelled(true);
+        if (!event.getEntity().getType().equals(EntityType.DROPPED_ITEM)) {
+            if (SPSSpigot.claims().checkEntityInSpawn(event.getEntity())) {
+                event.setCancelled(true);
+            }
         }
     }
 

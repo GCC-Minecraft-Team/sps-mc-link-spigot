@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
+import java.awt.desktop.QuitEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -94,6 +95,7 @@ public class SPSSpigot extends JavaPlugin {
 
         // Setup other stuff
         getServer().getPluginManager().registerEvents(new JoinEvent(), this);
+        getServer().getPluginManager().registerEvents(new LeaveEvent(), this);
         SPSSpigot.logger().log(Level.INFO, "SPS Spigot integration started.");
 
         System.out.println("==[SPS MC INITIALIZED SUCCESSFULLY]==");
