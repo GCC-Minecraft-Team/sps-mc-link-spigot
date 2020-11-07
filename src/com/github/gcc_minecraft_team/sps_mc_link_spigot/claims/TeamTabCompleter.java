@@ -32,7 +32,7 @@ public class TeamTabCompleter implements TabCompleter {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 1) {
             // /team <partial>
-            return keepStarts(Arrays.asList("create", "join", "leave", "list", "requests"), args[0]);
+            return keepStarts(Arrays.asList("create", "join", "leave", "kick", "list", "requests"), args[0]);
         } else if (args[0].equals("create")) {
             // /team create <...partial>
             return new ArrayList<>();
@@ -44,6 +44,8 @@ public class TeamTabCompleter implements TabCompleter {
                 // /team join <team> <partial>
                 return new ArrayList<>();
             }
+        } else if (args[0].equals("kick")) {
+            return keepStarts(new ArrayList<>(SPSSpigot.claims().getPlayerTeam(((Player) sender).getUniqueId()).getMemberNames()), args[1]);
         } else if (args[0].equals("leave")) {
             // /team leave <partial>
             return new ArrayList<>();

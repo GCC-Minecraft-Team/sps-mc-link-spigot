@@ -88,6 +88,7 @@ public class JoinEvent implements Listener {
                     public void run() {
                         NickAPI.nick(player, userNoFormat.substring(0, maxLength));
                         NickAPI.refreshPlayer(player);
+                        player.setFoodLevel(player.getFoodLevel() - 1);
                     }
                 }, 20);
             }

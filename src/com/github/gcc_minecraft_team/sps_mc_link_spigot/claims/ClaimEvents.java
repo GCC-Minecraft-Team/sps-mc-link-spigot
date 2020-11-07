@@ -18,6 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTakeLecternBookEvent;
@@ -62,6 +63,13 @@ public class ClaimEvents implements Listener {
     }
 
     @EventHandler
+    public void onEntitySpawn(EntitySpawnEvent event) {
+        if (SPSSpigot.claims().checkEntityInSpawn(event.getEntity())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         Chunk chunk = event.getBlock().getChunk();
         if (!SPSSpigot.claims().canModifyChunk(event.getPlayer().getUniqueId(), chunk))
@@ -70,6 +78,9 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onBlockDamage(BlockDamageEvent event) {
+        if (SPSSpigot.claims().checkInSpawn(event.getPlayer())) {
+            event.setCancelled(true);
+        }
         Chunk chunk = event.getBlock().getChunk();
         if (!SPSSpigot.claims().canModifyChunk(event.getPlayer().getUniqueId(), chunk))
             event.setCancelled(true);
@@ -77,6 +88,9 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onEntityDamageEvent(EntityDamageByEntityEvent event) {
+        if (SPSSpigot.claims().checkEntityInSpawn(event.getDamager())) {
+            event.setCancelled(true);
+        }
         Entity target = event.getEntity();
         if (event.getDamager() instanceof Player && !SPSSpigot.claims().canModifyChunk(event.getDamager().getUniqueId(), target.getLocation().getChunk())) {
             if (event.getEntity() instanceof Mob) {
@@ -97,6 +111,9 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onBlockIgnite(BlockIgniteEvent event) {
+        if (SPSSpigot.claims().checkInSpawn(event.getPlayer())) {
+            event.setCancelled(true);
+        }
         Chunk toChunk = event.getBlock().getChunk();
         if (event.getPlayer() != null) {
             if (!SPSSpigot.claims().canModifyChunk(event.getPlayer().getUniqueId(), toChunk))

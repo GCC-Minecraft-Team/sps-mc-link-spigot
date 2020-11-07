@@ -107,6 +107,37 @@ public class TeamCommands implements CommandExecutor {
                 sender.sendMessage(ChatColor.RED + "Only players may create teams.");
                 return true;
             }
+        } else if (args[0].equalsIgnoreCase("kick")) {
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    Team team = SPSSpigot.claims().getPlayerTeam(player.getUniqueId());
+                    if (team == null) {
+                        // Player is not on a team
+                        sender.sendMessage(ChatColor.RED + "You need to be a team leader to kick players from a team.");
+                        return true;
+                    } else {
+                        if (team.getLeader().equals(player.getUniqueId())) {
+                            if (args.length > 0) {
+                                if(team.removeMember(DatabaseLink.getSPSUUID(args[1]))) {
+                                    sender.sendMessage(ChatColor.BLUE + args[1] + " has been kicked from the team!");
+                                    return true;
+                                } else {
+                                    sender.sendMessage(ChatColor.RED + "Couldn't remove player from team!");
+                                    return true;
+                                }
+                            } else {
+                                sender.sendMessage("Please specify the player you want to kick.");
+                                return true;
+                            }
+                        } else {
+                            sender.sendMessage(ChatColor.RED + "You need to be a team leader to kick players from a team.");
+                            return true;
+                        }
+                    }
+                } else {
+                    sender.sendMessage(ChatColor.RED + "Something went wrong kicking that player from the team.");
+                    return true;
+                }
         } else if (args[0].equalsIgnoreCase("leave")) {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
@@ -205,7 +236,7 @@ public class TeamCommands implements CommandExecutor {
                                 for (UUID member : team.getMembers()) {
                                     Player onlineMember = SPSSpigot.server().getPlayer(member);
                                     if (onlineMember != null)
-                                        onlineMember.sendMessage(ChatColor.GOLD + DatabaseLink.getSPSName(uuid) + " joined the team!");
+                                        onlineMember.sendMessage(ChatColor.LIGHT_PURPLE + DatabaseLink.getSPSName(uuid) + " joined the team!");
                                 }
                                 return true;
                             } else {

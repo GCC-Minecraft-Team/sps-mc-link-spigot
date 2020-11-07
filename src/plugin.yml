@@ -18,7 +18,7 @@ commands:
     permission: spsmc.claim
   team:
     description: Base command for the teams system.
-    usage: "Usage: /<command> <create|join|leave|list|requests>"
+    usage: "Usage: /<command> <create|join|kick|leave|list|requests>"
     permission: spsmc.team
   perms:
     description: Controls SPSMC's permissions systems.
