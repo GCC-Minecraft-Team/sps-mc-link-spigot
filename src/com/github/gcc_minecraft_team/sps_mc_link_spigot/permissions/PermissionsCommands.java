@@ -84,7 +84,7 @@ public class PermissionsCommands implements CommandExecutor {
                 Map<String, Boolean> perms = new HashMap<>();
                 for (Map.Entry<Permission, Boolean> p : SPSSpigot.perms().getMemberPerms().entrySet())
                     perms.put(p.getKey().getName(), p.getValue());
-                sender.sendMessage(CMD.buildListBooleanText("MEMBERS", perms));
+                sender.spigot().sendMessage(CMD.buildListBooleanTellraw("MEMBERS", perms, "/perms members set %s %b"));
                 return true;
             } else {
                 // args[1] is invalid
@@ -138,7 +138,7 @@ public class PermissionsCommands implements CommandExecutor {
                     return true;
                 } else if (args.length == 2) {
                     // List all ranks
-                    sender.sendMessage(CMD.buildListText("RANKS", new ArrayList<>(SPSSpigot.perms().getRankNames())));
+                    sender.spigot().sendMessage(CMD.buildListTellraw("RANKS", new ArrayList<>(SPSSpigot.perms().getRankNames()), "/perms rank list %s"));
                     return true;
                 } else {
                     Rank rank = SPSSpigot.perms().getRank(args[2]);
@@ -148,11 +148,10 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     } else {
                         // A valid, existing rank is chosen.
-                        // TODO: Make this in alphabetical order
                         Map<String, Boolean> permStrs = new HashMap<>();
                         for (Map.Entry<Permission, Boolean> perm : rank.getPerms().entrySet())
                             permStrs.put(perm.getKey().getName(), perm.getValue());
-                        sender.sendMessage(CMD.buildListBooleanText(rank.getColor() + rank.getName(), permStrs));
+                        sender.spigot().sendMessage(CMD.buildListBooleanTellraw(rank.getColor() + rank.getName(), permStrs, "/perms rank set " + rank.getName() + " %s %b"));
                         return true;
                     }
                 }

@@ -1,6 +1,5 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.database;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimHandler;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import com.mongodb.client.MongoClient;

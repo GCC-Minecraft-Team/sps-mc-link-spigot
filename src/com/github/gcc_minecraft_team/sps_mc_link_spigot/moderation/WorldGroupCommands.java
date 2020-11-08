@@ -173,7 +173,7 @@ public class WorldGroupCommands implements CommandExecutor {
                 List<String> names = new ArrayList<>();
                 for (WorldGroup worldGroup : SPSSpigot.plugin().getWorldGroups())
                     names.add(worldGroup.getName());
-                sender.sendMessage(CMD.buildListText("WORLD GROUPS", names));
+                sender.spigot().sendMessage(CMD.buildListTellraw("WORLD GROUPS", names, "/wgroup list %s"));
                 return true;
             } else if (args.length == 2) {
                 // List all worlds in a given group
