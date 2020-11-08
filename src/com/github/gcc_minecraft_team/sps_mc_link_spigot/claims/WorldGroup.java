@@ -14,6 +14,7 @@ import java.util.*;
 
 public class WorldGroup {
 
+    private UUID worldgroupID;
     private String name;
     private Set<World> worlds;
     private Set<World> claimable;
@@ -26,6 +27,7 @@ public class WorldGroup {
      * @param name The name of this worldGroup.
      */
     public WorldGroup(String name) {
+        worldgroupID = UUID.randomUUID();
         this.name = name;
         worlds = new HashSet<>();
         claimable = new HashSet<>();
@@ -59,6 +61,12 @@ public class WorldGroup {
     public String getName() {
         return name;
     }
+
+    /**
+     * Getter for this worldGroup's ID.
+     * @return This worldGroup's ID.
+     */
+    public UUID getID() { return worldgroupID; }
 
     /**
      * Gets whether this {@link WorldGroup}'s worldGroup contains the given {@link World}.

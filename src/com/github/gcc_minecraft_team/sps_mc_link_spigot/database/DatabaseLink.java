@@ -46,7 +46,7 @@ public class DatabaseLink {
     private static MongoDatabase mongoDatabase;
 
     private static MongoCollection<Document> userCol;
-    private static MongoCollection<Team> teamCol;
+    private static MongoCollection<Team> wgCol;
 
     /**
      * Creates a connection to the MongoDB com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
@@ -81,7 +81,7 @@ public class DatabaseLink {
             mongoClient = MongoClients.create(clientSettings);
             mongoDatabase = mongoClient.getDatabase(dbName);
             userCol = mongoDatabase.getCollection("users");
-            teamCol = mongoDatabase.getCollection("teams", Team.class);
+            wgCol = mongoDatabase.getCollection("worldgroups", Team.class);
         } catch(MongoException exception) {
             SPSSpigot.logger().log(Level.SEVERE, "Something went wrong connecting to the MongoDB com.github.gcc_minecraft_team.sps_mc_link_spigot.database, is " + DBFILE + " set up correctly?");
         }
@@ -133,7 +133,7 @@ public class DatabaseLink {
      * @param team The {@link Team} to add.
      */
     public static void addTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
-        teamCol.insertOne(team);
+        wgCol.insertOne(team);
     }
 
     /**
@@ -141,7 +141,7 @@ public class DatabaseLink {
      * @param team The {@link Team} to update.
      */
     public static void updateTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
-        teamCol.updateOne(new BasicDBObject("name", team.getName()), new BasicDBObject("$set", team));
+        wgCol.updateOne(new BasicDBObject("name", team.getName()), new BasicDBObject("$set", team));
     }
 
     /**
@@ -150,7 +150,7 @@ public class DatabaseLink {
      * @return The team.
      */
     public static Team getTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
-        return teamCol.find(new BasicDBObject("name", team.getName())).first();
+        return wgCol.find(new BasicDBObject("name", team.getName())).first();
     }
 
     /**
@@ -159,7 +159,7 @@ public class DatabaseLink {
      * @return A {@link Set} of {@link Team}s found.
      */
     public static Set<Team> getTeams(@NotNull WorldGroup worldGroup) { // FIXME: Update this to the new world groups system.
-        FindIterable<Team> teams = teamCol.find();
+        FindIterable<Team> teams = wgCol.find();
         Set<Team> output = new HashSet<>();
         for (Team team : teams) {
             output.add(team);
@@ -172,7 +172,7 @@ public class DatabaseLink {
      * @param team The {@link Team} to remove.
      */
     public static void removeTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
-        teamCol.deleteOne(new BasicDBObject("name", team.getName()));
+        wgCol.deleteOne(new BasicDBObject("name", team.getName()));
     }
 
     /**
