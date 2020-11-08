@@ -13,9 +13,9 @@ import java.util.List;
 
 public class ClaimTabCompleter implements TabCompleter {
 
-    @Nullable
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+    @Nullable
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (command.getName().equalsIgnoreCase("unclaim")) {
             return new ArrayList<>();
         } else if (command.getName().equalsIgnoreCase("claim")) {

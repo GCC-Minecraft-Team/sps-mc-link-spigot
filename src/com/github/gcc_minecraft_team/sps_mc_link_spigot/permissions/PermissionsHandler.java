@@ -28,6 +28,7 @@ public class PermissionsHandler {
 
     private Map<Permission, Boolean> memberPerms;
 
+    @Nullable
     private Set<Rank> ranks;
     private Map<UUID, Set<Rank>> playerRanks;
 
@@ -46,6 +47,8 @@ public class PermissionsHandler {
         permsConfig.addDefault(CFGPLAYERS, new HashMap<String, ArrayList<String>>());
         loadFile();
     }
+
+    // ========[SERIALIZATION]========
 
     /**
      * Saves the data in this {@link PermissionsHandler} to {@value PERMFILE}.
@@ -80,7 +83,7 @@ public class PermissionsHandler {
     public void loadFile() {
         try {
             permsConfig.load(new File(SPSSpigot.plugin().getDataFolder(), PERMFILE));
-        } catch (IOException | InvalidConfigurationException e) {
+        } catch (@NotNull IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
         // Deserialize member perms
@@ -109,23 +112,10 @@ public class PermissionsHandler {
         }
     }
 
-    /**
-     * Deletes the {@link PermissionsHandler} for the given {@link Player}. This generally should only be called when the {@link Player} is leaves the server.
-     * @param player The {@link Player} whose {@link PermissionsHandler} should be deleted.
-     * @return {@code true} if something was changed ({@code false} just means there was nothing to delete)
-     */
-    public boolean removeAttachment(@NotNull Player player) {
-        if (players.containsKey(player)) {
-            PermissionAttachment attach = players.get(player);
-            players.remove(player);
-            return attach.remove();
-        } else {
-            return false;
-        }
-    }
+    // ========[MEMBERS]========
 
     /**
-     * Only finds whether or not a permission is set for members.
+     * Only finds whether or not a {@link Permission} is set for members.
      * @param perm The {@link Permission} node to check.
      * @return {@code true} if the {@link Permission} node is set for members.
      */
@@ -171,8 +161,8 @@ public class PermissionsHandler {
     }
 
     /**
-     * Gets the values of all set permission nodes for members.
-     * @return A map containing the fully qualified names of each permission node and the value they are set to.
+     * Gets the values of all set {@link Permission} nodes for members.
+     * @return A map containing the fully qualified names of each {@link Permission} node and the value they are set to.
      */
     @NotNull
     public Map<Permission, Boolean> getMemberPerms() {
@@ -229,6 +219,8 @@ public class PermissionsHandler {
         else
             return false;
     }
+
+    // ========[RANKS]========
 
     /**
      * Gets a {@link Rank} by its name.
@@ -386,10 +378,10 @@ public class PermissionsHandler {
     }
 
     /**
-     * Gives a rank to a specified player.
-     * @param player The {@link UUID} of the player to give the rank.
+     * Gives a {@link Rank} to a specified player.
+     * @param player The {@link UUID} of the player to give the {@link Rank}.
      * @param rank The name of the {@link Rank} to give.
-     * @return {@code true} if the rank was given ({@code false} means the player already had the rank).
+     * @return {@code true} if the {@link Rank} was given ({@code false} means the player already had the {@link Rank}).
      * @throws IllegalArgumentException If the {@link Rank} was not found by the given name.
      */
     public boolean givePlayerRank(@NotNull UUID player, @NotNull String rank) {
@@ -420,10 +412,10 @@ public class PermissionsHandler {
     }
 
     /**
-     * Removes a rank from a specified player.
-     * @param player The {@link UUID} of the player to remove the rank from.
+     * Removes a {@link Rank} from a specified player.
+     * @param player The {@link UUID} of the player to remove the {@link Rank} from.
      * @param rank The name of the {@link Rank} to remove.
-     * @return {@code true} if the rank was removed ({@code false} means the player already did not have the rank).
+     * @return {@code true} if the rank was removed ({@code false} means the player already did not have the {@link Rank}).
      * @throws IllegalArgumentException If the {@link Rank} was not found by the given name.
      */
     public boolean removePlayerRank(@NotNull UUID player, @NotNull String rank) {
@@ -433,6 +425,23 @@ public class PermissionsHandler {
             throw new IllegalArgumentException("Permissions rank '" + rank + "' was not recognized.");
         // Saving occurs within the called method.
         return removePlayerRank(player, rankObj);
+    }
+
+    // ========[PLAYER INTERFACE]========
+
+    /**
+     * Deletes the {@link PermissionAttachment} for the given {@link Player}. This generally should only be called when the {@link Player} is leaves the server.
+     * @param player The {@link Player} whose {@link PermissionAttachment} should be deleted.
+     * @return {@code true} if something was changed ({@code false} means there was nothing to delete)
+     */
+    public boolean removeAttachment(@NotNull Player player) {
+        if (players.containsKey(player)) {
+            PermissionAttachment attach = players.get(player);
+            players.remove(player);
+            return attach.remove();
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -458,11 +467,6 @@ public class PermissionsHandler {
 
         players.put(player, a);
         player.recalculatePermissions();
-        /*
-        for (PermissionAttachmentInfo i : player.getEffectivePermissions()) {
-            System.out.println(i.getPermission() + " - " + i.getValue());
-        }
-        */
     }
 
 }

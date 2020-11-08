@@ -43,7 +43,7 @@ public class PluginConfig {
         }
     }
 
-    // V get functions V
+    // ========[GET FUNCTIONS]========
 
     /**
      * Gets the JWT secret from the {@value JWTSECRET} in {@value PLFILE} or randomly generates and saves one if it does not exist.
@@ -116,7 +116,7 @@ public class PluginConfig {
 
     /**
      * Gets the plugin webhook from {@value MESSAGEWEBHOOK} in {@value PLFILE}.
-     * @return The Report Webhook URL.
+     * @return The Message Webhook URL.
      */
     public static String GetMessageWebhook() {
         if (pluginCfg != null) {
@@ -128,7 +128,7 @@ public class PluginConfig {
 
     /**
      * Gets the plugin webhook from {@value CHATWEBHOOK} in {@value PLFILE}.
-     * @return The Report Webhook URL.
+     * @return The Chat Webhook URL.
      */
     public static String GetChatWebhook() {
         if (pluginCfg != null) {

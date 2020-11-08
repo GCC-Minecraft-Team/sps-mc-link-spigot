@@ -26,8 +26,10 @@ public class Rank implements ConfigurationSerializable {
         this.color = ChatColor.WHITE;
     }
 
+    // ========[NAME]========
+
     /**
-     *
+     * Getter for the {@link Rank}'s name.
      * @return This {@link Rank}'s name.
      */
     @NotNull
@@ -35,10 +37,12 @@ public class Rank implements ConfigurationSerializable {
         return this.name;
     }
 
+    // ========[PERMISSIONS]========
+
     /**
      * Checks whether or not this {@link Rank} has a {@link Permission} node set to {@code true}.
      * @param perm The {@link Permission} node to check.
-     * @return The value of the {@link Permission} if set for this {@link Rank}; {@code false} if unset.
+     * @return The value of the {@link Permission} if set to for this {@link Rank}; {@code false} if unset.
      */
     public boolean hasPermission(@NotNull Permission perm) {
         return perms.containsKey(perm) && perms.get(perm);
@@ -107,6 +111,8 @@ public class Rank implements ConfigurationSerializable {
         return Collections.unmodifiableMap(perms);
     }
 
+    // ========[COLOR]========
+
     /**
      * Gets the color for this {@link Rank}
      * @return The color of this {@link Rank}.
@@ -124,6 +130,8 @@ public class Rank implements ConfigurationSerializable {
         this.color = color;
         SPSSpigot.perms().saveFile();
     }
+
+    // ========[RANK HOLDERS]========
 
     /**
      * Convenience method that calls {@link PermissionsHandler#getRankPlayers(Rank)}
@@ -145,7 +153,8 @@ public class Rank implements ConfigurationSerializable {
         }
     }
 
-    // Serialization
+    // ========[SERIALIZATION]========
+
     private static final String NAMEKEY = "name";
     private static final String PERMSKEY = "perms";
     private static final String COLORKEY = "color";

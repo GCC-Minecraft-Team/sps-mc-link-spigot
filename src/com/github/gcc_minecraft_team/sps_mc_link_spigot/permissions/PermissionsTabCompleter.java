@@ -16,10 +16,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class PermissionsTabCompleter implements TabCompleter {
-    
+
     @Override
     @Nullable
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         // /perms a.k.a. /permissions
         if (args.length == 1) {
             // /perms <partial>

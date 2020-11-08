@@ -142,7 +142,7 @@ public class TeamCommands implements CommandExecutor {
                 // List all teams
                 List<String> names = new ArrayList<>(worldGroup.getTeamNames());
                 names.sort(String.CASE_INSENSITIVE_ORDER);
-                sender.sendMessage(CMD.buildListText("TEAMS", names));
+                sender.spigot().sendMessage(CMD.buildListTellraw("TEAMS", names, "/team list %s"));
                 return true;
             } else if (args.length == 2) {
                 Team team = worldGroup.getTeam(args[1]);

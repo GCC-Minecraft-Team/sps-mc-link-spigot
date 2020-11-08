@@ -205,6 +205,11 @@ public class SPSSpigot extends JavaPlugin {
         return rankTag.toString();
     }
 
+    /**
+     * Gets the cardinal direction that the {@link Player} is currently facing.
+     * @param player The {@link Player} to check.
+     * @return A one or two-character {@link String}: N, NE, E, SE, S, SW, W, or NW.
+     */
     public static String getCardinalDirection(Player player) {
         double rotation = (player.getLocation().getYaw() - 180) % 360;
         if (rotation < 0) {
@@ -233,6 +238,10 @@ public class SPSSpigot extends JavaPlugin {
         }
     }
 
+    /**
+     * Creates a board for a {@link Player}.
+     * @param player The {@link Player} whose board should be created.
+     */
     public static void showBoard(Player player) {
         // create the board
         FastBoard board = new FastBoard(player);

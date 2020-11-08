@@ -41,9 +41,9 @@ public class PlayerRenderer extends MapRenderer {
     private BufferedImage frame;
 
     /**
-     * Sets the map offset in blocks
-     * @param x
-     * @param z
+     * Sets the map offset in blocks.
+     * @param x The X offset.
+     * @param z The Z offset.
      */
     public void setOffest(int x, int z) {
         offsetX = x;
@@ -51,24 +51,18 @@ public class PlayerRenderer extends MapRenderer {
     }
 
     /**
-     * Checks if a block is within
-     * the spawn protection radius
-     * @param x
-     * @param z
+     * Checks if a block is within the spawn protection radius.
+     * @param x The X offset.
+     * @param z The Z offset.
      */
      private boolean CheckInSpawnRadius(int x, int z) {
-        double zdist = z - SPSSpigot.server().getWorlds().get(0).getSpawnLocation().getZ();
-        double xdist = x - SPSSpigot.server().getWorlds().get(0).getSpawnLocation().getX();
-        if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
-            return true;
-        } else {
-            return false;
-        }
+         double zdist = z - SPSSpigot.server().getWorlds().get(0).getSpawnLocation().getZ();
+         double xdist = x - SPSSpigot.server().getWorlds().get(0).getSpawnLocation().getX();
+         return Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius();
     }
 
     @Override
     public void initialize(@NotNull MapView map) {
-
          // load map frame
         try {
             frame = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(),"frame.png")).getSubimage((offsetX / 16) + 128, (offsetZ / 16) + 128, 128, 128);
@@ -99,7 +93,6 @@ public class PlayerRenderer extends MapRenderer {
 
     @Override
     public void render(@NotNull MapView view, @NotNull MapCanvas canvas, @NotNull Player player) {
-
         // render map background
         if (!hasRendered) {
             Collection<Player> onlinePlayers = (Collection<Player>) SPSSpigot.server().getOnlinePlayers();
@@ -129,7 +122,6 @@ public class PlayerRenderer extends MapRenderer {
                 }
             }
         }
-
         hasRendered = true;
     }
 
@@ -138,7 +130,6 @@ public class PlayerRenderer extends MapRenderer {
      */
     private void GenerateWorldBackground() throws IOException {
         BufferedImage img = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
-
         Graphics2D g2d = img.createGraphics();
 
         World world = SPSSpigot.server().getWorlds().get(0);

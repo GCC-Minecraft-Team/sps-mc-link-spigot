@@ -18,6 +18,9 @@ import java.util.*;
 
 public class ClaimEvents implements Listener {
 
+    /**
+     * A {@link List} of all the {@link Material}s that players are allowed to interact with in others' claims.
+     */
     List<Material> interactExceptions = Arrays.asList(
             // Doors (not iron)
             Material.OAK_DOOR, Material.BIRCH_DOOR, Material.SPRUCE_DOOR, Material.JUNGLE_DOOR,
@@ -37,20 +40,10 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onPlayerMoveEvent(PlayerMoveEvent event) {
 
-
     }
 
-    @EventHandler
-    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-        WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getPlayer().getWorld());
-        if (worldGroup != null && worldGroup.isInSpawn(event.getPlayer().getLocation())) {
-            if (event.getRightClicked() instanceof ItemFrame && !((ItemFrame) event.getRightClicked()).getItem().getType().equals(Material.AIR)) { // We don't need to prevent put items into the empty item frame (that's out of scope of this plugin)
-                event.setCancelled(true);
-            }
-        }
-    }
+    // ========[PLAYER BLOCK INTERACTION]========
 
-    // Claim modification
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.hasBlock() && !interactExceptions.contains(event.getClickedBlock().getType())) {
@@ -58,16 +51,6 @@ public class ClaimEvents implements Listener {
             WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
             if (worldGroup != null && !worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
                 event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onEntitySpawn(EntitySpawnEvent event) {
-        WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getLocation().getWorld());
-        if (!event.getEntity().getType().equals(EntityType.DROPPED_ITEM)) {
-            if (worldGroup != null && worldGroup.isEntityInSpawn(event.getEntity()) && event.getEntity().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
-                event.setCancelled(true);
-            }
         }
     }
 
@@ -92,26 +75,11 @@ public class ClaimEvents implements Listener {
     }
 
     @EventHandler
-    public void onEntityDamageEvent(EntityDamageByEntityEvent event) {
-        Entity target = event.getEntity();
-        WorldGroup worldGroup = SPSSpigot.getWorldGroup(target.getWorld());
-        if (worldGroup != null) {
-            if (worldGroup.isEntityInSpawn(event.getDamager()) && event.getEntity().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getPlayer().getWorld());
+        if (worldGroup != null && worldGroup.isInSpawn(event.getPlayer().getLocation())) {
+            if (event.getRightClicked() instanceof ItemFrame && !((ItemFrame) event.getRightClicked()).getItem().getType().equals(Material.AIR)) { // We don't need to prevent put items into the empty item frame (that's out of scope of this plugin)
                 event.setCancelled(true);
-            } else if (event.getDamager() instanceof Player && !worldGroup.canModifyChunk(event.getDamager().getUniqueId(), target.getLocation().getChunk())) {
-                if (event.getEntity() instanceof Mob) {
-                    Mob mob = (Mob) event.getEntity();
-                    if (mob instanceof Animals || mob instanceof WaterMob || mob instanceof NPC) {
-                        // Allow defense against actively hostile animals like aggro wolves or polar bears
-                        // Otherwise, cancel:
-                        if (mob.getTarget() == null) {
-                            event.setCancelled(true);
-                        }
-                    }
-                } else if (!(event.getEntity() instanceof Projectile)) {
-                    // It's not a mob at all. It's a tile entity or something like that.
-                    event.setCancelled(true);
-                }
             }
         }
     }
@@ -121,14 +89,11 @@ public class ClaimEvents implements Listener {
         Chunk toChunk = event.getBlock().getChunk();
         WorldGroup worldGroup = SPSSpigot.getWorldGroup(toChunk.getWorld());
         if (worldGroup != null) {
-            if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && event.getPlayer().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
+            if (worldGroup.isInSpawn(event.getBlock().getLocation()) && event.getBlock().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
                 event.setCancelled(true);
             } else if (event.getPlayer() != null) {
                 if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), toChunk))
                     event.setCancelled(true);
-            } else if (event.getIgnitingEntity() != null) {
-                // It was done by a non-player entity.
-                // I guess let it happen.
             } else if (event.getIgnitingBlock() != null) {
                 // It was done by a block.
                 // Cancel if the source block's owner is not allowed to modify the fire block.
@@ -145,6 +110,8 @@ public class ClaimEvents implements Listener {
         if (worldGroup != null && !worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
             event.setCancelled(true);
     }
+
+    // ========[BLOCKS]========
 
     @EventHandler
     public void onBlockPistonExtendEvent(BlockPistonExtendEvent event) {
@@ -213,6 +180,8 @@ public class ClaimEvents implements Listener {
         }
     }
 
+    // ========[ENTITIES]========
+
     @EventHandler
     public void onEntityExplodeEvent(EntityExplodeEvent event) {
         // Stop TNT explosions from breaking claimed blocks
@@ -227,4 +196,30 @@ public class ClaimEvents implements Listener {
             }
         }
     }
+
+    @EventHandler
+    public void onEntityDamageEvent(EntityDamageByEntityEvent event) {
+        Entity target = event.getEntity();
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(target.getWorld());
+        if (worldGroup != null) {
+            if (worldGroup.isEntityInSpawn(event.getDamager()) && event.getEntity().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
+                event.setCancelled(true);
+            } else if (event.getDamager() instanceof Player && !worldGroup.canModifyChunk(event.getDamager().getUniqueId(), target.getLocation().getChunk())) {
+                if (event.getEntity() instanceof Mob) {
+                    Mob mob = (Mob) event.getEntity();
+                    if (mob instanceof Animals || mob instanceof WaterMob || mob instanceof NPC) {
+                        // Allow defense against actively hostile animals like aggro wolves or polar bears
+                        // Otherwise, cancel:
+                        if (mob.getTarget() == null) {
+                            event.setCancelled(true);
+                        }
+                    }
+                } else if (!(event.getEntity() instanceof Projectile)) {
+                    // It's not a mob at all. It's a tile entity or something like that.
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
+
 }
