@@ -84,7 +84,7 @@ public class ClaimCommands implements CommandExecutor {
                 }
 
                 Set<Chunk> claimed = worldGroup.claimChunkSet(player.getUniqueId(), chunks);
-                sender.sendMessage(ChatColor.GREEN + "Unclaimed " + claimed.size() + "/" + chunks.size() + " chunks! You are now at " + worldGroup.getChunkCount(player.getUniqueId()) + "/" + worldGroup.getMaxChunks(player) + " chunks you can currently claim.");
+                sender.sendMessage(ChatColor.GREEN + "Claimed " + claimed.size() + "/" + chunks.size() + " chunks! You are now at " + worldGroup.getChunkCount(player.getUniqueId()) + "/" + worldGroup.getMaxChunks(player) + " chunks you can currently claim.");
                 worldGroup.updateClaimMap(player);
                 return true;
             } else {

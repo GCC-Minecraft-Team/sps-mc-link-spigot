@@ -12,11 +12,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class WorldGroupSerializable {
-    private final String worldgroupId;
+    private final UUID worldgroupId;
     private final String name;
     private final Set<String> worlds;
     private final Set<String> claimable;
-    private final Set<Team> teams;
+    private final Set<TeamSerializable> teams;
     private final Map<String, Set<Chunk>> claims;
     // Don't bother serializing join requests as they shouldn't leave memory
     //@BsonProperty(value = "joinRequests")
@@ -25,11 +25,11 @@ public class WorldGroupSerializable {
     // MongoDB POJO constructor
     @BsonCreator
     public WorldGroupSerializable(
-            @BsonProperty("WGID") final String WGID,
+            @BsonProperty("WGID") final UUID WGID,
             @BsonProperty("name") final String name,
             @BsonProperty("worlds") final Set<String> worlds,
             @BsonProperty("claimable") final Set<String> claimable,
-            @BsonProperty("teams") final Set<Team> teams,
+            @BsonProperty("teams") final Set<TeamSerializable> teams,
             @BsonProperty("claims") final Map<String, Set<Chunk>> claims
     ) {
         this.worldgroupId = WGID;
@@ -42,7 +42,7 @@ public class WorldGroupSerializable {
 
     // Worldgroup constructor
     public WorldGroupSerializable(WorldGroup wg) {
-        this.worldgroupId = wg.getID().toString();
+        this.worldgroupId = wg.getID();
         this.name = wg.getName();
 
         this.worlds = new HashSet<>();
@@ -55,7 +55,10 @@ public class WorldGroupSerializable {
             this.claimable.add(w.getUID().toString());
         }
 
-        this.teams = wg.getTeams();
+        this.teams = new HashSet<>();
+        for (Team t : wg.getTeams()) {
+            this.teams.add(new TeamSerializable(t));
+        }
         this.claims = new HashMap<>();
         for (Map.Entry<UUID, Set<Chunk>> c : wg.getClaims().entrySet()) {
             this.claims.put(c.getKey().toString(), c.getValue());
@@ -63,7 +66,7 @@ public class WorldGroupSerializable {
     }
 
     @BsonProperty("WGID")
-    public String getID() {
+    public UUID getID() {
         return worldgroupId;
     }
 
@@ -83,7 +86,7 @@ public class WorldGroupSerializable {
     }
 
     @BsonProperty("teams")
-    public Set<Team> getTeams() {
+    public Set<TeamSerializable> getTeams() {
         return teams;
     }
 

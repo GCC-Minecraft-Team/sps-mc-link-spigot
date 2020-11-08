@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.codecs.pojo.annotations.BsonProperty;
@@ -11,22 +12,23 @@ import java.util.*;
 
 public class Team {
 
-    @BsonProperty(value = "name")
     public String name;
-    @BsonProperty(value = "members")
     public Set<UUID> members;
-    @BsonProperty(value = "leader")
     public UUID leader;
 
-    private WorldGroupSerializable worldGroup;
+    private UUID worldGroup;
 
-    // Mongo POJO Constructor
-    public Team() {}
+    public Team(TeamSerializable team) {
+        this.name = team.name;
+        this.members = team.members;
+        this.leader = team.leader;
+        this.worldGroup = team.WGID;
+    }
 
     public Team(@NotNull WorldGroup worldGroup, @NotNull String name, @NotNull UUID leader) {
         this.name = name;
         this.leader = leader;
-        this.worldGroup = new WorldGroupSerializable(worldGroup);
+        this.worldGroup = worldGroup.getID();
         members = new HashSet<>();
         members.add(leader);
     }
@@ -40,9 +42,9 @@ public class Team {
         return name;
     }
 
-    @NotNull
+
     public WorldGroup getWorldGroup() {
-        return new WorldGroup(worldGroup);
+        return SPSSpigot.plugin().getWorldGroup(worldGroup);
     }
 
     /**
@@ -90,7 +92,7 @@ public class Team {
      * @return {@code true} if successful.
      */
     public boolean addMember(@NotNull UUID player) {
-        if (new WorldGroup(worldGroup).getPlayerTeam(player) == null) {
+        if (getWorldGroup().getPlayerTeam(player) == null) {
             boolean out = members.add(player);
             DatabaseLink.updateTeam(this);
             return out;
@@ -118,7 +120,7 @@ public class Team {
         if (player.equals(leader)) {
             if (members.size() == 1) {
                 // Delete the team
-                new WorldGroup(worldGroup).deleteTeam(this);
+                getWorldGroup().deleteTeam(this);
                 DatabaseLink.updateTeam(this);
                 return true;
             } else {

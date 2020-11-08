@@ -1,6 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.database;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.TeamSerializable;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroupSerializable;
@@ -115,7 +116,9 @@ public class DatabaseLink {
         Set<WorldGroup> output = new HashSet<>();
         while(cur.hasNext()) {
             WorldGroupSerializable wgs = (WorldGroupSerializable)cur.next();
+            System.out.println(wgs.getID());
             WorldGroup wg = new WorldGroup(wgs);
+            System.out.println(wg.getID());
             output.add(wg);
         }
         return output;
@@ -146,7 +149,7 @@ public class DatabaseLink {
      * @param team The {@link Team} to add.
      */
     public static void addTeam(@NotNull Team team) {
-        dbThreads.new UpdateTeam(team).run();
+        dbThreads.new UpdateTeam(new TeamSerializable(team)).run();
     }
 
     /**
@@ -154,7 +157,7 @@ public class DatabaseLink {
      * @param team The {@link Team} to update.
      */
     public static void updateTeam(@NotNull Team team) {
-        dbThreads.new UpdateTeam(team).run();
+        dbThreads.new UpdateTeam(new TeamSerializable(team)).run();
     }
 
     /**
@@ -172,7 +175,13 @@ public class DatabaseLink {
      * @return A {@link Set} of {@link Team}s found.
      */
     public static Set<Team> getTeams(@NotNull WorldGroup worldGroup) {
-        return new WorldGroup(wgCol.find(Filters.eq("WGID", worldGroup.getID())).first()).getTeams();
+        Set<TeamSerializable> cur = wgCol.find(Filters.eq("WGID", worldGroup.getID())).first().getTeams();
+        Set<Team> output = new HashSet<>();
+        for (TeamSerializable ts : cur) {
+            Team t = new Team(ts);
+            output.add(t);
+        }
+        return output;
     }
 
     /**

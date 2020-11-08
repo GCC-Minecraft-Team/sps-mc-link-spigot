@@ -42,20 +42,23 @@ public class WorldGroup {
      * @param wg
      */
     public WorldGroup(WorldGroupSerializable wg) {
-        this.id = UUID.fromString(wg.getID());
+        this.id = wg.getID();
         this.name = wg.getName();
 
         this.worlds = new HashSet<>();
         for (String w : wg.getWorlds()) {
-            this.worlds.add(SPSSpigot.server().getWorld(UUID.fromString(w)));
+            this.worlds.add(Bukkit.getWorld(UUID.fromString(w)));
         }
 
         this.claimable = new HashSet<>();
         for (String w : wg.getWorlds()) {
-            this.claimable.add(SPSSpigot.server().getWorld(UUID.fromString(w)));
+            this.claimable.add(Bukkit.getWorld(UUID.fromString(w)));
         }
 
-        this.teams = wg.getTeams();
+        this.teams = new HashSet<>();
+        for (TeamSerializable ts : wg.getTeams()) {
+            this.teams.add(new Team(ts));
+        }
 
         this.claims = new HashMap<>();
         for (Map.Entry<String, Set<Chunk>> c : wg.getClaims().entrySet()) {
@@ -465,13 +468,12 @@ public class WorldGroup {
         for (Chunk chunk : chunks) {
             if (!claimable.contains(chunk.getWorld())) {
                 // Ensure the world is claimable in this
-                continue;
+                System.out.println("World not claimable");
             } else if (getChunkOwner(chunk) != null) {
                 // Ensure the chunk isn't claimed
-                continue;
+                System.out.println("Chunk is already claimed");
             } else if (getChunkCount(player) >= getMaxChunks(player)) {
                 // Ensure this won't put the player over their claim limit
-                continue;
             } else {
                 if (!claims.containsKey(player)) {
                     claims.put(player, new HashSet<>());

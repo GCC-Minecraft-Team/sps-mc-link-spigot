@@ -19,5 +19,5 @@ cd ..
 copy target\sps-mc-link-spigot-1.0-SNAPSHOT-jar-with-dependencies.jar TestServer\plugins\sps-mc-link-spigot-latest.jar
 
 cd TestServer
-java -Xms8g -Xmx8g -XX:+UseG1GC -jar spigot.jar nogui
+java -Xms8g -Xmx8g -XX:+UseG1GC -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9585 -jar spigot.jar nogui
 pause

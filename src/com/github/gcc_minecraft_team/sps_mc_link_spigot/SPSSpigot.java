@@ -38,6 +38,7 @@ public class SPSSpigot extends JavaPlugin {
 
         // Setup Database
         DatabaseLink.SetupDatabase();
+        worldGroups = DatabaseLink.getWorldGroups();
 
         // Start listen server
         WebInterfaceLink.Listen();
@@ -49,7 +50,6 @@ public class SPSSpigot extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PermissionsEvents(), this);
 
         // Setup Claims
-        worldGroups = DatabaseLink.getWorldGroups();
         getServer().getPluginManager().registerEvents(new ClaimEvents(), this);
 
         // register chat events
@@ -116,6 +116,20 @@ public class SPSSpigot extends JavaPlugin {
     public WorldGroup getWorldGroup(@NotNull String name) {
         for (WorldGroup worldGroup : worldGroups) {
             if (worldGroup.getName().equalsIgnoreCase(name))
+                return worldGroup;
+        }
+        return null;
+    }
+
+    /**
+     * Getter for a world group.
+     * @param id The UUID of the world group.
+     * @return The world group's {@link WorldGroup}.
+     */
+    @Nullable
+    public WorldGroup getWorldGroup(@NotNull UUID id) {
+        for (WorldGroup worldGroup : worldGroups) {
+            if (worldGroup.getID().toString().equals(id.toString()))
                 return worldGroup;
         }
         return null;

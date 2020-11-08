@@ -1,8 +1,10 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.database;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.TeamSerializable;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroupSerializable;
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.client.MongoClient;
@@ -15,9 +17,7 @@ import org.bson.Document;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class DatabaseThreads {
 
@@ -69,13 +69,13 @@ public class DatabaseThreads {
      */
     class UpdateTeam implements Runnable {
 
-        private final Team team;
-        UpdateTeam(Team team) {
+        private final TeamSerializable team;
+        UpdateTeam(TeamSerializable team) {
             this.team = team;
         }
 
         public void run() {
-            wgCol.updateOne(Filters.eq("WGID", team.getWorldGroup().getID()), Updates.addToSet("teams", team), new UpdateOptions().upsert(true));
+            wgCol.updateOne(Filters.eq("WGID", team.WGID), Updates.addToSet("teams", team), new UpdateOptions().upsert(true));
         }
     }
 
@@ -93,7 +93,7 @@ public class DatabaseThreads {
         }
 
         public void run() {
-            wgCol.updateOne(Filters.eq("WGID", wg.getID().toString()), Updates.addToSet("worlds", world.getUID().toString()), new UpdateOptions().upsert(true));
+            wgCol.updateOne(Filters.eq("WGID", wg.getID()), Updates.addToSet("worlds", world.getUID().toString()), new UpdateOptions().upsert(true));
         }
     }
 
@@ -132,6 +132,7 @@ public class DatabaseThreads {
             for (Map.Entry<UUID, Set<Chunk>> player : claims.entrySet()) {
                 UUID uuid = player.getKey();
                 Set<Chunk> uuidClaims = player.getValue();
+                Set<DBObject> dbChunkSet = new HashSet<>();
 
                 // add all claimed chunks
                 for (Chunk chunk : uuidClaims) {
@@ -139,9 +140,11 @@ public class DatabaseThreads {
                     dbChunk.put("x", chunk.getX());
                     dbChunk.put("z", chunk.getZ());
                     dbChunk.put("world", chunk.getWorld().getUID());
-                    wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("claims", Updates.addToSet(uuid.toString(), dbChunk)), new UpdateOptions().upsert(true));
+                    dbChunkSet.add(dbChunk);
                 }
 
+                Document elementToArray = new Document("claims." + uuid.toString(), dbChunkSet);
+                wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("$set", elementToArray), new UpdateOptions().upsert(true));
             }
         }
 
