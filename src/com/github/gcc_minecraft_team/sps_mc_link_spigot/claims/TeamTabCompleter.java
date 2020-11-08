@@ -30,7 +30,15 @@ public class TeamTabCompleter implements TabCompleter {
     @Nullable
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        if (args.length == 1) {
+        if (!(sender instanceof Player)) {
+            return new ArrayList<>();
+        }
+        Player player = (Player) sender;
+        ClaimHandler worldGroup = SPSSpigot.claims(player.getWorld());
+        if (worldGroup == null) {
+            // This world is not in a worldGroup
+            return new ArrayList<>();
+        } else if (args.length == 1) {
             // /team <partial>
             return keepStarts(Arrays.asList("create", "join", "leave", "kick", "list", "requests"), args[0]);
         } else if (args[0].equals("create")) {
@@ -39,74 +47,69 @@ public class TeamTabCompleter implements TabCompleter {
         } else if (args[0].equals("join")) {
             if (args.length == 2) {
                 // /team join <partial>
-                return keepStarts(new ArrayList<>(SPSSpigot.claims().getTeamNames()), args[1]);
+                return keepStarts(new ArrayList<>(worldGroup.getTeamNames()), args[1]);
             } else {
                 // /team join <team> <partial>
                 return new ArrayList<>();
             }
         } else if (args[0].equals("kick")) {
-            return keepStarts(new ArrayList<>(SPSSpigot.claims().getPlayerTeam(((Player) sender).getUniqueId()).getMemberNames()), args[1]);
+            // /team kick <...partial>
+            return keepStarts(new ArrayList<>(worldGroup.getPlayerTeam((player).getUniqueId()).getMemberNames()), args[1]);
         } else if (args[0].equals("leave")) {
             // /team leave <partial>
             return new ArrayList<>();
         } else if (args[0].equals("list")) {
             if (args.length == 2) {
                 // /team list <partial>
-                return keepStarts(new ArrayList<>(SPSSpigot.claims().getTeamNames()), args[1]);
+                return keepStarts(new ArrayList<>(worldGroup.getTeamNames()), args[1]);
             } else {
                 // /team list <team> <partial>
                 return new ArrayList<>();
             }
         } else if (args[0].equals("requests")) {
-            if (sender instanceof Player) {
-                Player player = (Player) sender;
-                Team team = SPSSpigot.claims().getPlayerTeam(player.getUniqueId());
-                if (args.length == 2) {
-                    // /team requests <partial>
-                    return keepStarts(Arrays.asList("list", "accept", "deny"), args[1]);
-                } else if (args[1].equals("list")) {
-                    // /team requests list <...partial>
-                    return new ArrayList<>();
-                } else if (args[1].equals("accept")) {
-                    if (args.length == 3) {
-                        // /team requests accept <partial>
-                        if (team != null && team.getLeader().equals(player.getUniqueId())) {
-                            // Player is the leader of team
-                            List<String> names = new ArrayList<>();
-                            for (UUID uuid : SPSSpigot.claims().getTeamJoinRequests(team))
-                                names.add(DatabaseLink.getSPSName(uuid));
-                            return keepStarts(names, args[2]);
-                        } else {
-                            // Player is not on a team or is not the leader
-                            return new ArrayList<>();
-                        }
+            Team team = worldGroup.getPlayerTeam(player.getUniqueId());
+            if (args.length == 2) {
+                // /team requests <partial>
+                return keepStarts(Arrays.asList("list", "accept", "deny"), args[1]);
+            } else if (args[1].equals("list")) {
+                // /team requests list <...partial>
+                return new ArrayList<>();
+            } else if (args[1].equals("accept")) {
+                if (args.length == 3) {
+                    // /team requests accept <partial>
+                    if (team != null && team.getLeader().equals(player.getUniqueId())) {
+                        // Player is the leader of team
+                        List<String> names = new ArrayList<>();
+                        for (UUID uuid : worldGroup.getTeamJoinRequests(team))
+                            names.add(DatabaseLink.getSPSName(uuid));
+                        return keepStarts(names, args[2]);
                     } else {
-                        // /team requests accept <name> <...partial>
-                        return new ArrayList<>();
-                    }
-                } else if (args[1].equals("deny")) {
-                    if (args.length == 3) {
-                        // /team requests deny <partial>
-                        if (team != null && team.getLeader().equals(player.getUniqueId())) {
-                            // Player is the leader of team
-                            List<String> names = new ArrayList<>();
-                            for (UUID uuid : SPSSpigot.claims().getTeamJoinRequests(team))
-                                names.add(DatabaseLink.getSPSName(uuid));
-                            return keepStarts(names, args[2]);
-                        } else {
-                            // Player is not on a team or is not the leader
-                            return new ArrayList<>();
-                        }
-                    } else {
-                        // /team requests deny <name> <...partial>
+                        // Player is not on a team or is not the leader
                         return new ArrayList<>();
                     }
                 } else {
-                    // /team requests <INVALID>
+                    // /team requests accept <name> <...partial>
+                    return new ArrayList<>();
+                }
+            } else if (args[1].equals("deny")) {
+                if (args.length == 3) {
+                    // /team requests deny <partial>
+                    if (team != null && team.getLeader().equals(player.getUniqueId())) {
+                        // Player is the leader of team
+                        List<String> names = new ArrayList<>();
+                        for (UUID uuid : worldGroup.getTeamJoinRequests(team))
+                            names.add(DatabaseLink.getSPSName(uuid));
+                        return keepStarts(names, args[2]);
+                    } else {
+                        // Player is not on a team or is not the leader
+                        return new ArrayList<>();
+                    }
+                } else {
+                    // /team requests deny <name> <...partial>
                     return new ArrayList<>();
                 }
             } else {
-                // Not a player
+                // /team requests <INVALID>
                 return new ArrayList<>();
             }
         } else {

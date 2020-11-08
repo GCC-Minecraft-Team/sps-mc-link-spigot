@@ -18,20 +18,13 @@ public class Team implements ConfigurationSerializable {
     @BsonProperty(value = "leader")
     public UUID leader;
 
-    public Team() { }
+    private ClaimHandler worldGroup;
 
-    public Team(@NotNull String name, @NotNull UUID leader) {
+    public Team(@NotNull ClaimHandler worldGroup, @NotNull String name, @NotNull UUID leader) {
         this.name = name;
         this.leader = leader;
         members = new HashSet<>();
         members.add(leader);
-    }
-
-    public Team(@NotNull String name, @NotNull Set<UUID> members, @NotNull UUID leader) {
-        this.name = name;
-        this.leader = leader;
-        this.members = new HashSet<>();
-        this.members = members;
     }
 
     /**
@@ -88,7 +81,7 @@ public class Team implements ConfigurationSerializable {
      * @return {@code true} if successful.
      */
     public boolean addMember(@NotNull UUID player) {
-        if (SPSSpigot.claims().getPlayerTeam(player) == null) {
+        if (worldGroup.getPlayerTeam(player) == null) {
             boolean out = members.add(player);
             DatabaseLink.updateTeam(this);
             return out;
@@ -116,7 +109,7 @@ public class Team implements ConfigurationSerializable {
         if (player.equals(leader)) {
             if (members.size() == 1) {
                 // Delete the team
-                SPSSpigot.claims().deleteTeam(this);
+                worldGroup.deleteTeam(this);
                 DatabaseLink.updateTeam(this);
                 return true;
             } else {

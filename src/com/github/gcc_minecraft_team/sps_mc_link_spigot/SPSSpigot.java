@@ -9,26 +9,24 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationTab
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.*;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapEvents;
 import fr.mrmicky.fastboard.FastBoard;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
+import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitScheduler;
 
-import java.awt.desktop.QuitEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SPSSpigot extends JavaPlugin {
 
     public PermissionsHandler perms;
-    public ClaimHandler claims;
+    public Set<ClaimHandler> worldGroups;
     public final Map<UUID, FastBoard> boards = new HashMap<>();
 
     @Override
@@ -51,7 +49,7 @@ public class SPSSpigot extends JavaPlugin {
         // Setup Claims
         ConfigurationSerialization.registerClass(Team.class);
 
-        claims = new ClaimHandler();
+        worldGroups = new HashSet<ClaimHandler>();
         getServer().getPluginManager().registerEvents(new ClaimEvents(), this);
 
         // register chat events
@@ -116,7 +114,7 @@ public class SPSSpigot extends JavaPlugin {
         StringBuilder rankTag = new StringBuilder();
         if (SPSSpigot.perms().getPlayerRanks(p.getUniqueId()).size() > 0) {
             for (Rank rank : SPSSpigot.perms().getPlayerRanks(p.getUniqueId())) {
-                rankTag.append(rank.getColor() + "[" + rank.getName() +"]" + ChatColor.WHITE);
+                rankTag.append(rank.getColor()).append("[").append(rank.getName()).append("]").append(ChatColor.WHITE);
             }
         }
 
@@ -128,7 +126,7 @@ public class SPSSpigot extends JavaPlugin {
         StringBuilder rankTag = new StringBuilder();
         if (SPSSpigot.perms().getPlayerRanks(p.getUniqueId()).size() > 0) {
             for (Rank rank : SPSSpigot.perms().getPlayerRanks(p.getUniqueId())) {
-                rankTag.append("[" + rank.getName() +"]");
+                rankTag.append("[").append(rank.getName()).append("]");
             }
         }
 
@@ -195,11 +193,16 @@ public class SPSSpigot extends JavaPlugin {
     }
 
     /**
-     * Convenience function to get the {@link ClaimHandler}.
-     * @return This plugin's {@link ClaimHandler}.
+     * Convenience function to get a {@link ClaimHandler} for a worldGroup.
+     * @param world The {@link World} whose worldGroup {@link ClaimHandler} should be found.
+     * @return The worldGroup {@link ClaimHandler}.
      */
-    public static ClaimHandler claims() {
-        return plugin().claims;
+    public static ClaimHandler claims(World world) {
+        for (ClaimHandler worldGroup : plugin().worldGroups) {
+            if (worldGroup.hasWorld(world))
+                return worldGroup;
+        }
+        return null;
     }
 
     /**

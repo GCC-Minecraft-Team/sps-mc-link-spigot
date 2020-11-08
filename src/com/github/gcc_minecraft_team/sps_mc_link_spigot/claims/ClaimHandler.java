@@ -5,22 +5,23 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import fr.mrmicky.fastboard.FastBoard;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.*;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.*;
 
 public class ClaimHandler {
+    private Set<World> worlds;
+    private Set<World> claimable;
     private Set<Team> teams;
     private Map<UUID, Set<Chunk>> claims;
     private Map<UUID, Team> joinRequests;
 
     public ClaimHandler() {
+        worlds = new HashSet<>();
+        claimable = new HashSet<>();
         teams = new HashSet<>();
         claims = new HashMap<>();
         joinRequests = new HashMap<>();
@@ -43,19 +44,23 @@ public class ClaimHandler {
     }
 
     /**
-     * checks to see if a {@link Player} is within spawn protection
-     * @param player
-     * @return
+     * Gets whether this {@link ClaimHandler}'s worldGroup contains the given {@link World}.
+     * @param world The {@link World} to check for.
+     * @return {@code true} if this worldGroup contains the {@link World}.
      */
-    public boolean checkInSpawn(Player player) {
-        Location pLoc = player.getLocation();
-        Double zdist = pLoc.getZ() - player.getWorld().getSpawnLocation().getZ();
-        Double xdist = pLoc.getX() - player.getWorld().getSpawnLocation().getX();
-        if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
-            return true;
-        } else {
-            return false;
-        }
+    public boolean hasWorld(World world) {
+        return worlds.contains(world);
+    }
+
+    /**
+     * Checks to see if a {@link Location} is within spawn protection
+     * @param location The {@link Location} to check.
+     * @return {@code true} if the {@link Location} is within the spawn radius.
+     */
+    public boolean isInSpawn(@NotNull Location location) {
+        double zdist = location.getZ() - location.getWorld().getSpawnLocation().getZ();
+        double xdist = location.getX() - location.getWorld().getSpawnLocation().getX();
+        return Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius();
     }
 
     /***
@@ -63,15 +68,8 @@ public class ClaimHandler {
      * @param entity
      * @return
      */
-    public boolean checkEntityInSpawn(Entity entity) {
-        Location pLoc = entity.getLocation();
-        Double zdist = pLoc.getZ() - entity.getWorld().getSpawnLocation().getZ();
-        Double xdist = pLoc.getX() - entity.getWorld().getSpawnLocation().getX();
-        if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
-            return true;
-        } else {
-            return false;
-        }
+    public boolean isEntityInSpawn(Entity entity) {
+        return isInSpawn(entity.getLocation());
     }
 
 
@@ -329,10 +327,13 @@ public class ClaimHandler {
      * Claims a {@link Chunk} for a given player.
      * @param player The {@link UUID} of the player.
      * @param chunk The {@link Chunk} to be claimed.
-     * @return {@code true} if successful. This means the {@link Chunk} is not already claimed, and the player is not exceeding their claim limit.
+     * @return {@code true} if successful. This means the {@link Chunk} is not already claimed, the player is not exceeding their claim limit, and the {@link World} is claimable by this {@link ClaimHandler}.
      */
     public boolean claimChunk(@NotNull UUID player, @NotNull Chunk chunk) {
-        if (getChunkOwner(chunk) != null) {
+        if (!claimable.contains(chunk.getWorld())) {
+            // Ensure the world is claimable in this
+            return false;
+        } else if (getChunkOwner(chunk) != null) {
             // Ensure the chunk isn't claimed
             return false;
         } else if (getChunkCount(player) >= getMaxChunks(player)) {
@@ -343,6 +344,7 @@ public class ClaimHandler {
                 claims.put(player, new HashSet<>());
             }
             boolean out = claims.get(player).add(chunk);
+            saveCurrentClaims();
             return out;
         }
     }
@@ -350,28 +352,32 @@ public class ClaimHandler {
     /**
      * Claims a list of {@link Chunk}s for a given player
      * @param player The {@link UUID} of the player.
-     * @param chunks The list of {@link Chunk}s to be claimed.
-     * @return {@code true} if successful. This means the {@link Chunk}s are not already claimed, and the player is not exceeding their claim limit.
+     * @param chunks The {@link Set} of {@link Chunk}s to be claimed.
+     * @return A {@link Set} of successfully claimed {@link Chunk}s. This means the {@link Chunk}s are not already claimed, the player is not exceeding their claim limit, and the {@link World}s are claimable.
      */
-    public boolean claimChunkList(@NotNull UUID player, @NotNull ArrayList<Chunk> chunks) {
-        boolean out = false;
+    @NotNull
+    public Set<Chunk> claimChunkSet(@NotNull UUID player, @NotNull Set<Chunk> chunks) {
+        Set<Chunk> successes = new HashSet<>();
         for (Chunk chunk : chunks) {
-            if (getChunkOwner(chunk) != null) {
+            if (!claimable.contains(chunk.getWorld())) {
+                // Ensure the world is claimable in this
+                continue;
+            } else if (getChunkOwner(chunk) != null) {
                 // Ensure the chunk isn't claimed
-                return false;
+                continue;
             } else if (getChunkCount(player) >= getMaxChunks(player)) {
                 // Ensure this won't put the player over their claim limit
-                return false;
+                continue;
             } else {
                 if (!claims.containsKey(player)) {
                     claims.put(player, new HashSet<>());
                 }
-                out = claims.get(player).add(chunk);
+                if (claims.get(player).add(chunk))
+                    successes.add(chunk);
             }
         }
-
         saveCurrentClaims();
-        return out;
+        return successes;
     }
 
     /**
@@ -397,20 +403,19 @@ public class ClaimHandler {
     /**
      * Unclaims multiple {@link Chunk}s.
      * @param chunks The {@link Chunk}s to be unclaimed.
-     * @return {@code true} if successful; {@code false} if already not claimed.
+     * @return A {@link Set} of the {@link Chunk}s that were successfully unclaimed.
      */
-    public boolean unclaimChunkList(@NotNull ArrayList<Chunk> chunks) {
-        boolean out = false;
+    @NotNull
+    public Set<Chunk> unclaimChunkSet(@NotNull Set<Chunk> chunks) {
+        Set<Chunk> successes = new HashSet<>();
         for (Chunk chunk : chunks) {
             UUID owner = getChunkOwner(chunk);
-            if (owner == null) {
-                return false;
-            } else {
-                out = claims.get(owner).remove(chunk);
-                saveCurrentClaims();
+            if (owner != null && claims.get(owner).remove(chunk)) {
+                successes.add(chunk);
             }
         }
-        return out;
+        saveCurrentClaims();
+        return successes;
     }
 
     /**
@@ -435,60 +440,37 @@ public class ClaimHandler {
      * @param player
      */
     public void updateClaimMap(Player player) {
-        boolean isInSpawn = SPSSpigot.claims().checkInSpawn(player);
+        Chunk playerChunk = player.getLocation().getChunk();
         FastBoard board = SPSSpigot.plugin().boards.get(player.getUniqueId());
-        if (board != null && board.isDeleted() == false) {
+        if (board != null && !board.isDeleted()) {
             // map
             String[] rows = new String[7];
-            ArrayList<Chunk> ownedChunks = new ArrayList<Chunk>();
 
             for (int z = -3; z <= 3; z++) {
                 StringBuilder bRow = new StringBuilder();
-
                 for (int x = -3; x <= 3; x++) {
-
                     // get the surrounding chunks
-                    Chunk cChunk = SPSSpigot.server().getWorlds().get(0).getChunkAt(((int) player.getLocation().getX() / 16) + x, ((int) player.getLocation().getZ() / 16) + z);
-                    if (cChunk != null) {
-                        UUID cChunkOwner = SPSSpigot.claims().getChunkOwner(cChunk);
 
-                        if (cChunkOwner != null) {
-                            if (cChunkOwner.equals(player.getUniqueId())) {
-                                ownedChunks.add(cChunk);
-                            }
-                        }
-
-                        if (x == 0 && z == 0) {
-                            bRow.append(ChatColor.BLUE + "Ⓟ");
-                        } else {
-                            // check for the spawn protection zone
-                            if (!isInSpawn) {
-                                if (cChunkOwner != null) {
-                                    if (cChunkOwner.equals(player.getUniqueId())) {
-                                        bRow.append(ChatColor.GREEN + "█"); // owned chunk
-                                    } else {
-                                        if (SPSSpigot.claims().getPlayerTeam(player.getUniqueId()) != null) {
-                                            if (SPSSpigot.claims().getPlayerTeam(player.getUniqueId()).getMembers().contains(cChunkOwner)) {
-                                                bRow.append(ChatColor.AQUA + "▒"); // owned by other players on team
-                                            } else {
-                                                bRow.append(ChatColor.RED + "▒"); // owned by other player not on team
-                                            }
-                                        } else {
-                                            bRow.append(ChatColor.RED + "▒"); // owned by other player not on team
-                                        }
-                                    }
-                                } else {
-                                    bRow.append(ChatColor.GRAY + "▒"); // unowned
-                                }
-                            } else {
-                                bRow.append(ChatColor.RED + "ⓢ"); // spawn
-                            }
-                        }
+                    Chunk chunk = player.getWorld().getChunkAt(playerChunk.getX() + x, playerChunk.getZ() + z);
+                    UUID chunkOwner = getChunkOwner(chunk);
+                    if (x == 0 && z == 0) {
+                        bRow.append(ChatColor.BLUE).append("Ⓟ");
                     } else {
-                        bRow.append(ChatColor.GRAY + "▒"); // unowned
+                        if (chunkOwner == null) {
+                            // Unowned / in spawn
+                            bRow.append(ChatColor.GRAY).append("▒");
+                        } else if (chunkOwner.equals(player.getUniqueId())) {
+                            // Player owns chunk
+                            bRow.append(ChatColor.GREEN).append("█");
+                        } else if (isOnSameTeam(player.getUniqueId(), chunkOwner)) {
+                            // Teammate owns chunk
+                            bRow.append(ChatColor.AQUA).append("▒");
+                        } else {
+                            // Other player owns chunk
+                            bRow.append(ChatColor.RED).append("▒");
+                        }
                     }
                 }
-
                 rows[z + 3] = bRow.toString();
             }
 

@@ -112,10 +112,10 @@ public class PlayerRenderer extends MapRenderer {
     }
 
     @Override
-    public void render(MapView view, MapCanvas canvas, Player player) {
+    public void render(@NotNull MapView view, @NotNull MapCanvas canvas, @NotNull Player player) {
 
         // render map background
-        if (hasRendered == false) {
+        if (!hasRendered) {
             Collection<Player> onlinePlayers = (Collection<Player>) SPSSpigot.server().getOnlinePlayers();
             World world = SPSSpigot.server().getWorlds().get(0);
 
@@ -163,7 +163,7 @@ public class PlayerRenderer extends MapRenderer {
                 Location spawn = world.getSpawnLocation();
                 Block block = world.getBlockAt((int) spawn.getX() + (x * 16) + offsetX, 23, (int) spawn.getZ() + (z * 16) + offsetZ);
                 Biome biome = block.getBiome();
-                if (Arrays.stream(B_WATER).anyMatch(biome::equals)) {
+                if (Arrays.asList(B_WATER).contains(biome)) {
                     g2d.setColor(new Color(25, 0, 120));
                     g2d.fillRect(x, z, 1, 1);
                 } else if (biome.equals(Biome.MUSHROOM_FIELDS) || biome.equals(Biome.MUSHROOM_FIELD_SHORE)) {

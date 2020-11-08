@@ -45,8 +45,8 @@ public class SignboardRenderer extends MapRenderer {
     }
 
     @Override
-    public void render(MapView view, MapCanvas canvas, Player player) {
-        if (hasRendered == false) {
+    public void render(@NotNull MapView view, @NotNull MapCanvas canvas, @NotNull Player player) {
+        if (!hasRendered) {
             canvas.drawImage(0, 0, image.getSubimage(offsetX, offsetZ, 128, 128));
             hasRendered = true;
         }

@@ -8,7 +8,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommandYamlParser;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -18,11 +17,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.Plugin;
 import xyz.haoshoku.nick.api.NickAPI;
 
-import javax.xml.crypto.Data;
-
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -54,7 +49,7 @@ public class ChatEvents implements Listener {
             if (!PluginConfig.GetChatWebhook().equals("")) {
                 DiscordWebhook webhook = new DiscordWebhook(PluginConfig.GetChatWebhook());
                 StringBuilder discordName = new StringBuilder();
-                discordName.append(SPSSpigot.plugin().GetRankTagNoFormat(e.getPlayer()) + " ");
+                discordName.append(SPSSpigot.plugin().GetRankTagNoFormat(e.getPlayer())).append(" ");
                 discordName.append(NickAPI.getName(e.getPlayer()));
 
                 webhook.setUsername(discordName.toString());
@@ -121,8 +116,7 @@ public class ChatEvents implements Listener {
                         List<Command> commandList = PluginCommandYamlParser.parse(plugin);
                         for (int i = 0; i < commandList.size(); i++) {
                             if (e.getPlayer().hasPermission(commandList.get(i).getPermission())) {
-                                helpList.append("\n" + ChatColor.GOLD + commandList.get(i).getName() + ChatColor.WHITE
-                                        + "  -  " + commandList.get(i).getDescription() + "\n");
+                                helpList.append("\n" + ChatColor.GOLD).append(commandList.get(i).getName()).append(ChatColor.WHITE).append("  -  ").append(commandList.get(i).getDescription()).append("\n");
                             }
                         }
                         helpList.append("\n");

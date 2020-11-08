@@ -404,12 +404,12 @@ public class DatabaseLink {
             public void run() {
                 // compass
                 String claimStatus = net.md_5.bungee.api.ChatColor.DARK_GREEN + "Wilderness";
-                UUID chunkOwner = SPSSpigot.claims().getChunkOwner(player.getLocation().getChunk());
+                UUID chunkOwner = SPSSpigot.claims(player.getWorld()).getChunkOwner(player.getLocation().getChunk());
                 if (chunkOwner != null) {
                     claimStatus = net.md_5.bungee.api.ChatColor.RED + DatabaseLink.getSPSName(chunkOwner);
                 }
 
-                SPSSpigot.claims().updateClaimMap(player);
+                SPSSpigot.claims(player.getWorld()).updateClaimMap(player);
                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder().append("[" + SPSSpigot.getCardinalDirection(player) + "] " + claimStatus).create());
             }
         }, 0, 10);
