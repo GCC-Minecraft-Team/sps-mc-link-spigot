@@ -1,6 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
+import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -8,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class Team implements ConfigurationSerializable {
+public class Team {
 
     @BsonProperty(value = "name")
     public String name;
@@ -17,11 +18,15 @@ public class Team implements ConfigurationSerializable {
     @BsonProperty(value = "leader")
     public UUID leader;
 
-    private WorldGroup worldGroup;
+    private WorldGroupSerializable worldGroup;
+
+    // Mongo POJO Constructor
+    public Team() {}
 
     public Team(@NotNull WorldGroup worldGroup, @NotNull String name, @NotNull UUID leader) {
         this.name = name;
         this.leader = leader;
+        this.worldGroup = new WorldGroupSerializable(worldGroup);
         members = new HashSet<>();
         members.add(leader);
     }
@@ -37,7 +42,7 @@ public class Team implements ConfigurationSerializable {
 
     @NotNull
     public WorldGroup getWorldGroup() {
-        return worldGroup;
+        return new WorldGroup(worldGroup);
     }
 
     /**
@@ -85,7 +90,7 @@ public class Team implements ConfigurationSerializable {
      * @return {@code true} if successful.
      */
     public boolean addMember(@NotNull UUID player) {
-        if (worldGroup.getPlayerTeam(player) == null) {
+        if (new WorldGroup(worldGroup).getPlayerTeam(player) == null) {
             boolean out = members.add(player);
             DatabaseLink.updateTeam(this);
             return out;
@@ -113,7 +118,7 @@ public class Team implements ConfigurationSerializable {
         if (player.equals(leader)) {
             if (members.size() == 1) {
                 // Delete the team
-                worldGroup.deleteTeam(this);
+                new WorldGroup(worldGroup).deleteTeam(this);
                 DatabaseLink.updateTeam(this);
                 return true;
             } else {
@@ -157,39 +162,4 @@ public class Team implements ConfigurationSerializable {
             return false;
         }
     }
-
-    // Serialization
-    private static final String NAMEKEY = "name";
-    private static final String MEMBERSKEY = "members";
-    private static final String LEADERKEY = "leader";
-
-    public Team(@NotNull Map<String, Object> map) {
-        // Get name
-        this.name = (String) map.get(NAMEKEY);
-        // Get members
-        List<String> memberStrs = (List<String>) map.get(MEMBERSKEY);
-        this.members = new HashSet<>();
-        for (String uuidStr : memberStrs)
-            this.members.add(UUID.fromString(uuidStr));
-        // Get leader
-        this.leader = UUID.fromString((String) map.get(LEADERKEY));
-    }
-
-    @NotNull
-    @Override
-    public Map<String, Object> serialize() {
-        Map<String, Object> map = new HashMap<>();
-        // Add name
-        map.put(NAMEKEY, this.name);
-        // Add members
-        List<String> memberStrs = new ArrayList<>();
-        for (UUID uuid : this.members)
-            memberStrs.add(uuid.toString());
-        map.put(MEMBERSKEY, memberStrs);
-        // Add leader
-        map.put(LEADERKEY, this.leader.toString());
-        return map;
-    }
-
-
 }

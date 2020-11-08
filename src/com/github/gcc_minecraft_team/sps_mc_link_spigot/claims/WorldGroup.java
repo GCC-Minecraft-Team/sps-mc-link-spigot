@@ -14,7 +14,7 @@ import java.util.*;
 
 public class WorldGroup {
 
-    private UUID worldgroupID;
+    private UUID id;
     private String name;
     private Set<World> worlds;
     private Set<World> claimable;
@@ -27,7 +27,7 @@ public class WorldGroup {
      * @param name The name of this worldGroup.
      */
     public WorldGroup(String name) {
-        worldgroupID = UUID.randomUUID();
+        id = UUID.randomUUID();
         this.name = name;
         worlds = new HashSet<>();
         claimable = new HashSet<>();
@@ -37,7 +37,31 @@ public class WorldGroup {
         saveCurrentClaims();
     }
 
+    /**
+     * This constructor is used to initialize the class with a serialized worldgroup
+     * @param wg
+     */
+    public WorldGroup(WorldGroupSerializable wg) {
+        this.id = UUID.fromString(wg.getID());
+        this.name = wg.getName();
 
+        this.worlds = new HashSet<>();
+        for (String w : wg.getWorlds()) {
+            this.worlds.add(SPSSpigot.server().getWorld(UUID.fromString(w)));
+        }
+
+        this.claimable = new HashSet<>();
+        for (String w : wg.getWorlds()) {
+            this.claimable.add(SPSSpigot.server().getWorld(UUID.fromString(w)));
+        }
+
+        this.teams = wg.getTeams();
+
+        this.claims = new HashMap<>();
+        for (Map.Entry<String, Set<Chunk>> c : wg.getClaims().entrySet()) {
+            this.claims.put(UUID.fromString(c.getKey()), c.getValue());
+        }
+    }
 
     /**
      * Saves data from this {@link WorldGroup} to com.github.gcc_minecraft_team.sps_mc_link_spigot.database
@@ -55,6 +79,14 @@ public class WorldGroup {
     }
 
     /**
+     * Getter for this worldGroup's claimables
+     * @return This worldGroup's claimables
+     */
+    public Set<World> getClaimable() {
+        return claimable;
+    }
+
+    /**
      * Getter for this worldGroup's name.
      * @return This worldGroup's name.
      */
@@ -66,7 +98,7 @@ public class WorldGroup {
      * Getter for this worldGroup's ID.
      * @return This worldGroup's ID.
      */
-    public UUID getID() { return worldgroupID; }
+    public UUID getID() { return id; }
 
     /**
      * Gets whether this {@link WorldGroup}'s worldGroup contains the given {@link World}.
@@ -93,7 +125,7 @@ public class WorldGroup {
     public boolean addWorld(World world) {
         if (SPSSpigot.getWorldGroup(world) == null) {
             worlds.add(world);
-            // TODO: Update database
+            DatabaseLink.addWorld(this, world);
             return true;
         } else {
             return false;
@@ -108,7 +140,7 @@ public class WorldGroup {
     public boolean removeWorld(World world) {
         if (worlds.remove(world)) {
             claimable.remove(world);
-            // TODO: Update database
+            DatabaseLink.removeWorld(this, world);
             return true;
         } else {
             return false;
@@ -384,6 +416,15 @@ public class WorldGroup {
             return Collections.unmodifiableSet(claims.get(player));
         else
             return Collections.unmodifiableSet(new HashSet<>());
+    }
+
+    /**
+     * Gets all claims in this {@link WorldGroup}
+     * @return
+     */
+    @NotNull
+    public Map<UUID, Set<Chunk>> getClaims() {
+        return claims;
     }
 
     /**

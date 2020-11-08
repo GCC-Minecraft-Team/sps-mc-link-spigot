@@ -3,9 +3,11 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.database;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroupSerializable;
 import com.mongodb.*;
 import com.mongodb.client.*;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
@@ -15,10 +17,7 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -46,7 +45,9 @@ public class DatabaseLink {
     private static MongoDatabase mongoDatabase;
 
     private static MongoCollection<Document> userCol;
-    private static MongoCollection<Team> wgCol;
+    private static MongoCollection<WorldGroupSerializable> wgCol;
+
+    private static DatabaseThreads dbThreads;
 
     /**
      * Creates a connection to the MongoDB com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
@@ -81,10 +82,13 @@ public class DatabaseLink {
             mongoClient = MongoClients.create(clientSettings);
             mongoDatabase = mongoClient.getDatabase(dbName);
             userCol = mongoDatabase.getCollection("users");
-            wgCol = mongoDatabase.getCollection("worldgroups", Team.class);
+            wgCol = mongoDatabase.getCollection("worldgroups", WorldGroupSerializable.class);
         } catch(MongoException exception) {
             SPSSpigot.logger().log(Level.SEVERE, "Something went wrong connecting to the MongoDB com.github.gcc_minecraft_team.sps_mc_link_spigot.database, is " + DBFILE + " set up correctly?");
         }
+
+        // create an instance of DatabaseThreads with our connection info
+        dbThreads = new DatabaseThreads(mongoClient, mongoDatabase, userCol, wgCol);
     }
 
     /**
@@ -106,8 +110,15 @@ public class DatabaseLink {
      * Gets all the world groups. Should generally be only called on startup.
      * @return A {@link Set} of the {@link WorldGroup} world groups.
      */
-    public static Set<WorldGroup> getWorldGroups() { // FIXME: Doesn't do anything.
-        return new HashSet<>();
+    public static Set<WorldGroup> getWorldGroups() {
+        MongoCursor<WorldGroupSerializable> cur = wgCol.find().iterator();
+        Set<WorldGroup> output = new HashSet<>();
+        while(cur.hasNext()) {
+            WorldGroupSerializable wgs = (WorldGroupSerializable)cur.next();
+            WorldGroup wg = new WorldGroup(wgs);
+            output.add(wg);
+        }
+        return output;
     }
 
     /**
@@ -115,7 +126,8 @@ public class DatabaseLink {
      * @param worldGroup The {@link WorldGroup} of the world group.
      * @return {@code true} if successful.
      */
-    public static boolean addWorldGroup(WorldGroup worldGroup) { // FIXME: Doesn't do anything
+    public static boolean addWorldGroup(WorldGroup worldGroup) {
+        dbThreads.new AddWorldGroup(new WorldGroupSerializable(worldGroup)).run();
         return true;
     }
 
@@ -124,7 +136,8 @@ public class DatabaseLink {
      * @param worldGroup The {@link WorldGroup} of the world group.
      * @return {@code true} if successful.
      */
-    public static boolean removeWorldGroup(WorldGroup worldGroup) { // FIXME: Doesn't do anything
+    public static boolean removeWorldGroup(WorldGroup worldGroup) {
+        dbThreads.new RemoveWorldGroup(worldGroup).run();
         return true;
     }
 
@@ -132,16 +145,16 @@ public class DatabaseLink {
      * Adds a new {@link Team} to the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
      * @param team The {@link Team} to add.
      */
-    public static void addTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
-        wgCol.insertOne(team);
+    public static void addTeam(@NotNull Team team) {
+        dbThreads.new UpdateTeam(team).run();
     }
 
     /**
      * Updates an existing {@link Team} in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
      * @param team The {@link Team} to update.
      */
-    public static void updateTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
-        wgCol.updateOne(new BasicDBObject("name", team.getName()), new BasicDBObject("$set", team));
+    public static void updateTeam(@NotNull Team team) {
+        dbThreads.new UpdateTeam(team).run();
     }
 
     /**
@@ -149,8 +162,8 @@ public class DatabaseLink {
      * @param team The {@link Team} to get.
      * @return The team.
      */
-    public static Team getTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
-        return wgCol.find(new BasicDBObject("name", team.getName())).first();
+    public static Team getTeam(@NotNull Team team) {
+        return new WorldGroup(wgCol.find(Filters.eq("WGID", team.getWorldGroup().getID())).first()).getTeam(team.getName());
     }
 
     /**
@@ -158,21 +171,34 @@ public class DatabaseLink {
      * @param worldGroup The {@link WorldGroup} worldGroup from which to find the {@link Team}.
      * @return A {@link Set} of {@link Team}s found.
      */
-    public static Set<Team> getTeams(@NotNull WorldGroup worldGroup) { // FIXME: Update this to the new world groups system.
-        FindIterable<Team> teams = wgCol.find();
-        Set<Team> output = new HashSet<>();
-        for (Team team : teams) {
-            output.add(team);
-        }
-        return output;
+    public static Set<Team> getTeams(@NotNull WorldGroup worldGroup) {
+        return new WorldGroup(wgCol.find(Filters.eq("WGID", worldGroup.getID())).first()).getTeams();
     }
 
     /**
      * Removes a {@link Team} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
      * @param team The {@link Team} to remove.
      */
-    public static void removeTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
+    public static void removeTeam(@NotNull Team team) {
         wgCol.deleteOne(new BasicDBObject("name", team.getName()));
+    }
+
+    /**
+     * Adds a new {@link World} to the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * @param wg The {@link WorldGroup} to add the world to.
+     * @param world The {@link World} to add.
+     */
+    public static void addWorld(@NotNull WorldGroup wg, @NotNull World world) {
+        dbThreads.new UpdateWorld(wg, world).run();
+    }
+
+    /**
+     * Removes a {@link World} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * @param wg The {@link WorldGroup} to add the world to.
+     * @param world The {@link World} to add.
+     */
+    public static void removeWorld(@NotNull WorldGroup wg, @NotNull World world) {
+        dbThreads.new RemoveWorld(wg, world).run();
     }
 
     /**
@@ -180,33 +206,8 @@ public class DatabaseLink {
      * @param claims The claim map to save.
      * @param worldGroup The {@link WorldGroup} worldGroup to which to save the claims.
      */
-    public static void saveClaims(@NotNull Map<UUID, Set<Chunk>> claims, @NotNull WorldGroup worldGroup) { // FIXME: Update this to the new world groups system.
-
-        for (Map.Entry<UUID, Set<Chunk>> player : claims.entrySet()) {
-            BasicDBObject updateFields = new BasicDBObject();
-
-            // load claimed chunks for the player
-            ArrayList<ArrayList<Integer>> claimList = new ArrayList<>();
-            for (Chunk cChunk : player.getValue()) {
-                ArrayList<Integer> cCoords = new ArrayList<>();
-                cCoords.add(cChunk.getX());
-                cCoords.add(cChunk.getZ());
-                claimList.add(cCoords);
-            }
-
-            // add it to the update queue
-            updateFields.append("claims", claimList);
-
-            // set query
-            BasicDBObject setQuery = new BasicDBObject();
-            setQuery.append("$set", updateFields);
-
-            // upsert means it will create a new field if the player has never claimed land before
-            UpdateOptions options = new UpdateOptions().upsert(true);
-
-            // push to the com.github.gcc_minecraft_team.sps_mc_link_spigot.database
-            userCol.updateOne(new Document("mcUUID", player.getKey().toString()), setQuery, options);
-        }
+    public static void saveClaims(@NotNull Map<UUID, Set<Chunk>> claims, @NotNull WorldGroup worldGroup) {
+        dbThreads.new UpdateClaims(claims, new WorldGroupSerializable(worldGroup)).run();
     }
 
     /**
@@ -215,29 +216,8 @@ public class DatabaseLink {
      * @return The worldGroup's claim map.
      */
     @NotNull
-    public static Map<UUID, Set<Chunk>> getClaims(@NotNull WorldGroup worldGroup) { // FIXME: Update this to the new world groups system.
-        Map<UUID, Set<Chunk>> output = new HashMap<>();
-        FindIterable<Document> allDocs = userCol.find();
-        for(Document doc : allDocs) {
-            UUID uuid = UUID.fromString(doc.getString("mcUUID"));
-            if (doc.containsKey("claims")) {
-                ArrayList<Object> claimList = (ArrayList<Object>) doc.get("claims");
-                Set<Chunk> chunksSet = new HashSet<>();
-                if (claimList != null) {
-                    for (Object chunkCoords : claimList) {
-                        ArrayList<Integer> cc = (ArrayList<Integer>) chunkCoords;
-                        Chunk c = SPSSpigot.server().getWorlds().get(0).getChunkAt(cc.get(0), cc.get(1));
-                        if (c != null) {
-                            chunksSet.add(c);
-                        }
-                    }
-                }
-                if (!chunksSet.isEmpty()) {
-                    output.put(uuid, chunksSet);
-                }
-            }
-        }
-        return output;
+    public static Map<UUID, Set<Chunk>> getClaims(@NotNull WorldGroup worldGroup) {
+        return new WorldGroup(wgCol.find(Filters.eq("WGID", worldGroup.getID())).first()).getClaims();
     }
 
     /**

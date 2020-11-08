@@ -1,25 +1,33 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.database;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimHandler;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroupSerializable;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.Updates;
 import org.bson.Document;
+import org.bukkit.Chunk;
+import org.bukkit.World;
 
-import javax.print.Doc;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 public class DatabaseThreads {
 
-    private static MongoClient mongoClient;
-    private static MongoDatabase mongoDatabase;
+    private MongoClient mongoClient;
+    private MongoDatabase mongoDatabase;
 
-    private static MongoCollection<Document> userCol;
-    private static MongoCollection<WorldGroup> wgCol;
+    private MongoCollection<Document> userCol;
+    private MongoCollection<WorldGroupSerializable> wgCol;
 
-    public DatabaseThreads(MongoClient mongoClient, MongoDatabase mongoDatabase, MongoCollection<Document> userCol, MongoCollection<WorldGroup> wgCol) {
+    public DatabaseThreads(MongoClient mongoClient, MongoDatabase mongoDatabase, MongoCollection<Document> userCol, MongoCollection<WorldGroupSerializable> wgCol) {
         this.mongoClient = mongoClient;
         this.mongoDatabase = mongoDatabase;
         this.userCol = userCol;
@@ -27,12 +35,12 @@ public class DatabaseThreads {
     }
 
     /**
-     * Adds a @{link WorldGroup} to the database on thread.
+     * Adds a {@link WorldGroup} to the database on thread.
      */
     class AddWorldGroup implements Runnable {
 
-        private final WorldGroup worldGroup;
-        AddWorldGroup(WorldGroup worldGroup) {
+        private final WorldGroupSerializable worldGroup;
+        AddWorldGroup(WorldGroupSerializable worldGroup) {
             this.worldGroup = worldGroup;
         }
 
@@ -42,7 +50,7 @@ public class DatabaseThreads {
     }
 
     /**
-     * Removes a @{link WorldGroup} from the database on thread.
+     * Removes a {@link WorldGroup} from the database on thread.
      */
     class RemoveWorldGroup implements Runnable {
 
@@ -52,10 +60,91 @@ public class DatabaseThreads {
         }
 
         public void run() {
-            wgCol.deleteOne(new Document("worldgroup_id", worldGroup.getID()));
+            wgCol.deleteOne(new Document("WGID", worldGroup.getID()));
         }
     }
 
+    /**
+     * Adds (or updates) a {@link Team} to the database on thread.
+     */
+    class UpdateTeam implements Runnable {
 
+        private final Team team;
+        UpdateTeam(Team team) {
+            this.team = team;
+        }
+
+        public void run() {
+            wgCol.updateOne(Filters.eq("WGID", team.getWorldGroup().getID()), Updates.addToSet("teams", team), new UpdateOptions().upsert(true));
+        }
+    }
+
+    /**
+     * Adds (or updates) a world ID to the database on thread.
+     */
+    class UpdateWorld implements Runnable {
+
+        private final World world;
+        private final WorldGroup wg;
+
+        UpdateWorld(WorldGroup wg, World world) {
+            this.wg = wg;
+            this.world = world;
+        }
+
+        public void run() {
+            wgCol.updateOne(Filters.eq("WGID", wg.getID().toString()), Updates.addToSet("worlds", world.getUID().toString()), new UpdateOptions().upsert(true));
+        }
+    }
+
+    /**
+     * Removes a world ID from the database on thread.
+     */
+    class RemoveWorld implements Runnable {
+
+        private final World world;
+        private final WorldGroup wg;
+
+        RemoveWorld(WorldGroup wg, World world) {
+            this.wg = wg;
+            this.world = world;
+        }
+
+        public void run() {
+            wgCol.updateOne(Filters.eq("WGID", wg.getID()), new Document("$pull", world.getUID().toString()));
+        }
+    }
+
+    /**
+     * Updates the claims for a specified {@link WorldGroup};
+     */
+    class UpdateClaims implements Runnable {
+        private final WorldGroupSerializable worldGroup;
+        private final Map<UUID, Set<Chunk>> claims;
+
+        UpdateClaims(Map<UUID, Set<Chunk>> claims, WorldGroupSerializable worldGroup) {
+            this.worldGroup = worldGroup;
+            this.claims = claims;
+        }
+
+        public void run() {
+            // loop through players who have claims
+            for (Map.Entry<UUID, Set<Chunk>> player : claims.entrySet()) {
+                UUID uuid = player.getKey();
+                Set<Chunk> uuidClaims = player.getValue();
+
+                // add all claimed chunks
+                for (Chunk chunk : uuidClaims) {
+                    DBObject dbChunk = new BasicDBObject();
+                    dbChunk.put("x", chunk.getX());
+                    dbChunk.put("z", chunk.getZ());
+                    dbChunk.put("world", chunk.getWorld().getUID());
+                    wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("claims", Updates.addToSet(uuid.toString(), dbChunk)), new UpdateOptions().upsert(true));
+                }
+
+            }
+        }
+
+    }
 }
 
