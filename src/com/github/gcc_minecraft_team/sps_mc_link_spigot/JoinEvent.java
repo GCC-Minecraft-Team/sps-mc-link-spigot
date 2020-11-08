@@ -8,11 +8,15 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitScheduler;
 import xyz.haoshoku.nick.api.NickAPI;
 
@@ -99,6 +103,18 @@ public class JoinEvent implements Listener {
     public void onPlayerLeave(PlayerQuitEvent event) {
         event.setQuitMessage("");
         SPSSpigot.perms().removeAttachment(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onPlayerSpawn(PlayerRespawnEvent event) {
+        Location pLoc = event.getRespawnLocation();
+        double zdist = pLoc.getZ() - event.getPlayer().getWorld().getSpawnLocation().getZ();
+        double xdist = pLoc.getX() - event.getPlayer().getWorld().getSpawnLocation().getX();
+        if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
+            // give starting boat
+            event.getPlayer().getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));
+            SPSSpigot.showBoard(event.getPlayer());
+        }
     }
 
 }

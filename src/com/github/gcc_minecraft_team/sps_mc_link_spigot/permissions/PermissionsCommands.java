@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.ChatColor;
@@ -17,39 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 public class PermissionsCommands implements CommandExecutor {
-
-    /**
-     * Builds the text for a list to be sent in chat.
-     * @param title The title of the list. May safely include {@link ChatColor}s.
-     * @param items A {@link List} of the items to include.
-     * @return A multi-line text representation of the list.
-     */
-    @NotNull
-    public static String buildListText(@NotNull String title, @NotNull List<String> items) {
-        StringBuilder str = new StringBuilder(ChatColor.BOLD + "====[" + title.strip() + ChatColor.RESET + ChatColor.BOLD + "]====\n");
-        for (String item : items) {
-            str.append(ChatColor.RESET).append(item.strip()).append("\n");
-        }
-        return str.toString();
-    }
-
-    /**
-     * Builds the text for a list to be sent in chat, with boolean values for each item.
-     * @param title The title of the list. May safely include {@link ChatColor}s.
-     * @param items A {@link Map} of the items to include and their boolean values.
-     * @return A multi-line text representation of the list.
-     */
-    @NotNull
-    public static String buildListBooleanText(@NotNull String title, @NotNull Map<String, Boolean> items) {
-        List<String> strItems = new ArrayList<>();
-        for (Map.Entry<String, Boolean> item : items.entrySet()) {
-            if (item.getValue())
-                strItems.add(item.getKey().strip() + ChatColor.RESET + " - " + ChatColor.GREEN + "true");
-            else
-                strItems.add(item.getKey().strip() + ChatColor.RESET + " - " + ChatColor.RED + "false");
-        }
-        return buildListText(title, strItems);
-    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
@@ -116,7 +84,7 @@ public class PermissionsCommands implements CommandExecutor {
                 Map<String, Boolean> perms = new HashMap<>();
                 for (Map.Entry<Permission, Boolean> p : SPSSpigot.perms().getMemberPerms().entrySet())
                     perms.put(p.getKey().getName(), p.getValue());
-                sender.sendMessage(buildListBooleanText("MEMBERS", perms));
+                sender.sendMessage(CMD.buildListBooleanText("MEMBERS", perms));
                 return true;
             } else {
                 // args[1] is invalid
@@ -170,7 +138,7 @@ public class PermissionsCommands implements CommandExecutor {
                     return true;
                 } else if (args.length == 2) {
                     // List all ranks
-                    sender.sendMessage(buildListText("RANKS", new ArrayList<>(SPSSpigot.perms().getRankNames())));
+                    sender.sendMessage(CMD.buildListText("RANKS", new ArrayList<>(SPSSpigot.perms().getRankNames())));
                     return true;
                 } else {
                     Rank rank = SPSSpigot.perms().getRank(args[2]);
@@ -184,7 +152,7 @@ public class PermissionsCommands implements CommandExecutor {
                         Map<String, Boolean> permStrs = new HashMap<>();
                         for (Map.Entry<Permission, Boolean> perm : rank.getPerms().entrySet())
                             permStrs.put(perm.getKey().getName(), perm.getValue());
-                        sender.sendMessage(buildListBooleanText(rank.getColor() + rank.getName(), permStrs));
+                        sender.sendMessage(CMD.buildListBooleanText(rank.getColor() + rank.getName(), permStrs));
                         return true;
                     }
                 }
@@ -393,7 +361,7 @@ public class PermissionsCommands implements CommandExecutor {
                         for (Rank rank : SPSSpigot.perms().getPlayerRanks(player.getUniqueId()))
                             items.add(rank.getColor() + rank.getName());
                         // Generate text
-                        sender.sendMessage(buildListText(NickAPI.getName(player), items));
+                        sender.sendMessage(CMD.buildListText(NickAPI.getName(player), items));
                         return true;
                     }
                 }

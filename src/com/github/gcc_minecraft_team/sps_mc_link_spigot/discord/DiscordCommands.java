@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class DiscordCommands implements CommandExecutor {
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player)) {

@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 public class ModerationCommands implements CommandExecutor {
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         String modPrefix = ChatColor.AQUA + "[SPSMC Mod System]: " + ChatColor.WHITE;

@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.ChatColor;
@@ -15,20 +16,6 @@ import java.util.Set;
 import java.util.UUID;
 
 public class TeamCommands implements CommandExecutor {
-
-    /**
-     * Builds the text for a list to be sent in chat.
-     * @param title The title of the list. May safely include {@link ChatColor}s.
-     * @param items A {@link List} of the items to include.
-     * @return A multi-line text representation of the list.
-     */
-    public static String buildListText(String title, List<String> items) {
-        StringBuilder str = new StringBuilder(ChatColor.BOLD + "====[" + title.strip() + ChatColor.RESET + ChatColor.BOLD + "]====\n");
-        for (String item : items) {
-            str.append(ChatColor.RESET).append(item.strip()).append("\n");
-        }
-        return str.toString();
-    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -155,7 +142,7 @@ public class TeamCommands implements CommandExecutor {
                 // List all teams
                 List<String> names = new ArrayList<>(worldGroup.getTeamNames());
                 names.sort(String.CASE_INSENSITIVE_ORDER);
-                sender.sendMessage(buildListText("TEAMS", names));
+                sender.sendMessage(CMD.buildListText("TEAMS", names));
                 return true;
             } else if (args.length == 2) {
                 Team team = worldGroup.getTeam(args[1]);
@@ -165,7 +152,7 @@ public class TeamCommands implements CommandExecutor {
                     return true;
                 } else {
                     // List info on the given team
-                    sender.sendMessage(buildListText(team.getName(), team.getMemberNames()));
+                    sender.sendMessage(CMD.buildListText(team.getName(), team.getMemberNames()));
                     return true;
                 }
             } else {
@@ -188,7 +175,7 @@ public class TeamCommands implements CommandExecutor {
                 ArrayList<String> names = new ArrayList<>();
                 for (UUID req : requests)
                     names.add(DatabaseLink.getSPSName(req));
-                sender.sendMessage(buildListText(team.getName() + " Join Requests", names));
+                sender.sendMessage(CMD.buildListText(team.getName() + " Join Requests", names));
                 // TODO: Make this a tellraw for team leaders to be able to click to run accept/deny
                 return true;
             } else if (args[1].equals("accept")) {
