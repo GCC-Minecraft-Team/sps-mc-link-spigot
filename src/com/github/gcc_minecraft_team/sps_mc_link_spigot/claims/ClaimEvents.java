@@ -3,6 +3,7 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -15,6 +16,10 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTakeLecternBookEvent;
+import org.bukkit.event.player.*;
+import org.bukkit.inventory.ItemStack;
+import org.spigotmc.event.player.PlayerSpawnLocationEvent;
+import xyz.haoshoku.nick.api.NickAPI;
 
 import java.util.*;
 
@@ -43,6 +48,18 @@ public class ClaimEvents implements Listener {
     }
 
     @EventHandler
+    public void onPlayerSpawn(PlayerRespawnEvent event) {
+        Location pLoc = event.getRespawnLocation();
+        Double zdist = pLoc.getZ() - event.getPlayer().getWorld().getSpawnLocation().getZ();
+        Double xdist = pLoc.getX() - event.getPlayer().getWorld().getSpawnLocation().getX();
+        if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
+            // give starting boat
+            event.getPlayer().getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));
+            SPSSpigot.showBoard(event.getPlayer());
+        }
+    }
+
+    @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         ClaimHandler worldGroup = SPSSpigot.claims(event.getPlayer().getWorld());
         if (worldGroup.isInSpawn(event.getPlayer().getLocation())) {
@@ -67,7 +84,7 @@ public class ClaimEvents implements Listener {
     public void onEntitySpawn(EntitySpawnEvent event) {
         ClaimHandler worldGroup = SPSSpigot.claims(event.getLocation().getWorld());
         if (!event.getEntity().getType().equals(EntityType.DROPPED_ITEM)) {
-            if (worldGroup.isEntityInSpawn(event.getEntity())) {
+            if (worldGroup.isEntityInSpawn(event.getEntity()) && event.getEntity().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
                 event.setCancelled(true);
             }
         }
@@ -85,7 +102,7 @@ public class ClaimEvents implements Listener {
     public void onBlockDamage(BlockDamageEvent event) {
         Chunk chunk = event.getBlock().getChunk();
         ClaimHandler worldGroup = SPSSpigot.claims(chunk.getWorld());
-        if (worldGroup.isInSpawn(event.getPlayer().getLocation())) {
+        if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && event.getPlayer().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
             event.setCancelled(true);
         } else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
             event.setCancelled(true);
@@ -95,7 +112,7 @@ public class ClaimEvents implements Listener {
     public void onEntityDamageEvent(EntityDamageByEntityEvent event) {
         Entity target = event.getEntity();
         ClaimHandler worldGroup = SPSSpigot.claims(target.getWorld());
-        if (worldGroup.isEntityInSpawn(event.getDamager())) {
+        if (worldGroup.isEntityInSpawn(event.getDamager()) && event.getEntity().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
             event.setCancelled(true);
         } else if (event.getDamager() instanceof Player && !worldGroup.canModifyChunk(event.getDamager().getUniqueId(), target.getLocation().getChunk())) {
             if (event.getEntity() instanceof Mob) {
@@ -118,7 +135,9 @@ public class ClaimEvents implements Listener {
     public void onBlockIgnite(BlockIgniteEvent event) {
         Chunk toChunk = event.getBlock().getChunk();
         ClaimHandler worldGroup = SPSSpigot.claims(toChunk.getWorld());
-        if (event.getPlayer() != null) {
+        if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && event.getPlayer().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
+            event.setCancelled(true);
+        } else if (event.getPlayer() != null) {
             if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), toChunk))
                 event.setCancelled(true);
         } else if (event.getIgnitingEntity() != null) {
