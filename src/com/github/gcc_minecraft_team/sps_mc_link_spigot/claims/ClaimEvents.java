@@ -42,7 +42,7 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-        ClaimHandler worldGroup = SPSSpigot.getWorldGroup(event.getPlayer().getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getPlayer().getWorld());
         if (worldGroup != null && worldGroup.isInSpawn(event.getPlayer().getLocation())) {
             if (event.getRightClicked() instanceof ItemFrame && !((ItemFrame) event.getRightClicked()).getItem().getType().equals(Material.AIR)) { // We don't need to prevent put items into the empty item frame (that's out of scope of this plugin)
                 event.setCancelled(true);
@@ -55,7 +55,7 @@ public class ClaimEvents implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.hasBlock() && !interactExceptions.contains(event.getClickedBlock().getType())) {
             Chunk chunk = event.getClickedBlock().getChunk();
-            ClaimHandler worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+            WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
             if (worldGroup != null && !worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
                 event.setCancelled(true);
         }
@@ -63,7 +63,7 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onEntitySpawn(EntitySpawnEvent event) {
-        ClaimHandler worldGroup = SPSSpigot.getWorldGroup(event.getLocation().getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getLocation().getWorld());
         if (!event.getEntity().getType().equals(EntityType.DROPPED_ITEM)) {
             if (worldGroup != null && worldGroup.isEntityInSpawn(event.getEntity()) && event.getEntity().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
                 event.setCancelled(true);
@@ -74,7 +74,7 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         Chunk chunk = event.getBlock().getChunk();
-        ClaimHandler worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
         if (worldGroup != null && !worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
             event.setCancelled(true);
     }
@@ -82,7 +82,7 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onBlockDamage(BlockDamageEvent event) {
         Chunk chunk = event.getBlock().getChunk();
-        ClaimHandler worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
         if (worldGroup != null) {
             if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && event.getPlayer().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
                 event.setCancelled(true);
@@ -94,7 +94,7 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onEntityDamageEvent(EntityDamageByEntityEvent event) {
         Entity target = event.getEntity();
-        ClaimHandler worldGroup = SPSSpigot.getWorldGroup(target.getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(target.getWorld());
         if (worldGroup != null) {
             if (worldGroup.isEntityInSpawn(event.getDamager()) && event.getEntity().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
                 event.setCancelled(true);
@@ -119,7 +119,7 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onBlockIgnite(BlockIgniteEvent event) {
         Chunk toChunk = event.getBlock().getChunk();
-        ClaimHandler worldGroup = SPSSpigot.getWorldGroup(toChunk.getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(toChunk.getWorld());
         if (worldGroup != null) {
             if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && event.getPlayer().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
                 event.setCancelled(true);
@@ -141,14 +141,14 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onPlayerTakeLecternBook(PlayerTakeLecternBookEvent event) {
         Chunk chunk = event.getLectern().getChunk();
-        ClaimHandler worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
         if (worldGroup != null && !worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
             event.setCancelled(true);
     }
 
     @EventHandler
     public void onBlockPistonExtendEvent(BlockPistonExtendEvent event) {
-        ClaimHandler worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
         if (worldGroup != null) {
             UUID piston = worldGroup.getChunkOwner(event.getBlock().getChunk());
             Set<Chunk> moveCurrent = new HashSet<>();
@@ -176,7 +176,7 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onBlockPistonRetractEvent(BlockPistonRetractEvent event) {
-        ClaimHandler worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
         if (worldGroup != null) {
             UUID piston = worldGroup.getChunkOwner(event.getBlock().getChunk());
             Set<Chunk> moveCurrent = new HashSet<>();
@@ -206,7 +206,7 @@ public class ClaimEvents implements Listener {
     public void onBlockSpreadEvent(BlockSpreadEvent event) {
         // Only CLAIMS (and you) can prevent forest fires!
         if (event.getBlock().getType().equals(Material.FIRE)) {
-            ClaimHandler worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
+            WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
             if (worldGroup != null && !worldGroup.canModifyChunk(worldGroup.getChunkOwner(event.getSource().getChunk()), event.getBlock().getChunk())) {
                 event.setCancelled(true);
             }
@@ -217,7 +217,7 @@ public class ClaimEvents implements Listener {
     public void onEntityExplodeEvent(EntityExplodeEvent event) {
         // Stop TNT explosions from breaking claimed blocks
         if (!event.getEntityType().isAlive()) {
-            ClaimHandler worldGroup = SPSSpigot.getWorldGroup(event.getEntity().getWorld());
+            WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getEntity().getWorld());
             if (worldGroup != null) {
                 for (int i = event.blockList().size() - 1; i >= 0; i--) {
                     if (worldGroup.getChunkOwner(event.blockList().get(i).getChunk()) != null) {

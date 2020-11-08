@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 public class SPSSpigot extends JavaPlugin {
 
     public PermissionsHandler perms;
-    private Set<ClaimHandler> worldGroups;
+    private Set<WorldGroup> worldGroups;
     public final Map<UUID, FastBoard> boards = new HashMap<>();
 
     @Override
@@ -112,11 +112,11 @@ public class SPSSpigot extends JavaPlugin {
     /**
      * Getter for a world group.
      * @param name The name of the world group.
-     * @return The world group's {@link ClaimHandler}.
+     * @return The world group's {@link WorldGroup}.
      */
     @Nullable
-    public ClaimHandler getWorldGroup(@NotNull String name) {
-        for (ClaimHandler worldGroup : worldGroups) {
+    public WorldGroup getWorldGroup(@NotNull String name) {
+        for (WorldGroup worldGroup : worldGroups) {
             if (worldGroup.getName().equalsIgnoreCase(name))
                 return worldGroup;
         }
@@ -125,12 +125,12 @@ public class SPSSpigot extends JavaPlugin {
 
     /**
      * Getter for a world group.
-     * @param world The {@link World} whose worldGroup {@link ClaimHandler} should be found.
-     * @return The world group's {@link ClaimHandler}, or {@code null} if the {@link World} is not in a world group.
+     * @param world The {@link World} whose worldGroup {@link WorldGroup} should be found.
+     * @return The world group's {@link WorldGroup}, or {@code null} if the {@link World} is not in a world group.
      */
     @Nullable
-    public static ClaimHandler getWorldGroup(@NotNull World world) {
-        for (ClaimHandler worldGroup : plugin().worldGroups) {
+    public static WorldGroup getWorldGroup(@NotNull World world) {
+        for (WorldGroup worldGroup : plugin().worldGroups) {
             if (worldGroup.hasWorld(world))
                 return worldGroup;
         }
@@ -139,19 +139,19 @@ public class SPSSpigot extends JavaPlugin {
 
     /**
      * Gets all world groups.
-     * @return An unmodifiable {@link Set} of each world group's {@link ClaimHandler}.
+     * @return An unmodifiable {@link Set} of each world group's {@link WorldGroup}.
      */
     @NotNull
-    public Set<ClaimHandler> getWorldGroups() {
+    public Set<WorldGroup> getWorldGroups() {
         return Collections.unmodifiableSet(worldGroups);
     }
 
     /**
      * Adds a new world group.
-     * @param worldGroup The {@link ClaimHandler} of the world group to add.
+     * @param worldGroup The {@link WorldGroup} of the world group to add.
      * @return {@code true} if successful; {@code false} if a world group already exists with this name.
      */
-    public boolean addWorldGroup(@NotNull ClaimHandler worldGroup) {
+    public boolean addWorldGroup(@NotNull WorldGroup worldGroup) {
         if (getWorldGroup(worldGroup.getName()) == null) {
             worldGroups.add(worldGroup);
             DatabaseLink.addWorldGroup(worldGroup);
@@ -163,10 +163,10 @@ public class SPSSpigot extends JavaPlugin {
 
     /**
      * Removes a world group.
-     * @param worldGroup The {@link ClaimHandler} of the world group to remove.
+     * @param worldGroup The {@link WorldGroup} of the world group to remove.
      * @return {@code true} if successful; {@code false} if this world group is unknown.
      */
-    public boolean removeWorldGroup(@NotNull ClaimHandler worldGroup) {
+    public boolean removeWorldGroup(@NotNull WorldGroup worldGroup) {
         if (worldGroups.remove(worldGroup)) {
             DatabaseLink.removeWorldGroup(worldGroup);
             return true;

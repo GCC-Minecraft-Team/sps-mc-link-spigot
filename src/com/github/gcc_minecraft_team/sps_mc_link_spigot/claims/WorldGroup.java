@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class ClaimHandler {
+public class WorldGroup {
 
     private String name;
     private Set<World> worlds;
@@ -25,7 +25,7 @@ public class ClaimHandler {
      * This is the simple constructor, generally for new instances not loaded from file.
      * @param name The name of this worldGroup.
      */
-    public ClaimHandler(String name) {
+    public WorldGroup(String name) {
         this.name = name;
         worlds = new HashSet<>();
         claimable = new HashSet<>();
@@ -38,14 +38,14 @@ public class ClaimHandler {
 
 
     /**
-     * Saves data from this {@link ClaimHandler} to com.github.gcc_minecraft_team.sps_mc_link_spigot.database
+     * Saves data from this {@link WorldGroup} to com.github.gcc_minecraft_team.sps_mc_link_spigot.database
      */
     public void saveCurrentClaims() {
         DatabaseLink.saveClaims(claims, this);
     }
 
     /**
-     * Loads data for this {@link ClaimHandler} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database
+     * Loads data for this {@link WorldGroup} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database
      */
     public void loadFromDatabase() {
         teams = DatabaseLink.getTeams(this);
@@ -61,7 +61,7 @@ public class ClaimHandler {
     }
 
     /**
-     * Gets whether this {@link ClaimHandler}'s worldGroup contains the given {@link World}.
+     * Gets whether this {@link WorldGroup}'s worldGroup contains the given {@link World}.
      * @param world The {@link World} to check for.
      * @return {@code true} if this worldGroup contains the {@link World}.
      */
@@ -382,7 +382,7 @@ public class ClaimHandler {
      * Claims a {@link Chunk} for a given player.
      * @param player The {@link UUID} of the player.
      * @param chunk The {@link Chunk} to be claimed.
-     * @return {@code true} if successful. This means the {@link Chunk} is not already claimed, the player is not exceeding their claim limit, and the {@link World} is claimable by this {@link ClaimHandler}.
+     * @return {@code true} if successful. This means the {@link Chunk} is not already claimed, the player is not exceeding their claim limit, and the {@link World} is claimable by this {@link WorldGroup}.
      */
     public boolean claimChunk(@NotNull UUID player, @NotNull Chunk chunk) {
         if (!claimable.contains(chunk.getWorld())) {

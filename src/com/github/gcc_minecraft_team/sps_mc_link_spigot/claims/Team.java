@@ -17,9 +17,9 @@ public class Team implements ConfigurationSerializable {
     @BsonProperty(value = "leader")
     public UUID leader;
 
-    private ClaimHandler worldGroup;
+    private WorldGroup worldGroup;
 
-    public Team(@NotNull ClaimHandler worldGroup, @NotNull String name, @NotNull UUID leader) {
+    public Team(@NotNull WorldGroup worldGroup, @NotNull String name, @NotNull UUID leader) {
         this.name = name;
         this.leader = leader;
         members = new HashSet<>();
@@ -36,7 +36,7 @@ public class Team implements ConfigurationSerializable {
     }
 
     @NotNull
-    public ClaimHandler getWorldGroup() {
+    public WorldGroup getWorldGroup() {
         return worldGroup;
     }
 

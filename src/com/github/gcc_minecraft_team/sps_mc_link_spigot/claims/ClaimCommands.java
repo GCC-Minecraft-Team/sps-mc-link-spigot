@@ -24,7 +24,7 @@ public class ClaimCommands implements CommandExecutor {
             return true;
         }
         Player player = (Player) sender;
-        ClaimHandler worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
         if (worldGroup == null) {
             sender.sendMessage(ChatColor.RED + "This world is not in a world group, so claims cannot be made.");
             return true;

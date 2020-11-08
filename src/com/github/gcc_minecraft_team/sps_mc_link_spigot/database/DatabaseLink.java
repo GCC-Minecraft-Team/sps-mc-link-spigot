@@ -1,7 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.database;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimHandler;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
 import com.mongodb.*;
 import com.mongodb.client.*;
@@ -104,27 +104,27 @@ public class DatabaseLink {
 
     /**
      * Gets all the world groups. Should generally be only called on startup.
-     * @return A {@link Set} of the {@link ClaimHandler} world groups.
+     * @return A {@link Set} of the {@link WorldGroup} world groups.
      */
-    public static Set<ClaimHandler> getWorldGroups() { // FIXME: Doesn't do anything.
+    public static Set<WorldGroup> getWorldGroups() { // FIXME: Doesn't do anything.
         return new HashSet<>();
     }
 
     /**
      * Adds a world group to the database. This should not be called to update the world group.
-     * @param worldGroup The {@link ClaimHandler} of the world group.
+     * @param worldGroup The {@link WorldGroup} of the world group.
      * @return {@code true} if successful.
      */
-    public static boolean addWorldGroup(ClaimHandler worldGroup) { // FIXME: Doesn't do anything
+    public static boolean addWorldGroup(WorldGroup worldGroup) { // FIXME: Doesn't do anything
         return true;
     }
 
     /**
      * Remove a world group from the database.
-     * @param worldGroup The {@link ClaimHandler} of the world group.
+     * @param worldGroup The {@link WorldGroup} of the world group.
      * @return {@code true} if successful.
      */
-    public static boolean removeWorldGroup(ClaimHandler worldGroup) { // FIXME: Doesn't do anything
+    public static boolean removeWorldGroup(WorldGroup worldGroup) { // FIXME: Doesn't do anything
         return true;
     }
 
@@ -155,10 +155,10 @@ public class DatabaseLink {
 
     /**
      * Gets all {@link Team}s in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
-     * @param worldGroup The {@link ClaimHandler} worldGroup from which to find the {@link Team}.
+     * @param worldGroup The {@link WorldGroup} worldGroup from which to find the {@link Team}.
      * @return A {@link Set} of {@link Team}s found.
      */
-    public static Set<Team> getTeams(@NotNull ClaimHandler worldGroup) { // FIXME: Update this to the new world groups system.
+    public static Set<Team> getTeams(@NotNull WorldGroup worldGroup) { // FIXME: Update this to the new world groups system.
         FindIterable<Team> teams = teamCol.find();
         Set<Team> output = new HashSet<>();
         for (Team team : teams) {
@@ -178,9 +178,9 @@ public class DatabaseLink {
     /**
      * Saves getWorldGroup to the database.
      * @param claims The claim map to save.
-     * @param worldGroup The {@link ClaimHandler} worldGroup to which to save the claims.
+     * @param worldGroup The {@link WorldGroup} worldGroup to which to save the claims.
      */
-    public static void saveClaims(@NotNull Map<UUID, Set<Chunk>> claims, @NotNull ClaimHandler worldGroup) { // FIXME: Update this to the new world groups system.
+    public static void saveClaims(@NotNull Map<UUID, Set<Chunk>> claims, @NotNull WorldGroup worldGroup) { // FIXME: Update this to the new world groups system.
 
         for (Map.Entry<UUID, Set<Chunk>> player : claims.entrySet()) {
             BasicDBObject updateFields = new BasicDBObject();
@@ -210,12 +210,12 @@ public class DatabaseLink {
     }
 
     /**
-     * @param worldGroup The {@link ClaimHandler} worldGroup from which to get claims.
+     * @param worldGroup The {@link WorldGroup} worldGroup from which to get claims.
      * Gets getWorldGroup from the database.
      * @return The worldGroup's claim map.
      */
     @NotNull
-    public static Map<UUID, Set<Chunk>> getClaims(@NotNull ClaimHandler worldGroup) { // FIXME: Update this to the new world groups system.
+    public static Map<UUID, Set<Chunk>> getClaims(@NotNull WorldGroup worldGroup) { // FIXME: Update this to the new world groups system.
         Map<UUID, Set<Chunk>> output = new HashMap<>();
         FindIterable<Document> allDocs = userCol.find();
         for(Document doc : allDocs) {

@@ -1,6 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimHandler;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import net.md_5.bungee.api.ChatMessageType;
@@ -60,7 +60,7 @@ public class JoinEvent implements Listener {
 
             } else {
                 // claim map
-                ClaimHandler worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
+                WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
 
                 BukkitScheduler scheduler = SPSSpigot.server().getScheduler();
                 scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), () -> {

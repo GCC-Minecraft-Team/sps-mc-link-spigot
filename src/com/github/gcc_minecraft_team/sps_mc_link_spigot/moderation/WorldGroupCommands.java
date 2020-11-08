@@ -2,7 +2,7 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimHandler;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
@@ -30,7 +30,7 @@ public class WorldGroupCommands implements CommandExecutor {
                 sender.sendMessage(adminPrefix + ChatColor.RED + "Usage: /" + label + " create <name>");
                 return true;
             } else {
-                if (SPSSpigot.plugin().addWorldGroup(new ClaimHandler(args[1]))) {
+                if (SPSSpigot.plugin().addWorldGroup(new WorldGroup(args[1]))) {
                     // Success
                     sender.sendMessage(adminPrefix + ChatColor.GREEN + "Successfully created new world group " + args[1] + ".");
                     return true;
@@ -44,7 +44,7 @@ public class WorldGroupCommands implements CommandExecutor {
             // arg[2] can equal "-confirm=<CASE-SENSITIVE NAME>" to skip confirmation. This is suggested by the tellraw in confirmation to force the player to rewrite the name.
             if (args.length == 3 && args[2].startsWith("-confirm=")) {
                 // /wgroup delete <NON-CASE-SENSITIVE NAME> -confirm=<CASE-SENSITIVE NAME>
-                ClaimHandler worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
+                WorldGroup worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
                 if (worldGroup == null) {
                     sender.sendMessage(adminPrefix + ChatColor.RED + "World group '" + args[1] + "' was not recognized.");
                     return true;
@@ -63,7 +63,7 @@ public class WorldGroupCommands implements CommandExecutor {
                 sender.sendMessage(adminPrefix + ChatColor.RED + "Usage: /" + label + " delete <world group>");
                 return true;
             } else {
-                ClaimHandler worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
+                WorldGroup worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
                 if (worldGroup == null) {
                     sender.sendMessage(adminPrefix + ChatColor.RED + "World group '" + args[1] + "' was not recognized.");
                     return true;
@@ -93,7 +93,7 @@ public class WorldGroupCommands implements CommandExecutor {
                 sender.sendMessage(adminPrefix + ChatColor.RED + "Usage: /" + label + " addworld <world group> <world>");
                 return true;
             } else {
-                ClaimHandler worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
+                WorldGroup worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
                 World world = SPSSpigot.server().getWorld(args[2]);
                 if (worldGroup == null) {
                     sender.sendMessage(adminPrefix + ChatColor.RED + "World group '" + args[1] + "' was not recognized.");
@@ -115,7 +115,7 @@ public class WorldGroupCommands implements CommandExecutor {
             // arg[3] can equal "-confirm=<CASE-SENSITIVE WORLD NAME>" to skip confirmation. This is suggested by the tellraw in confirmation to force the player to rewrite the name.
             if (args.length == 4 && args[3].startsWith("-confirm=")) {
                 // /wgroup remworld <WORLD GROUP> <NON-CASE-SENSITIVE WORLD NAME> -confirm=<CASE-SENSITIVE WORLD NAME>
-                ClaimHandler worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
+                WorldGroup worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
                 World world = SPSSpigot.server().getWorld(args[2]);
                 if (worldGroup == null) {
                     sender.sendMessage(adminPrefix + ChatColor.RED + "World group '" + args[1] + "' was not recognized.");
@@ -138,7 +138,7 @@ public class WorldGroupCommands implements CommandExecutor {
                 sender.sendMessage(adminPrefix + ChatColor.RED + "Usage: /" + label + " remworld <world group> <world>");
                 return true;
             } else {
-                ClaimHandler worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
+                WorldGroup worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
                 World world = SPSSpigot.server().getWorld(args[2]);
                 if (worldGroup == null) {
                     sender.sendMessage(adminPrefix + ChatColor.RED + "World group '" + args[1] + "' was not recognized.");
@@ -171,13 +171,13 @@ public class WorldGroupCommands implements CommandExecutor {
             if (args.length == 1) {
                 // List all world groups
                 List<String> names = new ArrayList<>();
-                for (ClaimHandler worldGroup : SPSSpigot.plugin().getWorldGroups())
+                for (WorldGroup worldGroup : SPSSpigot.plugin().getWorldGroups())
                     names.add(worldGroup.getName());
                 sender.sendMessage(CMD.buildListText("WORLD GROUPS", names));
                 return true;
             } else if (args.length == 2) {
                 // List all worlds in a given group
-                ClaimHandler worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
+                WorldGroup worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
                 if (worldGroup == null) {
                     // World group not recognized.
                     sender.sendMessage(adminPrefix + ChatColor.RED + "World group '" + args[0] + "' was not recognized.");

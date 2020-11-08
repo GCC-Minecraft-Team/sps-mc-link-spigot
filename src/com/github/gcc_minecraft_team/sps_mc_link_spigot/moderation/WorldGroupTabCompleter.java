@@ -2,7 +2,7 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimHandler;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -29,7 +29,7 @@ public class WorldGroupTabCompleter implements TabCompleter {
             if (args.length == 2) {
                 // /wgroup delete <partial>
                 List<String> names = new ArrayList<>();
-                for (ClaimHandler worldGroup : SPSSpigot.plugin().getWorldGroups())
+                for (WorldGroup worldGroup : SPSSpigot.plugin().getWorldGroups())
                     names.add(worldGroup.getName());
                 return CMD.keepStarts(names, args[1]);
             } else {
@@ -40,7 +40,7 @@ public class WorldGroupTabCompleter implements TabCompleter {
             if (args.length == 2) {
                 // /wgroup addworld <partial>
                 List<String> names = new ArrayList<>();
-                for (ClaimHandler worldGroup : SPSSpigot.plugin().getWorldGroups())
+                for (WorldGroup worldGroup : SPSSpigot.plugin().getWorldGroups())
                     names.add(worldGroup.getName());
                 return CMD.keepStarts(names, args[1]);
             } else if (args.length == 3) {
@@ -58,12 +58,12 @@ public class WorldGroupTabCompleter implements TabCompleter {
             if (args.length == 2) {
                 // /wgroup remworld <partial>
                 List<String> names = new ArrayList<>();
-                for (ClaimHandler worldGroup : SPSSpigot.plugin().getWorldGroups())
+                for (WorldGroup worldGroup : SPSSpigot.plugin().getWorldGroups())
                     names.add(worldGroup.getName());
                 return CMD.keepStarts(names, args[1]);
             } else if (args.length == 3) {
                 // /wgroup remworld <world group> <partial>
-                ClaimHandler worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
+                WorldGroup worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
                 if (worldGroup == null) {
                     return new ArrayList<>();
                 } else {
@@ -82,7 +82,7 @@ public class WorldGroupTabCompleter implements TabCompleter {
             if (args.length == 2) {
                 // /wgroup list <partial>
                 List<String> names = new ArrayList<>();
-                for (ClaimHandler worldGroup : SPSSpigot.plugin().getWorldGroups())
+                for (WorldGroup worldGroup : SPSSpigot.plugin().getWorldGroups())
                     names.add(worldGroup.getName());
                 return CMD.keepStarts(names, args[1]);
             } else {
