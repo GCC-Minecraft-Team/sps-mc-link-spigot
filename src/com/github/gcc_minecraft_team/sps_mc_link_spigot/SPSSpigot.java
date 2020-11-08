@@ -6,6 +6,8 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.discord.DiscordTabComple
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.general.GeneralCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationTabCompleter;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.WorldGroupCommands;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.WorldGroupTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.*;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapEvents;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
@@ -16,6 +18,8 @@ import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -24,7 +28,7 @@ import java.util.logging.Logger;
 public class SPSSpigot extends JavaPlugin {
 
     public PermissionsHandler perms;
-    public Set<ClaimHandler> worldGroups;
+    private Set<ClaimHandler> worldGroups;
     public final Map<UUID, FastBoard> boards = new HashMap<>();
 
     @Override
@@ -47,7 +51,7 @@ public class SPSSpigot extends JavaPlugin {
         // Setup Claims
         ConfigurationSerialization.registerClass(Team.class);
 
-        worldGroups = new HashSet<>();
+        worldGroups = DatabaseLink.getWorldGroups();
         getServer().getPluginManager().registerEvents(new ClaimEvents(), this);
 
         // register chat events
@@ -73,6 +77,9 @@ public class SPSSpigot extends JavaPlugin {
 
         this.getCommand("mod").setExecutor(new ModerationCommands());
         this.getCommand("mod").setTabCompleter(new ModerationTabCompleter());
+
+        this.getCommand("wgroup").setExecutor(new WorldGroupCommands());
+        this.getCommand("wgroup").setTabCompleter(new WorldGroupTabCompleter());
 
         // General utility commands for players
         GeneralCommands generalCommands = new GeneralCommands();
@@ -103,31 +110,100 @@ public class SPSSpigot extends JavaPlugin {
     }
 
     /**
-     * Gets a chat friendly colored string of player ranks
-     * @param p player
-     * @return string with ranks
+     * Getter for a world group.
+     * @param name The name of the world group.
+     * @return The world group's {@link ClaimHandler}.
      */
-    public static String GetRankTag(Player p) {
-        // set rank tag formatting
+    @Nullable
+    public ClaimHandler getWorldGroup(@NotNull String name) {
+        for (ClaimHandler worldGroup : worldGroups) {
+            if (worldGroup.getName().equalsIgnoreCase(name))
+                return worldGroup;
+        }
+        return null;
+    }
+
+    /**
+     * Getter for a world group.
+     * @param world The {@link World} whose worldGroup {@link ClaimHandler} should be found.
+     * @return The world group's {@link ClaimHandler}, or {@code null} if the {@link World} is not in a world group.
+     */
+    @Nullable
+    public static ClaimHandler getWorldGroup(@NotNull World world) {
+        for (ClaimHandler worldGroup : plugin().worldGroups) {
+            if (worldGroup.hasWorld(world))
+                return worldGroup;
+        }
+        return null;
+    }
+
+    /**
+     * Gets all world groups.
+     * @return An unmodifiable {@link Set} of each world group's {@link ClaimHandler}.
+     */
+    @NotNull
+    public Set<ClaimHandler> getWorldGroups() {
+        return Collections.unmodifiableSet(worldGroups);
+    }
+
+    /**
+     * Adds a new world group.
+     * @param worldGroup The {@link ClaimHandler} of the world group to add.
+     * @return {@code true} if successful; {@code false} if a world group already exists with this name.
+     */
+    public boolean addWorldGroup(@NotNull ClaimHandler worldGroup) {
+        if (getWorldGroup(worldGroup.getName()) == null) {
+            worldGroups.add(worldGroup);
+            DatabaseLink.addWorldGroup(worldGroup);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Removes a world group.
+     * @param worldGroup The {@link ClaimHandler} of the world group to remove.
+     * @return {@code true} if successful; {@code false} if this world group is unknown.
+     */
+    public boolean removeWorldGroup(@NotNull ClaimHandler worldGroup) {
+        if (worldGroups.remove(worldGroup)) {
+            DatabaseLink.removeWorldGroup(worldGroup);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Gets a chat friendly colored {@link String} of player {@link Rank}s.
+     * @param player The {@link UUID} of the player to create the tag for.
+     * @return The text of the tag.
+     */
+    @NotNull
+    public String getRankTag(@NotNull UUID player) {
         StringBuilder rankTag = new StringBuilder();
-        if (SPSSpigot.perms().getPlayerRanks(p.getUniqueId()).size() > 0) {
-            for (Rank rank : SPSSpigot.perms().getPlayerRanks(p.getUniqueId())) {
+        if (perms().getPlayerRanks(player).size() > 0) {
+            for (Rank rank : perms().getPlayerRanks(player)) {
                 rankTag.append(rank.getColor()).append("[").append(rank.getName()).append("]").append(ChatColor.WHITE);
             }
         }
-
         return rankTag.toString();
     }
 
-    public static String GetRankTagNoFormat(Player p) {
-        // set rank tag without color formatting
+    /**
+     * Gets a chat-friendly {@link String} of player {@link Rank}s.
+     * @param player The {@link UUID} of the player to create the tag for.
+     * @return The unformatted text of the tag.
+     */
+    @NotNull
+    public String getRankTagNoFormat(@NotNull UUID player) {
         StringBuilder rankTag = new StringBuilder();
-        if (SPSSpigot.perms().getPlayerRanks(p.getUniqueId()).size() > 0) {
-            for (Rank rank : SPSSpigot.perms().getPlayerRanks(p.getUniqueId())) {
+        if (perms().getPlayerRanks(player).size() > 0) {
+            for (Rank rank : perms().getPlayerRanks(player)) {
                 rankTag.append("[").append(rank.getName()).append("]");
             }
         }
-
         return rankTag.toString();
     }
 
@@ -188,19 +264,6 @@ public class SPSSpigot extends JavaPlugin {
      */
     public static PermissionsHandler perms() {
         return plugin().perms;
-    }
-
-    /**
-     * Convenience function to get a {@link ClaimHandler} for a worldGroup.
-     * @param world The {@link World} whose worldGroup {@link ClaimHandler} should be found.
-     * @return The worldGroup {@link ClaimHandler}.
-     */
-    public static ClaimHandler claims(World world) {
-        for (ClaimHandler worldGroup : plugin().worldGroups) {
-            if (worldGroup.hasWorld(world))
-                return worldGroup;
-        }
-        return null;
     }
 
     /**

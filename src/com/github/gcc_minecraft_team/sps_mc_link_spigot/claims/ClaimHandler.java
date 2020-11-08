@@ -70,6 +70,44 @@ public class ClaimHandler {
     }
 
     /**
+     * Gets all {@link World}s this world group contains.
+     * @return An unmodifiable {@link Set} of {@link World}s.
+     */
+    public Set<World> getWorlds() {
+        return Collections.unmodifiableSet(worlds);
+    }
+
+    /**
+     * Adds a {@link World} to this world group if it is not in another one.
+     * @param world The {@link World} to add.
+     * @return {@code true} if successful, {@code false} if the {@code World} is already in a world group.
+     */
+    public boolean addWorld(World world) {
+        if (SPSSpigot.getWorldGroup(world) == null) {
+            worlds.add(world);
+            // TODO: Update database
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Removes a {@link World} from this world group.
+     * @param world The {@link World} to remove.
+     * @return {@code true} if successful, {@code false} if the {@code World} was not in this world group..
+     */
+    public boolean removeWorld(World world) {
+        if (worlds.remove(world)) {
+            claimable.remove(world);
+            // TODO: Update database
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Checks to see if a {@link Location} is within spawn protection
      * @param location The {@link Location} to check.
      * @return {@code true} if the {@link Location} is within the spawn radius.

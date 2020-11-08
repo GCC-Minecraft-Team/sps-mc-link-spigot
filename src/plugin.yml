@@ -14,7 +14,7 @@ commands:
     permission: spsmc.claim
   unclaim:
     description: Un-claims area around player.
-    usage: "Usage /unclaim"
+    usage: "Usage /<command>"
     permission: spsmc.claim
   team:
     description: Base command for the teams system.
@@ -29,6 +29,11 @@ commands:
     description: Base command for SPSMC moderators
     usage: "Usage: /<command> <banSPS>"
     permission: spsmc.mod
+  wgroup:
+    description: Manages world groups.
+    usage: "Usage: /<command> <create|delete|addworld|remworld|claimable>"
+    permission: spsmc.worldgroup
+    aliases: ["worldgroup"]
   report:
     description: Report a player for breaking the rules
     usage: "Usage: /report <player> <message>"
@@ -61,6 +66,9 @@ permissions:
     default: op
   spsmc.mod:
     description: Gives control over moderation commands.
+    default: op
+  spsmc.worldgroup:
+    description: Gives control over world group commands. This includes the power to delete all claims in a world. Be careful. [ADMIN]
     default: op
   spsmc.report:
     description: Gives the player access to report other players to moderators

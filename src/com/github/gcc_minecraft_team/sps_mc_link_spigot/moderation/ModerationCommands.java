@@ -9,9 +9,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class ModerationCommands implements CommandExecutor {
 
+    public static final String modPrefix = ChatColor.AQUA + "[SPSMC Mod System]: " + ChatColor.WHITE;
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        String modPrefix = ChatColor.AQUA + "[SPSMC Mod System]: " + ChatColor.WHITE;
         if (args.length == 0) {
             // No arguments
             return false;
@@ -22,7 +23,7 @@ public class ModerationCommands implements CommandExecutor {
                 return true;
             } else {
                 sender.sendMessage(modPrefix + ChatColor.YELLOW + "Banning Account: " + args[1]);
-                if(DatabaseLink.banPlayer(args[1])) {
+                if (DatabaseLink.banPlayer(args[1])) {
                     sender.sendMessage(modPrefix + ChatColor.GREEN + "[Account banned]");
                     return true;
                 } else {

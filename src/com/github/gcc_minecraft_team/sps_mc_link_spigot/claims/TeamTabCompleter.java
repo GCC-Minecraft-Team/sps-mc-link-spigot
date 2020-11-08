@@ -24,7 +24,7 @@ public class TeamTabCompleter implements TabCompleter {
             return new ArrayList<>();
         }
         Player player = (Player) sender;
-        ClaimHandler worldGroup = SPSSpigot.claims(player.getWorld());
+        ClaimHandler worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
         if (worldGroup == null) {
             // This world is not in a worldGroup
             return new ArrayList<>();

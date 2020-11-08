@@ -110,12 +110,22 @@ public class DatabaseLink {
         return new HashSet<>();
     }
 
-    public static void addWorldGroup(ClaimHandler worldGroup) { // FIXME: Doesn't do anything
-
+    /**
+     * Adds a world group to the database. This should not be called to update the world group.
+     * @param worldGroup The {@link ClaimHandler} of the world group.
+     * @return {@code true} if successful.
+     */
+    public static boolean addWorldGroup(ClaimHandler worldGroup) { // FIXME: Doesn't do anything
+        return true;
     }
 
-    public static void removeWorldGroup(ClaimHandler worldGroup) { // FIXME: Doesn't do anything
-
+    /**
+     * Remove a world group from the database.
+     * @param worldGroup The {@link ClaimHandler} of the world group.
+     * @return {@code true} if successful.
+     */
+    public static boolean removeWorldGroup(ClaimHandler worldGroup) { // FIXME: Doesn't do anything
+        return true;
     }
 
     /**
@@ -166,7 +176,7 @@ public class DatabaseLink {
     }
 
     /**
-     * Saves claims to the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * Saves getWorldGroup to the database.
      * @param claims The claim map to save.
      * @param worldGroup The {@link ClaimHandler} worldGroup to which to save the claims.
      */
@@ -200,8 +210,8 @@ public class DatabaseLink {
     }
 
     /**
-     * Gets claims from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
      * @param worldGroup The {@link ClaimHandler} worldGroup from which to get claims.
+     * Gets getWorldGroup from the database.
      * @return The worldGroup's claim map.
      */
     @NotNull
@@ -419,12 +429,12 @@ public class DatabaseLink {
         scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), () -> {
             // compass
             String claimStatus = net.md_5.bungee.api.ChatColor.DARK_GREEN + "Wilderness";
-            UUID chunkOwner = SPSSpigot.claims(player.getWorld()).getChunkOwner(player.getLocation().getChunk());
+            UUID chunkOwner = SPSSpigot.getWorldGroup(player.getWorld()).getChunkOwner(player.getLocation().getChunk());
             if (chunkOwner != null) {
                 claimStatus = net.md_5.bungee.api.ChatColor.RED + DatabaseLink.getSPSName(chunkOwner);
             }
 
-            SPSSpigot.claims(player.getWorld()).updateClaimMap(player);
+            SPSSpigot.getWorldGroup(player.getWorld()).updateClaimMap(player);
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder().append("[" + SPSSpigot.getCardinalDirection(player) + "] " + claimStatus).create());
         }, 0, 10);
 

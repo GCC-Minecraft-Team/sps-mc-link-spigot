@@ -39,7 +39,7 @@ public class ChatEvents implements Listener {
             e.setCancelled(true); // Cancel the event, so no message is sent (yet)
 
             String newMessage = ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId())
-                    + "]" + SPSSpigot.GetRankTag(e.getPlayer()) + ": " + ChatColor.WHITE
+                    + "]" + SPSSpigot.plugin().getRankTag(e.getPlayer().getUniqueId()) + ": " + ChatColor.WHITE
                     + message.replaceAll(e.getPlayer().getDisplayName(), ""); // format the message
 
             for (Player on : SPSSpigot.server().getOnlinePlayers()) { // loop through all online players
@@ -51,7 +51,7 @@ public class ChatEvents implements Listener {
             if (!PluginConfig.GetChatWebhook().equals("")) {
                 DiscordWebhook webhook = new DiscordWebhook(PluginConfig.GetChatWebhook());
 
-                String discordName = SPSSpigot.GetRankTagNoFormat(e.getPlayer()) + " " +
+                String discordName = SPSSpigot.plugin().getRankTagNoFormat(e.getPlayer().getUniqueId()) + " " +
                         NickAPI.getName(e.getPlayer());
                 webhook.setUsername(discordName);
                 String discordMsg = message.replaceAll(e.getPlayer().getDisplayName(), "");

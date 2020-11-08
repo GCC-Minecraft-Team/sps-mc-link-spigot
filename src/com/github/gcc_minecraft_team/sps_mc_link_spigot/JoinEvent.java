@@ -60,7 +60,7 @@ public class JoinEvent implements Listener {
 
             } else {
                 // claim map
-                ClaimHandler worldGroup = SPSSpigot.claims(player.getWorld());
+                ClaimHandler worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
 
                 BukkitScheduler scheduler = SPSSpigot.server().getScheduler();
                 scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), () -> {
