@@ -13,14 +13,8 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerTakeLecternBookEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
-import org.spigotmc.event.player.PlayerSpawnLocationEvent;
-import xyz.haoshoku.nick.api.NickAPI;
 
 import java.util.*;
 
@@ -51,8 +45,8 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onPlayerSpawn(PlayerRespawnEvent event) {
         Location pLoc = event.getRespawnLocation();
-        Double zdist = pLoc.getZ() - event.getPlayer().getWorld().getSpawnLocation().getZ();
-        Double xdist = pLoc.getX() - event.getPlayer().getWorld().getSpawnLocation().getX();
+        double zdist = pLoc.getZ() - event.getPlayer().getWorld().getSpawnLocation().getZ();
+        double xdist = pLoc.getX() - event.getPlayer().getWorld().getSpawnLocation().getX();
         if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
             // give starting boat
             event.getPlayer().getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));

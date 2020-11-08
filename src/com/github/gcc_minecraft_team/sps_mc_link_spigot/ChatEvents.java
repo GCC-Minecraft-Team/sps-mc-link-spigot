@@ -49,11 +49,10 @@ public class ChatEvents implements Listener {
             // send messages to a discord channel
             if (!PluginConfig.GetChatWebhook().equals("")) {
                 DiscordWebhook webhook = new DiscordWebhook(PluginConfig.GetChatWebhook());
-                StringBuilder discordName = new StringBuilder();
-                discordName.append(SPSSpigot.plugin().GetRankTagNoFormat(e.getPlayer())).append(" ");
-                discordName.append(NickAPI.getName(e.getPlayer()));
 
-                webhook.setUsername(discordName.toString());
+                String discordName = SPSSpigot.GetRankTagNoFormat(e.getPlayer()) + " " +
+                        NickAPI.getName(e.getPlayer());
+                webhook.setUsername(discordName);
                 String discordMsg = message.replaceAll(e.getPlayer().getDisplayName(), "");
                 webhook.setContent(discordMsg);
 
@@ -67,7 +66,7 @@ public class ChatEvents implements Listener {
     }
 
     /**
-     * overrides death messages
+     * Overrides death messages
      * @param event
      */
     @EventHandler
@@ -108,7 +107,6 @@ public class ChatEvents implements Listener {
             e.getPlayer().sendMessage(str.toString());
 
         } else if (command.equalsIgnoreCase("help")) {
-
             // TODO show some minecraft commands as well like "/list"
             // if the player does not have a rank, show the custom help message
             if (SPSSpigot.perms().getPlayerRanks(e.getPlayer().getUniqueId()).isEmpty()) {
@@ -118,12 +116,11 @@ public class ChatEvents implements Listener {
                     if (plugin.getName().equals(SPSSpigot.plugin().getName())) {
                         StringBuilder helpList = new StringBuilder();
                         List<Command> commandList = PluginCommandYamlParser.parse(plugin);
-                        for (int i = 0; i < commandList.size(); i++) {
-                            if (e.getPlayer().hasPermission(commandList.get(i).getPermission())) {
-                                helpList.append("\n" + ChatColor.GOLD).append(commandList.get(i).getName()).append(ChatColor.WHITE).append("  -  ").append(commandList.get(i).getDescription()).append("\n");
+                        for (Command value : commandList) {
+                            if (value.getPermission() == null || e.getPlayer().hasPermission(value.getPermission())) {
+                                helpList.append("\n" + ChatColor.GOLD).append(value.getName()).append(ChatColor.WHITE).append("  -  ").append(value.getDescription()).append("\n");
                             }
                         }
-                        helpList.append("\n");
                         e.getPlayer().sendMessage(helpList.toString());
                     }
                 }

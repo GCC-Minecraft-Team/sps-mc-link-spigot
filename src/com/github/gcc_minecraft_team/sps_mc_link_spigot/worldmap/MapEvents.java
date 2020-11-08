@@ -1,6 +1,5 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.MapInitializeEvent;

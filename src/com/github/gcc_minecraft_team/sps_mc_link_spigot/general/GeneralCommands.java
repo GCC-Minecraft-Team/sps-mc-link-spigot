@@ -39,13 +39,11 @@ public class GeneralCommands implements CommandExecutor {
             noMoveAttach.setPermission("spsmc.basic.move", false);
 
             // set a delay of 10 seconds
-            teleportTaskID = Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), new Runnable() {
-                public void run() {
-                    teleportTaskIDMap.remove(player.getUniqueId());
-                    player.sendMessage(chatPrefix + "Teleporting...");
-                    noMoveAttach.remove();
-                    player.teleport(SPSSpigot.server().getWorlds().get(0).getSpawnLocation());
-                }
+            teleportTaskID = Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), () -> {
+                teleportTaskIDMap.remove(player.getUniqueId());
+                player.sendMessage(chatPrefix + "Teleporting...");
+                noMoveAttach.remove();
+                player.teleport(SPSSpigot.server().getWorlds().get(0).getSpawnLocation());
             }, 20 * 10);
 
             // store task id in map for possible cancellation later

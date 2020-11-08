@@ -1,16 +1,14 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimHandler;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
 import com.mongodb.*;
 import com.mongodb.client.*;
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.UpdateOptions;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
-import com.mongodb.client.result.UpdateResult;
-import com.sun.jdi.IntegerValue;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bson.Document;
@@ -33,7 +31,6 @@ import xyz.haoshoku.nick.api.NickAPI;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Filter;
 import java.util.logging.Level;
 
 public class DatabaseLink {
@@ -51,7 +48,7 @@ public class DatabaseLink {
     private static MongoCollection<Team> teamCol;
 
     /**
-     * Creates a connection to the MongoDB database
+     * Creates a connection to the MongoDB database.
      */
     public static void SetupDatabase() {
         // create config if it doesn't exist
@@ -104,36 +101,53 @@ public class DatabaseLink {
         }
     }
 
-    /***
-     * Adds a new team to the database
-     * @param team
+    /**
+     * Gets all the world groups. Should generally be only called on startup.
+     * @return A {@link Set} of the {@link ClaimHandler} world groups.
      */
-    public static void addTeam(Team team) {
+    public static Set<ClaimHandler> getWorldGroups() { // FIXME: Doesn't do anything.
+        return new HashSet<>();
+    }
+
+    public static void addWorldGroup(ClaimHandler worldGroup) { // FIXME: Doesn't do anything
+
+    }
+
+    public static void removeWorldGroup(ClaimHandler worldGroup) { // FIXME: Doesn't do anything
+
+    }
+
+    /**
+     * Adds a new {@link Team} to the database.
+     * @param team The {@link Team} to add.
+     */
+    public static void addTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
         teamCol.insertOne(team);
     }
 
-    /***
-     * Updates an existing team in the database
-     * @param team
+    /**
+     * Updates an existing {@link Team} in the database.
+     * @param team The {@link Team} to update.
      */
-    public static void updateTeam(Team team) {
-        teamCol.updateOne(new BasicDBObject("leader", team.getLeader()), new BasicDBObject("$set", team));
+    public static void updateTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
+        teamCol.updateOne(new BasicDBObject("name", team.getName()), new BasicDBObject("$set", team));
     }
 
     /**
-     * Gets a team from the database
-     * @param team
-     * @return
+     * Gets a {@link Team} from the database. Unlikely to be used?
+     * @param team The {@link Team} to get.
+     * @return The team.
      */
-    public static Team getTeam(Team team) {
-        return teamCol.find(new BasicDBObject("leader", team.getLeader())).first();
+    public static Team getTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
+        return teamCol.find(new BasicDBObject("name", team.getName())).first();
     }
 
     /**
-     * Gets all teams in the database
-     * @return
+     * Gets all {@link Team}s in the database.
+     * @param worldGroup The {@link ClaimHandler} worldGroup from which to find the {@link Team}.
+     * @return A {@link Set} of {@link Team}s found.
      */
-    public static Set<Team> getTeams() {
+    public static Set<Team> getTeams(@NotNull ClaimHandler worldGroup) { // FIXME: Update this to the new world groups system.
         FindIterable<Team> teams = teamCol.find();
         Set<Team> output = new HashSet<>();
         for (Team team : teams) {
@@ -142,25 +156,26 @@ public class DatabaseLink {
         return output;
     }
 
-    /***
-     * Removes a team from the database
-     * @param team
+    /**
+     * Removes a {@link Team} from the database.
+     * @param team The {@link Team} to remove.
      */
-    public static void removeTeam(Team team) {
-        teamCol.deleteOne(new BasicDBObject("leader", team.getLeader()));
+    public static void removeTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
+        teamCol.deleteOne(new BasicDBObject("name", team.getName()));
     }
 
     /**
-     * saves claims to the database
-     * @param claims
+     * Saves claims to the database.
+     * @param claims The claim map to save.
+     * @param worldGroup The {@link ClaimHandler} worldGroup to which to save the claims.
      */
-    public static void saveClaims(@NotNull Map<UUID, Set<Chunk>> claims) {
+    public static void saveClaims(@NotNull Map<UUID, Set<Chunk>> claims, @NotNull ClaimHandler worldGroup) { // FIXME: Update this to the new world groups system.
 
         for (Map.Entry<UUID, Set<Chunk>> player : claims.entrySet()) {
             BasicDBObject updateFields = new BasicDBObject();
 
             // load claimed chunks for the player
-            ArrayList<ArrayList<Integer>> claimList = new ArrayList<ArrayList<Integer>>();
+            ArrayList<ArrayList<Integer>> claimList = new ArrayList<>();
             for (Chunk cChunk : player.getValue()) {
                 ArrayList<Integer> cCoords = new ArrayList<>();
                 cCoords.add(cChunk.getX());
@@ -183,18 +198,19 @@ public class DatabaseLink {
         }
     }
 
-    /***
-     * Gets claims from the database
-     * @return
+    /**
+     * Gets claims from the database.
+     * @param worldGroup The {@link ClaimHandler} worldGroup from which to get claims.
+     * @return The worldGroup's claim map.
      */
     @NotNull
-    public static Map<UUID, Set<Chunk>> getClaims() {
+    public static Map<UUID, Set<Chunk>> getClaims(@NotNull ClaimHandler worldGroup) { // FIXME: Update this to the new world groups system.
         Map<UUID, Set<Chunk>> output = new HashMap<>();
         FindIterable<Document> allDocs = userCol.find();
         for(Document doc : allDocs) {
             UUID uuid = UUID.fromString(doc.getString("mcUUID"));
             if (doc.containsKey("claims")) {
-                ArrayList claimList = (ArrayList) doc.get("claims");
+                ArrayList<Object> claimList = (ArrayList<Object>) doc.get("claims");
                 Set<Chunk> chunksSet = new HashSet<>();
                 if (claimList != null) {
                     for (Object chunkCoords : claimList) {
@@ -214,12 +230,12 @@ public class DatabaseLink {
     }
 
     /**
-     * Gets the MC names of all SPS users registered
+     * Gets the MC names of all SPS users registered.
      * @return A {@link List} of all the names.
      */
     @NotNull
     public static List<String> getAllSPSNames() {
-        List<String> spsNames = new ArrayList<String>();
+        List<String> spsNames = new ArrayList<>();
         for(Document doc : userCol.find()) {
             spsNames.add(doc.getString("mcName"));
         }
@@ -300,7 +316,7 @@ public class DatabaseLink {
      * Checks if a player is banned.
      * @param uuid The Minecraft {@link UUID} of the player to ban.
      * @return {@code true} if the player is banned.
-     **/
+     */
     public static boolean getIsBanned(@NotNull UUID uuid) {
         try {
             return userCol.find(new Document("mcUUID", uuid.toString())).first().getBoolean("banned");
@@ -313,7 +329,7 @@ public class DatabaseLink {
      * Bans a player using their SPS ID
      * @param SPSUser The SPS username to ban without domain (e.g. 1absmith)
      * @return {@code true} if the SPS ID was successfully banned.
-    **/
+     */
     public static boolean banPlayer(@NotNull String SPSUser) {
         String spsEmail = SPSUser + "@seattleschools.org";
 
@@ -350,7 +366,7 @@ public class DatabaseLink {
      * @param uuid The Minecraft {@link UUID} of the player.
      * @param SPSid The SPS ID of the player.
      * @param name The new name of the player.
-     **/
+     */
     public static void registerPlayer(@NotNull UUID uuid, @NotNull String SPSid, @NotNull String name) {
         // set UUID and Name
         BasicDBObject updateFields = new BasicDBObject();
@@ -399,19 +415,16 @@ public class DatabaseLink {
 
         // claim map
         BukkitScheduler scheduler = SPSSpigot.server().getScheduler();
-        scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), new Runnable() {
-            @Override
-            public void run() {
-                // compass
-                String claimStatus = net.md_5.bungee.api.ChatColor.DARK_GREEN + "Wilderness";
-                UUID chunkOwner = SPSSpigot.claims(player.getWorld()).getChunkOwner(player.getLocation().getChunk());
-                if (chunkOwner != null) {
-                    claimStatus = net.md_5.bungee.api.ChatColor.RED + DatabaseLink.getSPSName(chunkOwner);
-                }
-
-                SPSSpigot.claims(player.getWorld()).updateClaimMap(player);
-                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder().append("[" + SPSSpigot.getCardinalDirection(player) + "] " + claimStatus).create());
+        scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), () -> {
+            // compass
+            String claimStatus = net.md_5.bungee.api.ChatColor.DARK_GREEN + "Wilderness";
+            UUID chunkOwner = SPSSpigot.claims(player.getWorld()).getChunkOwner(player.getLocation().getChunk());
+            if (chunkOwner != null) {
+                claimStatus = net.md_5.bungee.api.ChatColor.RED + DatabaseLink.getSPSName(chunkOwner);
             }
+
+            SPSSpigot.claims(player.getWorld()).updateClaimMap(player);
+            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder().append("[" + SPSSpigot.getCardinalDirection(player) + "] " + claimStatus).create());
         }, 0, 10);
 
         player.sendMessage("You've spawned in the lobby, please use the included " + ChatColor.BLUE +"Starting Boat" + ChatColor.WHITE + " to leave the island!");

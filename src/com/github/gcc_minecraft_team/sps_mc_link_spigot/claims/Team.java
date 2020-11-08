@@ -1,7 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -34,6 +33,11 @@ public class Team implements ConfigurationSerializable {
     @NotNull
     public String getName() {
         return name;
+    }
+
+    @NotNull
+    public ClaimHandler getWorldGroup() {
+        return worldGroup;
     }
 
     /**

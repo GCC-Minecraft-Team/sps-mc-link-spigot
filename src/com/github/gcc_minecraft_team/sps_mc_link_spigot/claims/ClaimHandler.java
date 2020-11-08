@@ -13,34 +13,51 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class ClaimHandler {
+
+    private String name;
     private Set<World> worlds;
     private Set<World> claimable;
     private Set<Team> teams;
     private Map<UUID, Set<Chunk>> claims;
     private Map<UUID, Team> joinRequests;
 
-    public ClaimHandler() {
+    /**
+     * This is the simple constructor, generally for new instances not loaded from file.
+     * @param name The name of this worldGroup.
+     */
+    public ClaimHandler(String name) {
+        this.name = name;
         worlds = new HashSet<>();
         claimable = new HashSet<>();
         teams = new HashSet<>();
         claims = new HashMap<>();
         joinRequests = new HashMap<>();
-        loadFromDatabase();
+        saveCurrentClaims();
     }
+
+
 
     /**
      * Saves data from this {@link ClaimHandler} to database
      */
     public void saveCurrentClaims() {
-        DatabaseLink.saveClaims(claims);
+        DatabaseLink.saveClaims(claims, this);
     }
 
     /**
      * Loads data for this {@link ClaimHandler} from the database
      */
     public void loadFromDatabase() {
-        teams = DatabaseLink.getTeams();
-        claims = DatabaseLink.getClaims();
+        teams = DatabaseLink.getTeams(this);
+        claims = DatabaseLink.getClaims(this);
+    }
+
+    /**
+     * Getter for this worldGroup's name.
+     * @return This worldGroup's name.
+     */
+    public String getName() {
+        return name;
     }
 
     /**

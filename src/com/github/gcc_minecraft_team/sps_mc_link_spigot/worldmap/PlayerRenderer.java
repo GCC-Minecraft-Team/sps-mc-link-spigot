@@ -1,22 +1,14 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.map.*;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
-import xyz.haoshoku.nick.api.NickAPI;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -25,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.UUID;
 
 public class PlayerRenderer extends MapRenderer {
 
@@ -101,12 +92,7 @@ public class PlayerRenderer extends MapRenderer {
 
         // re-renders map
         BukkitScheduler scheduler = SPSSpigot.server().getScheduler();
-        scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), new Runnable() {
-            @Override
-            public void run() {
-                hasRendered = false;
-            }
-        }, 100L, UPDATE_DELAY * 20);
+        scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), () -> hasRendered = false, 100L, UPDATE_DELAY * 20);
 
         super.initialize(map);
     }
