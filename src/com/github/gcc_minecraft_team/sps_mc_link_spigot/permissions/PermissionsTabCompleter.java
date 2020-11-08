@@ -1,7 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
+import database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;

@@ -1,7 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.discord;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
+import database.DatabaseLink;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;

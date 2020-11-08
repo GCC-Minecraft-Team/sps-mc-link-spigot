@@ -10,6 +10,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
 
+import database.DatabaseLink;
 import io.javalin.Javalin;
 import io.jsonwebtoken.*;
 import org.jetbrains.annotations.NotNull;

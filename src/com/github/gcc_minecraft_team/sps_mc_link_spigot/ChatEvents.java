@@ -2,6 +2,7 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.discord.DiscordWebhook;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.Rank;
+import database.DatabaseLink;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
