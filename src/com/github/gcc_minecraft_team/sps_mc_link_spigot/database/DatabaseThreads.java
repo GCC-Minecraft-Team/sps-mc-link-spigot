@@ -1,14 +1,10 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.database;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
-
-import javax.print.Doc;
 
 public class DatabaseThreads {
 
@@ -26,7 +22,7 @@ public class DatabaseThreads {
     }
 
     /**
-     * Adds a @{link WorldGroup} to the database on thread.
+     * Adds a {@link WorldGroup} to the database on thread.
      */
     class AddWorldGroup implements Runnable {
 
@@ -41,7 +37,7 @@ public class DatabaseThreads {
     }
 
     /**
-     * Removes a @{link WorldGroup} from the database on thread.
+     * Removes a {@link WorldGroup} from the database on thread.
      */
     class RemoveWorldGroup implements Runnable {
 

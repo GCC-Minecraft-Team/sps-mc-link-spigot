@@ -16,10 +16,10 @@ import java.util.List;
 import java.util.UUID;
 
 public class TeamTabCompleter implements TabCompleter {
-    
-    @Nullable
+
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+    @Nullable
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player)) {
             return new ArrayList<>();
         }

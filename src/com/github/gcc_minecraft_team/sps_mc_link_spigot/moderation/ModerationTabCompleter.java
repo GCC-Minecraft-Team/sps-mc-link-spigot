@@ -24,7 +24,7 @@ public class ModerationTabCompleter implements TabCompleter {
      */
     @Override
     @Nullable
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         // /mod (moderation commands)
         if (args.length == 1) {
             // /mod <partial>

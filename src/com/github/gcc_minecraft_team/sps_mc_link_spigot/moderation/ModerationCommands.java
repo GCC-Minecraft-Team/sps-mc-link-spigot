@@ -12,7 +12,7 @@ public class ModerationCommands implements CommandExecutor {
     public static final String modPrefix = ChatColor.AQUA + "[SPSMC Mod System]: " + ChatColor.WHITE;
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length == 0) {
             // No arguments
             return false;

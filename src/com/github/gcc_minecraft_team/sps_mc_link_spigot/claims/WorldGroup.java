@@ -24,9 +24,9 @@ public class WorldGroup {
 
     /**
      * This is the simple constructor, generally for new instances not loaded from file.
-     * @param name The name of this worldGroup.
+     * @param name The name of this {@link WorldGroup}.
      */
-    public WorldGroup(String name) {
+    public WorldGroup(@NotNull String name) {
         worldgroupID = UUID.randomUUID();
         this.name = name;
         worlds = new HashSet<>();
@@ -37,60 +37,69 @@ public class WorldGroup {
         saveCurrentClaims();
     }
 
-
+    // ========[SAVE]========
 
     /**
-     * Saves data from this {@link WorldGroup} to com.github.gcc_minecraft_team.sps_mc_link_spigot.database
+     * Saves data from this {@link WorldGroup} to the database.
      */
     public void saveCurrentClaims() {
         DatabaseLink.saveClaims(claims, this);
     }
 
     /**
-     * Loads data for this {@link WorldGroup} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database
+     * Loads data for this {@link WorldGroup} from the database.
      */
     public void loadFromDatabase() {
         teams = DatabaseLink.getTeams(this);
         claims = DatabaseLink.getClaims(this);
     }
 
+    // ========[NAME]========
+
     /**
-     * Getter for this worldGroup's name.
-     * @return This worldGroup's name.
+     * Getter for this {@link WorldGroup}'s name.
+     * @return This {@link WorldGroup}'s name.
      */
+    @NotNull
     public String getName() {
         return name;
     }
 
     /**
-     * Getter for this worldGroup's ID.
-     * @return This worldGroup's ID.
+     * Getter for this {@link WorldGroup}'s ID.
+     * @return This {@link WorldGroup}'s ID.
      */
-    public UUID getID() { return worldgroupID; }
+    @NotNull
+    public UUID getID() {
+        return worldgroupID;
+    }
+
+    // ========[WORLDS]========
 
     /**
-     * Gets whether this {@link WorldGroup}'s worldGroup contains the given {@link World}.
+     * Gets whether this {@link WorldGroup} contains the given {@link World}.
      * @param world The {@link World} to check for.
-     * @return {@code true} if this worldGroup contains the {@link World}.
+     * @return {@code true} if this {@link WorldGroup} contains the {@link World}.
      */
-    public boolean hasWorld(World world) {
+    public boolean hasWorld(@NotNull World world) {
         return worlds.contains(world);
     }
 
     /**
-     * Gets all {@link World}s this world group contains.
+     * Gets all {@link World}s this {@link WorldGroup} contains.
      * @return An unmodifiable {@link Set} of {@link World}s.
      */
+    @NotNull
     public Set<World> getWorlds() {
         return Collections.unmodifiableSet(worlds);
     }
 
     /**
-     * Adds a {@link World} to this world group if it is not in another one.
+     * Adds a {@link World} to this {@link WorldGroup} if it is not in another one.
      * @param world The {@link World} to add.
-     * @return {@code true} if successful, {@code false} if the {@code World} is already in a world group.
+     * @return {@code true} if successful, {@code false} if the {@link World} is already in a {@link WorldGroup}.
      */
-    public boolean addWorld(World world) {
+    public boolean addWorld(@NotNull World world) {
         if (SPSSpigot.getWorldGroup(world) == null) {
             worlds.add(world);
             // TODO: Update database
@@ -101,9 +110,9 @@ public class WorldGroup {
     }
 
     /**
-     * Removes a {@link World} from this world group.
+     * Removes a {@link World} from this {@link WorldGroup}.
      * @param world The {@link World} to remove.
-     * @return {@code true} if successful, {@code false} if the {@code World} was not in this world group..
+     * @return {@code true} if successful, {@code false} if the {@code World} was not in this {@link WorldGroup}.
      */
     public boolean removeWorld(World world) {
         if (worlds.remove(world)) {
@@ -114,6 +123,8 @@ public class WorldGroup {
             return false;
         }
     }
+
+    // ========[LOCATIONS]========
 
     /**
      * Checks to see if a {@link Location} is within spawn protection
@@ -126,15 +137,16 @@ public class WorldGroup {
         return Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius();
     }
 
-    /***
-     * Checks to see if entity is in spawn
-     * @param entity
-     * @return
+    /**
+     * Checks to see if an {@link Entity} is in spawn.
+     * @param entity The {@link Entity} to check.
+     * @return {@code true} if the {@link Entity}'s {@link Location} is in spawn.
      */
     public boolean isEntityInSpawn(Entity entity) {
         return isInSpawn(entity.getLocation());
     }
 
+    // ========[TEAMS]========
 
     /**
      * Gets all known {@link Team}s.
@@ -244,6 +256,8 @@ public class WorldGroup {
         return team != null && team.isMember(player2);
     }
 
+    // ========[JOIN REQUESTS]========
+
     /**
      * Adds a new join request, replacing a previous one if it existed.
      * @param player The {@link UUID} of the player requesting to join.
@@ -316,6 +330,8 @@ public class WorldGroup {
         return requests;
     }
 
+    // ========[MAX CHUNKS]========
+
     /**
      * Calculates the maximum number of {@link Chunk}s a player can claim, based on their play time.
      * Formula where h is the number of hours online: {@code 16 + 8log_{2}(h+2)}
@@ -356,6 +372,8 @@ public class WorldGroup {
             return 0;
     }
 
+    // ========[CLAIMS]========
+
     /**
      * Gets the owner of a given {@link Chunk}.
      * @param chunk The {@link Chunk} to check.
@@ -365,9 +383,8 @@ public class WorldGroup {
     public UUID getChunkOwner(@NotNull Chunk chunk) {
         for (Map.Entry<UUID, Set<Chunk>> players : claims.entrySet()) {
             for (Chunk c : players.getValue()) {
-                if (c.getX() == chunk.getX() && c.getZ() == chunk.getZ()) {
+                if (chunk.equals(c))
                     return players.getKey();
-                }
             }
         }
         return null;
@@ -413,7 +430,7 @@ public class WorldGroup {
     }
 
     /**
-     * Claims a list of {@link Chunk}s for a given player
+     * Claims a list of {@link Chunk}s for a given player.
      * @param player The {@link UUID} of the player.
      * @param chunks The {@link Set} of {@link Chunk}s to be claimed.
      * @return A {@link Set} of successfully claimed {@link Chunk}s. This means the {@link Chunk}s are not already claimed, the player is not exceeding their claim limit, and the {@link World}s are claimable.
@@ -422,16 +439,7 @@ public class WorldGroup {
     public Set<Chunk> claimChunkSet(@NotNull UUID player, @NotNull Set<Chunk> chunks) {
         Set<Chunk> successes = new HashSet<>();
         for (Chunk chunk : chunks) {
-            if (!claimable.contains(chunk.getWorld())) {
-                // Ensure the world is claimable in this
-                continue;
-            } else if (getChunkOwner(chunk) != null) {
-                // Ensure the chunk isn't claimed
-                continue;
-            } else if (getChunkCount(player) >= getMaxChunks(player)) {
-                // Ensure this won't put the player over their claim limit
-                continue;
-            } else {
+            if (claimable.contains(chunk.getWorld()) && getChunkOwner(chunk) == null && getChunkCount(player) < getMaxChunks(player)) {
                 if (!claims.containsKey(player)) {
                     claims.put(player, new HashSet<>());
                 }
@@ -482,7 +490,7 @@ public class WorldGroup {
     }
 
     /**
-     * Checks whether a player is allowed to modify a chunk. If player is null, then only chunks that are unclaimed are allowed. This is to allow events that are related to unclaimed blocks.
+     * Checks whether a player is allowed to modify a {@link Chunk}. If player is null, then only chunks that are unclaimed are allowed. This is to allow events that are related to unclaimed blocks.
      * @param player The {@link UUID} of the player to check, or {@code null} if relating to unclaimed blocks.
      * @param chunk The {@link Chunk} to check claims on.
      * @return Whether the player is allowed to modify the {@link Chunk}.
@@ -499,8 +507,8 @@ public class WorldGroup {
     }
 
     /**
-     * updates the claim map in the scoreboard
-     * @param player
+     * Updates the claim map in the scoreboard for a specified {@link Player}.
+     * @param player The {@link Player} whose map should be updated.
      */
     public void updateClaimMap(Player player) {
         Chunk playerChunk = player.getLocation().getChunk();
@@ -512,8 +520,7 @@ public class WorldGroup {
             for (int z = -3; z <= 3; z++) {
                 StringBuilder bRow = new StringBuilder();
                 for (int x = -3; x <= 3; x++) {
-                    // get the surrounding chunks
-
+                    // Get the surrounding chunks
                     Chunk chunk = player.getWorld().getChunkAt(playerChunk.getX() + x, playerChunk.getZ() + z);
                     UUID chunkOwner = getChunkOwner(chunk);
                     if (x == 0 && z == 0) {
@@ -537,7 +544,7 @@ public class WorldGroup {
                 rows[z + 3] = bRow.toString();
             }
 
-            // update the board
+            // Update the board
             board.updateLines(
                     rows[0],
                     rows[1],

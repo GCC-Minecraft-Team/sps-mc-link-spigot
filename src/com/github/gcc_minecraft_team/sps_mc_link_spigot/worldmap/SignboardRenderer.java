@@ -21,9 +21,9 @@ public class SignboardRenderer extends MapRenderer {
     private BufferedImage image;
 
     /**
-     * Sets the map offset in blocks
-     * @param x
-     * @param z
+     * Sets the map offset in blocks.
+     * @param x The x offset.
+     * @param z The y offset.
      */
     public void setOffest(int x, int z) {
         offsetX = x;
@@ -31,11 +31,11 @@ public class SignboardRenderer extends MapRenderer {
     }
 
     /**
-     * Loads an image from the plugin data directory
-     * @param filename
+     * Loads an image from the plugin data directory.
+     * @param filename The name of the file to load.
      * @throws IOException
      */
-    public void loadIamge(String filename) throws IOException {
+    public void loadImage(String filename) throws IOException {
         image = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(), filename));
     }
 

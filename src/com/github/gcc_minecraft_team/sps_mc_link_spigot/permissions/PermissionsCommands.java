@@ -20,7 +20,7 @@ import java.util.Map;
 public class PermissionsCommands implements CommandExecutor {
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         // /perms a.k.a. /permissions
         if (args.length == 0) {
             // No arguments

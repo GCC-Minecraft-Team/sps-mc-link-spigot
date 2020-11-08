@@ -13,10 +13,10 @@ import java.util.List;
 
 public class DiscordTabCompleter implements TabCompleter {
 
-    @Nullable
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
-        if(args.length == 1){
+    @Nullable
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (args.length == 1){
             return CMD.keepStarts(DatabaseLink.getPlayerNames(), args[0]);
         }
 

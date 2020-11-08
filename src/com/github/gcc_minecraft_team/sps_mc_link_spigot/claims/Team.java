@@ -26,6 +26,8 @@ public class Team implements ConfigurationSerializable {
         members.add(leader);
     }
 
+    // ========[NAME]========
+
     /**
      * Getter for the {@link Team}'s name.
      * @return This {@link Team}'s name.
@@ -35,10 +37,14 @@ public class Team implements ConfigurationSerializable {
         return name;
     }
 
+    // ========[WORLD GROUP]========
+
     @NotNull
     public WorldGroup getWorldGroup() {
         return worldGroup;
     }
+
+    // ========[MEMBERS]========
 
     /**
      * Getter for the {@link Team}'s members. READ ONLY.
@@ -134,6 +140,8 @@ public class Team implements ConfigurationSerializable {
         return removeMember(player.getUniqueId());
     }
 
+    // ========[LEADER]========
+
     /**
      * Gets the leader.
      * @return The {@link UUID} of the leader.
@@ -158,7 +166,8 @@ public class Team implements ConfigurationSerializable {
         }
     }
 
-    // Serialization
+    // ========[SERIALIZATION]========
+
     private static final String NAMEKEY = "name";
     private static final String MEMBERSKEY = "members";
     private static final String LEADERKEY = "leader";

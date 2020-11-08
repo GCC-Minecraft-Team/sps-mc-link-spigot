@@ -49,7 +49,7 @@ public class DatabaseLink {
     private static MongoCollection<Team> wgCol;
 
     /**
-     * Creates a connection to the MongoDB com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * Creates a connection to the MongoDB database.
      */
     public static void SetupDatabase() {
         // create config if it doesn't exist
@@ -65,7 +65,7 @@ public class DatabaseLink {
             e.printStackTrace();
         }
 
-        // set up info for com.github.gcc_minecraft_team.sps_mc_link_spigot.database
+        // set up info for database
         ConnectionString connectionString = new ConnectionString((String) dbConfig.get(CFGURI));
         String dbName = (String) dbConfig.get(CFGDB);
 
@@ -76,19 +76,19 @@ public class DatabaseLink {
         MongoClientSettings clientSettings = MongoClientSettings.builder().applyConnectionString(connectionString)
                 .codecRegistry(codecRegistry).build();
 
-        // set com.github.gcc_minecraft_team.sps_mc_link_spigot.database and connect
+        // set database and connect
         try {
             mongoClient = MongoClients.create(clientSettings);
             mongoDatabase = mongoClient.getDatabase(dbName);
             userCol = mongoDatabase.getCollection("users");
             wgCol = mongoDatabase.getCollection("worldgroups", Team.class);
         } catch(MongoException exception) {
-            SPSSpigot.logger().log(Level.SEVERE, "Something went wrong connecting to the MongoDB com.github.gcc_minecraft_team.sps_mc_link_spigot.database, is " + DBFILE + " set up correctly?");
+            SPSSpigot.logger().log(Level.SEVERE, "Something went wrong connecting to the MongoDB database, is " + DBFILE + " set up correctly?");
         }
     }
 
     /**
-     * Gets whether a player is registered on the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * Gets whether a player is registered on the database.
      * @param uuid The {@link UUID} of the player to check.
      * @return {@code true} if the player is registered.
      */
@@ -97,22 +97,22 @@ public class DatabaseLink {
             // check if player is registered
             return userCol.countDocuments(new Document("mcUUID", uuid.toString())) == 1;
         } catch(MongoException exception) {
-            SPSSpigot.logger().log(Level.SEVERE, "Couldn't check user from com.github.gcc_minecraft_team.sps_mc_link_spigot.database! Error: " + exception.toString());
+            SPSSpigot.logger().log(Level.SEVERE, "Couldn't check user from database! Error: " + exception.toString());
             return false;
         }
     }
 
     /**
-     * Gets all the world groups. Should generally be only called on startup.
-     * @return A {@link Set} of the {@link WorldGroup} world groups.
+     * Gets all the {@link WorldGroup}s. Should generally be only called on startup.
+     * @return A {@link Set} of the {@link WorldGroup}s.
      */
     public static Set<WorldGroup> getWorldGroups() { // FIXME: Doesn't do anything.
         return new HashSet<>();
     }
 
     /**
-     * Adds a world group to the database. This should not be called to update the world group.
-     * @param worldGroup The {@link WorldGroup} of the world group.
+     * Adds a {@link WorldGroup} to the database. This should not be called to update it.
+     * @param worldGroup The {@link WorldGroup} to add.
      * @return {@code true} if successful.
      */
     public static boolean addWorldGroup(WorldGroup worldGroup) { // FIXME: Doesn't do anything
@@ -120,8 +120,8 @@ public class DatabaseLink {
     }
 
     /**
-     * Remove a world group from the database.
-     * @param worldGroup The {@link WorldGroup} of the world group.
+     * Remove a {@link WorldGroup} from the database.
+     * @param worldGroup The {@link WorldGroup} to remove.
      * @return {@code true} if successful.
      */
     public static boolean removeWorldGroup(WorldGroup worldGroup) { // FIXME: Doesn't do anything
@@ -129,7 +129,7 @@ public class DatabaseLink {
     }
 
     /**
-     * Adds a new {@link Team} to the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * Adds a new {@link Team} to the database.
      * @param team The {@link Team} to add.
      */
     public static void addTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
@@ -137,7 +137,7 @@ public class DatabaseLink {
     }
 
     /**
-     * Updates an existing {@link Team} in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * Updates an existing {@link Team} in the database.
      * @param team The {@link Team} to update.
      */
     public static void updateTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
@@ -145,17 +145,17 @@ public class DatabaseLink {
     }
 
     /**
-     * Gets a {@link Team} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database. Unlikely to be used?
+     * Gets a {@link Team} from the database. Unlikely to be used?
      * @param team The {@link Team} to get.
-     * @return The team.
+     * @return The {@link Team}.
      */
     public static Team getTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
         return wgCol.find(new BasicDBObject("name", team.getName())).first();
     }
 
     /**
-     * Gets all {@link Team}s in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
-     * @param worldGroup The {@link WorldGroup} worldGroup from which to find the {@link Team}.
+     * Gets all {@link Team}s in the database.
+     * @param worldGroup The {@link WorldGroup} from which to find the {@link Team}.
      * @return A {@link Set} of {@link Team}s found.
      */
     public static Set<Team> getTeams(@NotNull WorldGroup worldGroup) { // FIXME: Update this to the new world groups system.
@@ -168,7 +168,7 @@ public class DatabaseLink {
     }
 
     /**
-     * Removes a {@link Team} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * Removes a {@link Team} from the database.
      * @param team The {@link Team} to remove.
      */
     public static void removeTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
@@ -176,9 +176,9 @@ public class DatabaseLink {
     }
 
     /**
-     * Saves getWorldGroup to the database.
-     * @param claims The claim map to save.
-     * @param worldGroup The {@link WorldGroup} worldGroup to which to save the claims.
+     * Saves all claims to the database.
+     * @param claims The claim {@link Map} to save.
+     * @param worldGroup The {@link WorldGroup} for which to save the claims.
      */
     public static void saveClaims(@NotNull Map<UUID, Set<Chunk>> claims, @NotNull WorldGroup worldGroup) { // FIXME: Update this to the new world groups system.
 
@@ -210,9 +210,9 @@ public class DatabaseLink {
     }
 
     /**
-     * @param worldGroup The {@link WorldGroup} worldGroup from which to get claims.
-     * Gets getWorldGroup from the database.
-     * @return The worldGroup's claim map.
+     * Gets claims from the database.
+     * @param worldGroup The {@link WorldGroup} from which to get claims.
+     * @return The {@link WorldGroup}'s claim map.
      */
     @NotNull
     public static Map<UUID, Set<Chunk>> getClaims(@NotNull WorldGroup worldGroup) { // FIXME: Update this to the new world groups system.
@@ -373,7 +373,7 @@ public class DatabaseLink {
     }
 
     /**
-     * Registers a new player in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * Registers a new player in the database.
      * @param uuid The Minecraft {@link UUID} of the player.
      * @param SPSid The SPS ID of the player.
      * @param name The new name of the player.
@@ -404,8 +404,8 @@ public class DatabaseLink {
         // set nametag
         int maxLength = Math.min(name.length(), 15);
 
-        //NickAPI.setSkin( player, player.getName() );
-        //NickAPI.setUniqueId( player, player.getName() );
+        //NickAPI.setSkin(player, player.getName());
+        //NickAPI.setUniqueId(player, player.getName());
         NickAPI.nick( player, name.substring(0, maxLength));
         NickAPI.refreshPlayer( player );
 
@@ -438,7 +438,7 @@ public class DatabaseLink {
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder().append("[" + SPSSpigot.getCardinalDirection(player) + "] " + claimStatus).create());
         }, 0, 10);
 
-        player.sendMessage("You've spawned in the lobby, please use the included " + ChatColor.BLUE +"Starting Boat" + ChatColor.WHITE + " to leave the island!");
+        player.sendMessage("You've spawned in the lobby, please use the included " + ChatColor.BLUE + "Starting Boat" + ChatColor.WHITE + " to leave the island!");
 
     }
 

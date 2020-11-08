@@ -2,10 +2,8 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -13,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CMD {
+
     /**
      * Builds the text for a list to be sent in chat.
      * @param title The title of the list. May safely include {@link ChatColor}s.

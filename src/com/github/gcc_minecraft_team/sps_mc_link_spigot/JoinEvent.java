@@ -97,8 +97,8 @@ public class JoinEvent implements Listener {
     }
 
     /**
-     * Fired on player leave
-     * @param event
+     * Fired on player leave.
+     * @param event The {@link PlayerQuitEvent}.
      */
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) {
@@ -106,6 +106,10 @@ public class JoinEvent implements Listener {
         SPSSpigot.perms().removeAttachment(event.getPlayer());
     }
 
+    /**
+     * Fired on player spawn in.
+     * @param event The {@link PlayerRespawnEvent}.
+     */
     @EventHandler
     public void onPlayerSpawn(PlayerRespawnEvent event) {
         Location pLoc = event.getRespawnLocation();

@@ -35,7 +35,7 @@ public class MapEvents implements Listener {
         }
     }
 
-    void assignMaps(MapInitializeEvent e, String filename, int curMaxMaps) {
+    private void assignMaps(MapInitializeEvent e, String filename, int curMaxMaps) {
         if (e.getMap().getId() == curMaxMaps) {
             drawSignboard(e, 0, 0, filename);
         }
@@ -50,7 +50,7 @@ public class MapEvents implements Listener {
         }
     }
 
-    void drawSignboard(MapInitializeEvent e, int offsetX, int offsetZ, String filename) {
+    private void drawSignboard(MapInitializeEvent e, int offsetX, int offsetZ, String filename) {
         for (MapRenderer r : e.getMap().getRenderers()) {
             e.getMap().removeRenderer(r);
         }
@@ -60,7 +60,7 @@ public class MapEvents implements Listener {
         SignboardRenderer sr = new SignboardRenderer();
         sr.setOffest(offsetX * 128, offsetZ * 128);
         try {
-            sr.loadIamge(filename);
+            sr.loadImage(filename);
         } catch (IOException exception) {
             exception.printStackTrace();
         }
@@ -68,7 +68,7 @@ public class MapEvents implements Listener {
         map.addRenderer(sr);
     }
 
-    void drawMap(MapInitializeEvent e, int offsetX, int offsetZ) {
+    private void drawMap(MapInitializeEvent e, int offsetX, int offsetZ) {
         for (MapRenderer r : e.getMap().getRenderers()) {
             e.getMap().removeRenderer(r);
         }

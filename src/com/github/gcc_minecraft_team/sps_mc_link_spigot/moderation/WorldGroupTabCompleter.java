@@ -16,9 +16,9 @@ import java.util.List;
 
 public class WorldGroupTabCompleter implements TabCompleter {
 
-    @Nullable
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+    @Nullable
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length == 1) {
             // /wgroup <partial>
             return CMD.keepStarts(Arrays.asList("create", "delete", "addworld", "remworld", "claimable", "list"), args[0]);

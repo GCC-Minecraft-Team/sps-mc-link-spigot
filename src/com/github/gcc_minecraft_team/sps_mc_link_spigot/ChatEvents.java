@@ -27,8 +27,7 @@ import java.util.logging.Level;
 public class ChatEvents implements Listener {
 
     /**
-     * Fires when someone send a message in chat
-     * 
+     * Fires when someone send a message in chat.
      * @param e The {@link AsyncPlayerChatEvent}.
      */
     @EventHandler
@@ -67,8 +66,8 @@ public class ChatEvents implements Listener {
     }
 
     /**
-     * Overrides death messages
-     * @param event
+     * Overrides death messages.
+     * @param event The {@link PlayerDeathEvent}.
      */
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
@@ -84,7 +83,8 @@ public class ChatEvents implements Listener {
     }
 
     /**
-     * Overrides certain bukkit commands with SPSMC versions
+     * Overrides certain bukkit commands with SPSMC versions.
+     * @param e The {@link PlayerCommandPreprocessEvent}.
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerCommandPreProcess(PlayerCommandPreprocessEvent e) {
