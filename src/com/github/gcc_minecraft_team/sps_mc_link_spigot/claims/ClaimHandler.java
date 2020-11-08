@@ -435,8 +435,10 @@ public class ClaimHandler {
      * @param player
      */
     public void updateClaimMap(Player player) {
-        boolean isInSpawn = SPSSpigot.claims().checkInSpawn(player);
         FastBoard board = SPSSpigot.plugin().boards.get(player.getUniqueId());
+        Location ploc = player.getLocation();
+        Team pt = SPSSpigot.claims().getPlayerTeam(player.getUniqueId());
+        Set<UUID> tm = pt.getMembers();
         if (board != null && board.isDeleted() == false) {
             // map
             String[] rows = new String[7];
@@ -448,7 +450,7 @@ public class ClaimHandler {
                 for (int x = -3; x <= 3; x++) {
 
                     // get the surrounding chunks
-                    Chunk cChunk = SPSSpigot.server().getWorlds().get(0).getChunkAt(((int) player.getLocation().getX() / 16) + x, ((int) player.getLocation().getZ() / 16) + z);
+                    Chunk cChunk = SPSSpigot.server().getWorlds().get(0).getChunkAt(((int) ploc.getX() / 16) + x, ((int) ploc.getZ() / 16) + z);
                     if (cChunk != null) {
                         UUID cChunkOwner = SPSSpigot.claims().getChunkOwner(cChunk);
 
@@ -462,26 +464,22 @@ public class ClaimHandler {
                             bRow.append(ChatColor.BLUE + "Ⓟ");
                         } else {
                             // check for the spawn protection zone
-                            if (!isInSpawn) {
-                                if (cChunkOwner != null) {
-                                    if (cChunkOwner.equals(player.getUniqueId())) {
-                                        bRow.append(ChatColor.GREEN + "█"); // owned chunk
-                                    } else {
-                                        if (SPSSpigot.claims().getPlayerTeam(player.getUniqueId()) != null) {
-                                            if (SPSSpigot.claims().getPlayerTeam(player.getUniqueId()).getMembers().contains(cChunkOwner)) {
-                                                bRow.append(ChatColor.AQUA + "▒"); // owned by other players on team
-                                            } else {
-                                                bRow.append(ChatColor.RED + "▒"); // owned by other player not on team
-                                            }
+                            if (cChunkOwner != null) {
+                                if (cChunkOwner.equals(player.getUniqueId())) {
+                                    bRow.append(ChatColor.GREEN + "█"); // owned chunk
+                                } else {
+                                    if (pt != null) {
+                                        if (tm.contains(cChunkOwner)) {
+                                            bRow.append(ChatColor.AQUA + "▒"); // owned by other players on team
                                         } else {
                                             bRow.append(ChatColor.RED + "▒"); // owned by other player not on team
                                         }
+                                    } else {
+                                        bRow.append(ChatColor.RED + "▒"); // owned by other player not on team
                                     }
-                                } else {
-                                    bRow.append(ChatColor.GRAY + "▒"); // unowned
                                 }
                             } else {
-                                bRow.append(ChatColor.RED + "ⓢ"); // spawn
+                                bRow.append(ChatColor.GRAY + "▒"); // unowned
                             }
                         }
                     } else {

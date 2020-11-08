@@ -10,6 +10,7 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.Location;
 import org.bukkit.entity.*;
@@ -19,10 +20,9 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerTakeLecternBookEvent;
+import org.bukkit.event.player.*;
+import org.bukkit.inventory.ItemStack;
+import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 import xyz.haoshoku.nick.api.NickAPI;
 
 import javax.xml.crypto.Data;
@@ -53,9 +53,21 @@ public class ClaimEvents implements Listener {
     }
 
     @EventHandler
+    public void onPlayerSpawn(PlayerRespawnEvent event) {
+        Location pLoc = event.getRespawnLocation();
+        Double zdist = pLoc.getZ() - event.getPlayer().getWorld().getSpawnLocation().getZ();
+        Double xdist = pLoc.getX() - event.getPlayer().getWorld().getSpawnLocation().getX();
+        if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
+            // give starting boat
+            event.getPlayer().getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));
+            SPSSpigot.showBoard(event.getPlayer());
+        }
+    }
+
+    @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event)
     {
-        if (SPSSpigot.claims().checkInSpawn(event.getPlayer())) {
+        if (SPSSpigot.claims().checkInSpawn(event.getPlayer()) && event.getPlayer().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
             if(
                     !event.isCancelled()
                             && event.getRightClicked() instanceof ItemFrame
@@ -81,7 +93,7 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onEntitySpawn(EntitySpawnEvent event) {
         if (!event.getEntity().getType().equals(EntityType.DROPPED_ITEM)) {
-            if (SPSSpigot.claims().checkEntityInSpawn(event.getEntity())) {
+            if (SPSSpigot.claims().checkEntityInSpawn(event.getEntity()) && event.getEntity().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
                 event.setCancelled(true);
             }
         }
@@ -96,7 +108,7 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onBlockDamage(BlockDamageEvent event) {
-        if (SPSSpigot.claims().checkInSpawn(event.getPlayer())) {
+        if (SPSSpigot.claims().checkInSpawn(event.getPlayer()) && event.getPlayer().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
             event.setCancelled(true);
         }
         Chunk chunk = event.getBlock().getChunk();
@@ -106,7 +118,7 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onEntityDamageEvent(EntityDamageByEntityEvent event) {
-        if (SPSSpigot.claims().checkEntityInSpawn(event.getDamager())) {
+        if (SPSSpigot.claims().checkEntityInSpawn(event.getDamager()) && event.getEntity().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
             event.setCancelled(true);
         }
         Entity target = event.getEntity();
@@ -129,7 +141,7 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onBlockIgnite(BlockIgniteEvent event) {
-        if (SPSSpigot.claims().checkInSpawn(event.getPlayer())) {
+        if (SPSSpigot.claims().checkInSpawn(event.getPlayer()) && event.getPlayer().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
             event.setCancelled(true);
         }
         Chunk toChunk = event.getBlock().getChunk();

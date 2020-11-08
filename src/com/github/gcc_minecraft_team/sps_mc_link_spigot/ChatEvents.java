@@ -12,6 +12,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -76,11 +77,14 @@ public class ChatEvents implements Listener {
      */
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
-        Entity causeEntity = event.getEntity().getLastDamageCause().getEntity();
-        if (causeEntity instanceof Player) {
-            event.setDeathMessage(ChatColor.DARK_PURPLE + "[" + NickAPI.getName(event.getEntity()) + "] Was killed by " + NickAPI.getName((Player) causeEntity));
+        Entity ent = event.getEntity();
+        EntityDamageEvent ede = ent.getLastDamageCause();
+        EntityDamageEvent.DamageCause dc = ede.getCause();
+
+        if (ent.getLastDamageCause() instanceof Player) {
+            event.setDeathMessage(ChatColor.DARK_PURPLE + "[" + NickAPI.getName(event.getEntity()) + "] Was killed by " + NickAPI.getName((Player) ent.getLastDamageCause()));
         } else {
-            event.setDeathMessage(ChatColor.DARK_PURPLE + "[" + NickAPI.getName(event.getEntity()) + "] Was killed by " + causeEntity.getName());
+            event.setDeathMessage(ChatColor.DARK_PURPLE + "[" + NickAPI.getName(event.getEntity()) + "] Was killed by " + dc.toString());
         }
     }
 
