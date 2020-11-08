@@ -1,6 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
-import database.DatabaseLink;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import fr.mrmicky.fastboard.FastBoard;
 import net.md_5.bungee.api.ChatColor;
@@ -38,14 +38,14 @@ public class ClaimHandler {
 
 
     /**
-     * Saves data from this {@link ClaimHandler} to database
+     * Saves data from this {@link ClaimHandler} to com.github.gcc_minecraft_team.sps_mc_link_spigot.database
      */
     public void saveCurrentClaims() {
         DatabaseLink.saveClaims(claims, this);
     }
 
     /**
-     * Loads data for this {@link ClaimHandler} from the database
+     * Loads data for this {@link ClaimHandler} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database
      */
     public void loadFromDatabase() {
         teams = DatabaseLink.getTeams(this);

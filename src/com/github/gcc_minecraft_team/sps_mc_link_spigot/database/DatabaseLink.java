@@ -1,4 +1,4 @@
-package database;
+package com.github.gcc_minecraft_team.sps_mc_link_spigot.database;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimHandler;
@@ -49,7 +49,7 @@ public class DatabaseLink {
     private static MongoCollection<Team> teamCol;
 
     /**
-     * Creates a connection to the MongoDB database.
+     * Creates a connection to the MongoDB com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
      */
     public static void SetupDatabase() {
         // create config if it doesn't exist
@@ -65,7 +65,7 @@ public class DatabaseLink {
             e.printStackTrace();
         }
 
-        // set up info for database
+        // set up info for com.github.gcc_minecraft_team.sps_mc_link_spigot.database
         ConnectionString connectionString = new ConnectionString((String) dbConfig.get(CFGURI));
         String dbName = (String) dbConfig.get(CFGDB);
 
@@ -76,19 +76,19 @@ public class DatabaseLink {
         MongoClientSettings clientSettings = MongoClientSettings.builder().applyConnectionString(connectionString)
                 .codecRegistry(codecRegistry).build();
 
-        // set database and connect
+        // set com.github.gcc_minecraft_team.sps_mc_link_spigot.database and connect
         try {
             mongoClient = MongoClients.create(clientSettings);
             mongoDatabase = mongoClient.getDatabase(dbName);
             userCol = mongoDatabase.getCollection("users");
             teamCol = mongoDatabase.getCollection("teams", Team.class);
         } catch(MongoException exception) {
-            SPSSpigot.logger().log(Level.SEVERE, "Something went wrong connecting to the MongoDB database, is " + DBFILE + " set up correctly?");
+            SPSSpigot.logger().log(Level.SEVERE, "Something went wrong connecting to the MongoDB com.github.gcc_minecraft_team.sps_mc_link_spigot.database, is " + DBFILE + " set up correctly?");
         }
     }
 
     /**
-     * Gets whether a player is registered on the database.
+     * Gets whether a player is registered on the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
      * @param uuid The {@link UUID} of the player to check.
      * @return {@code true} if the player is registered.
      */
@@ -97,7 +97,7 @@ public class DatabaseLink {
             // check if player is registered
             return userCol.countDocuments(new Document("mcUUID", uuid.toString())) == 1;
         } catch(MongoException exception) {
-            SPSSpigot.logger().log(Level.SEVERE, "Couldn't check user from database! Error: " + exception.toString());
+            SPSSpigot.logger().log(Level.SEVERE, "Couldn't check user from com.github.gcc_minecraft_team.sps_mc_link_spigot.database! Error: " + exception.toString());
             return false;
         }
     }
@@ -119,7 +119,7 @@ public class DatabaseLink {
     }
 
     /**
-     * Adds a new {@link Team} to the database.
+     * Adds a new {@link Team} to the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
      * @param team The {@link Team} to add.
      */
     public static void addTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
@@ -127,7 +127,7 @@ public class DatabaseLink {
     }
 
     /**
-     * Updates an existing {@link Team} in the database.
+     * Updates an existing {@link Team} in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
      * @param team The {@link Team} to update.
      */
     public static void updateTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
@@ -135,7 +135,7 @@ public class DatabaseLink {
     }
 
     /**
-     * Gets a {@link Team} from the database. Unlikely to be used?
+     * Gets a {@link Team} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database. Unlikely to be used?
      * @param team The {@link Team} to get.
      * @return The team.
      */
@@ -144,7 +144,7 @@ public class DatabaseLink {
     }
 
     /**
-     * Gets all {@link Team}s in the database.
+     * Gets all {@link Team}s in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
      * @param worldGroup The {@link ClaimHandler} worldGroup from which to find the {@link Team}.
      * @return A {@link Set} of {@link Team}s found.
      */
@@ -158,7 +158,7 @@ public class DatabaseLink {
     }
 
     /**
-     * Removes a {@link Team} from the database.
+     * Removes a {@link Team} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
      * @param team The {@link Team} to remove.
      */
     public static void removeTeam(@NotNull Team team) { // FIXME: Update this to the new world groups system.
@@ -166,7 +166,7 @@ public class DatabaseLink {
     }
 
     /**
-     * Saves claims to the database.
+     * Saves claims to the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
      * @param claims The claim map to save.
      * @param worldGroup The {@link ClaimHandler} worldGroup to which to save the claims.
      */
@@ -194,13 +194,13 @@ public class DatabaseLink {
             // upsert means it will create a new field if the player has never claimed land before
             UpdateOptions options = new UpdateOptions().upsert(true);
 
-            // push to the database
+            // push to the com.github.gcc_minecraft_team.sps_mc_link_spigot.database
             userCol.updateOne(new Document("mcUUID", player.getKey().toString()), setQuery, options);
         }
     }
 
     /**
-     * Gets claims from the database.
+     * Gets claims from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
      * @param worldGroup The {@link ClaimHandler} worldGroup from which to get claims.
      * @return The worldGroup's claim map.
      */
@@ -342,7 +342,7 @@ public class DatabaseLink {
         BasicDBObject setQuery = new BasicDBObject();
         setQuery.append("$set", updateFields);
 
-        // ban the player in the database
+        // ban the player in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database
         try {
             userCol.updateOne(new Document("oAuthEmail", spsEmail), setQuery);
 
@@ -363,7 +363,7 @@ public class DatabaseLink {
     }
 
     /**
-     * Registers a new player in the database.
+     * Registers a new player in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
      * @param uuid The Minecraft {@link UUID} of the player.
      * @param SPSid The SPS ID of the player.
      * @param name The new name of the player.
@@ -381,7 +381,7 @@ public class DatabaseLink {
 
         UpdateOptions options = new UpdateOptions().upsert(true);
 
-        // update in the database
+        // update in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database
         userCol.updateOne(new Document("oAuthId", SPSid), setQuery, options);
         String email = userCol.find(new Document("oAuthId", SPSid)).first().getString("oAuthEmail");
 

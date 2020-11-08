@@ -10,7 +10,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
 
-import database.DatabaseLink;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import io.javalin.Javalin;
 import io.jsonwebtoken.*;
 import org.jetbrains.annotations.NotNull;
@@ -63,7 +63,7 @@ public class WebInterfaceLink {
                 SPSSpigot.logger().log(Level.SEVERE, "Something went wrong decoding a JSON web token");
             }
 
-            // send response and load database data
+            // send response and load com.github.gcc_minecraft_team.sps_mc_link_spigot.database data
             if (newUUID != null) {
                 DatabaseLink.registerPlayer(newUUID, newUser.get("id").asText(), newUser.get("nick").asText());
                 // success

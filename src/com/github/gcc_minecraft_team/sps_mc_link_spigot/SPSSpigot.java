@@ -8,7 +8,7 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationCom
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.*;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapEvents;
-import database.DatabaseLink;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
