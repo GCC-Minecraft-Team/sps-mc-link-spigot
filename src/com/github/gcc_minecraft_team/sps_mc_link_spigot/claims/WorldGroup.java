@@ -70,6 +70,8 @@ public class WorldGroup {
             }
             this.claims.put(UUID.fromString(c.getKey()), claimChunks);
         }
+
+        this.joinRequests = new HashMap<>();
     }
 
     /**
@@ -277,12 +279,16 @@ public class WorldGroup {
         teams.remove(team);
         // Delete all join requests for this team
         Set<UUID> remove = new HashSet<>();
-        for (Map.Entry<UUID, Team> request : joinRequests.entrySet()) {
-            if (request.getValue() == team)
-                remove.add(request.getKey());
+        try {
+            for (Map.Entry<UUID, Team> request : joinRequests.entrySet()) {
+                if (request.getValue() == team)
+                    remove.add(request.getKey());
+            }
+            for (UUID request : remove)
+                joinRequests.remove(request);
+        } catch (NullPointerException exception) {
+            // do nothing
         }
-        for (UUID request : remove)
-            joinRequests.remove(request);
         DatabaseLink.removeTeam(team);
     }
 
@@ -326,9 +332,16 @@ public class WorldGroup {
         if (getPlayerTeam(player) != null)
             throw new IllegalStateException("Cannot create join request for player (UUID: " + player.toString() + ") because they are already on a team.");
         // Get the previous team - will be null if none found.
-        Team old = joinRequests.get(player);
+        System.out.println(player);
+        System.out.println(team.getLeader());
         joinRequests.put(player, team);
-        return old;
+
+        try {
+            Team old = joinRequests.get(player);
+            return old;
+        } catch (NullPointerException exception) {
+            return null;
+        }
     }
 
     /**
@@ -338,10 +351,14 @@ public class WorldGroup {
      */
     @Nullable
     public Team cancelJoinRequest(@NotNull UUID player) {
-        Team team = joinRequests.get(player);
-        if (team != null)
-            joinRequests.remove(player);
-        return team;
+        try {
+            Team team = joinRequests.get(player);
+            if (team != null)
+                joinRequests.remove(player);
+            return team;
+        } catch (NullPointerException exception) {
+            return null;
+        }
     }
 
     /**
@@ -354,11 +371,15 @@ public class WorldGroup {
     public Team fulfillJoinRequest(@NotNull UUID player) {
         if (getPlayerTeam(player) != null)
             throw new IllegalStateException("Cannot fulfill a join request for player (UUID: " + player.toString() + ") because they are already on a team.");
-        Team team = joinRequests.get(player);
-        if (team != null)
-            team.addMember(player);
+        try {
+            Team team = joinRequests.get(player);
+            if (team != null)
+                team.addMember(player);
             joinRequests.remove(player);
-        return team;
+            return team;
+        } catch (NullPointerException exception) {
+            return null;
+        }
     }
 
     /**
@@ -368,7 +389,11 @@ public class WorldGroup {
      */
     @Nullable
     public Team getJoinRequest(@NotNull UUID player) {
-        return joinRequests.get(player);
+        try {
+            return joinRequests.get(player);
+        } catch (NullPointerException exception) {
+            return null;
+        }
     }
 
     /**
@@ -528,26 +553,19 @@ public class WorldGroup {
      * @param chunk The {@link Chunk} to be unclaimed.
      * @return {@code true} if successful; {@code false} if already not claimed.
      */
-    public boolean unclaimChunk(@NotNull Chunk chunk) {
-        UUID owner = getChunkOwner(chunk);
-        if (owner == null) {
-            return false;
-        } else {
-            Iterator it = claims.entrySet().iterator();
-            while (it.hasNext())
-            {
-                Map.Entry<UUID, Set<Chunk>> e = (Map.Entry<UUID, Set<Chunk>>) it.next();
-                Iterator itChunk = e.getValue().iterator();
-                while(itChunk.hasNext()) {
-                    Chunk c = (Chunk) itChunk.next();
-                    if (c.equals(chunk)) {
-                        itChunk.remove();
-                    }
+    public boolean unclaimChunk(@NotNull Chunk chunk, UUID owner) {
+        for (Map.Entry<UUID, Set<Chunk>> e : claims.entrySet())
+        {
+            if (e.getKey().equals(owner)) {
+                try {
+                    e.getValue().remove(chunk);
+                } catch(NullPointerException exception) {
+                    // do nothing
                 }
             }
-            saveCurrentClaims();
-            return true;
         }
+        saveCurrentClaims();
+        return true;
     }
 
     /**
@@ -556,10 +574,9 @@ public class WorldGroup {
      * @return A {@link Set} of the {@link Chunk}s that were successfully unclaimed.
      */
     @NotNull
-    public Set<Chunk> unclaimChunkSet(@NotNull Set<Chunk> chunks) {
+    public Set<Chunk> unclaimChunkSet(@NotNull Set<Chunk> chunks, UUID owner) {
         Set<Chunk> successes = new HashSet<>();
         for (Chunk chunk : chunks) {
-            UUID owner = getChunkOwner(chunk);
             if (owner != null && claims.get(owner).remove(chunk)) {
                 successes.add(chunk);
             }
@@ -583,5 +600,9 @@ public class WorldGroup {
             // We're just checking a player's permission in a chunk.
             return owner == null || owner.equals(player) || isOnSameTeam(player, owner);
         }
+    }
+
+    public boolean isClaimable(World world) {
+        return claimable.contains(world);
     }
 }

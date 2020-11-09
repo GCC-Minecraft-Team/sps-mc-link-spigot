@@ -10,6 +10,7 @@ import com.mongodb.client.model.UpdateOptions;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
+import fr.mrmicky.fastboard.FastBoard;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bson.Document;
@@ -184,7 +185,7 @@ public class DatabaseLink {
      * @param team The {@link Team} to remove.
      */
     public static void removeTeam(@NotNull Team team) {
-        wgCol.deleteOne(new BasicDBObject("name", team.getName()));
+        dbThreads.new UpdateWorldGroup(new WorldGroupSerializable(team.getWorldGroup())).run();
     }
 
     /**
@@ -424,23 +425,11 @@ public class DatabaseLink {
 
         // give starting boat
         player.getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));
-        SPSSpigot.showBoard(player);
 
-        // claim map
-        ClaimMap claimMap = new ClaimMap(player);
-        claimMap.start();
-        SPSSpigot.plugin().addMap(player.getUniqueId(), claimMap);
+        FastBoard board = new FastBoard(player);
+        SPSSpigot.plugin().boards.put(player.getUniqueId(), board);
 
-        BukkitScheduler scheduler = SPSSpigot.server().getScheduler();
-        scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), () -> {
-            // compass
-            String claimStatus = net.md_5.bungee.api.ChatColor.DARK_GREEN + "Wilderness";
-            UUID chunkOwner = SPSSpigot.getWorldGroup(player.getWorld()).getChunkOwner(player.getLocation().getChunk());
-            if (chunkOwner != null) {
-                claimStatus = net.md_5.bungee.api.ChatColor.RED + DatabaseLink.getSPSName(chunkOwner);
-            }
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder().append("[" + SPSSpigot.getCardinalDirection(player) + "] " + claimStatus).create());
-        }, 0, 10);
+        SPSSpigot.plugin().startCompass(player, SPSSpigot.getWorldGroup(player.getWorld()));
 
         player.sendMessage("You've spawned in the lobby, please use the included " + ChatColor.BLUE +"Starting Boat" + ChatColor.WHITE + " to leave the island!");
 

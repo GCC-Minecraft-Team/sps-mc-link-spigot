@@ -51,7 +51,7 @@ public class ClaimCommands implements CommandExecutor {
                 }
             }
 
-            Set<Chunk> unclaimed = worldGroup.unclaimChunkSet(chunks);
+            Set<Chunk> unclaimed = worldGroup.unclaimChunkSet(chunks, player.getUniqueId());
             sender.sendMessage(ChatColor.GREEN + "Unclaimed " + unclaimed.size() + "/" + chunks.size() + " chunks! You are now at " + worldGroup.getChunkCount(player.getUniqueId()) + "/" + worldGroup.getMaxChunks(player) + " chunks you can currently claim.");
             return true;
 
@@ -129,7 +129,7 @@ public class ClaimCommands implements CommandExecutor {
                         return true;
                     } else {
                         // TODO: Decide if we need a confirmation system
-                        if (worldGroup.unclaimChunk(chunk)) {
+                        if (worldGroup.unclaimChunk(chunk, player.getUniqueId())) {
                             sender.sendMessage(ChatColor.GREEN + "Successfully unclaimed chunk! You are now at " + worldGroup.getChunkCount(player.getUniqueId()) + "/" + worldGroup.getMaxChunks(player) + " chunks you can currently claim.");
                             return true;
                         } else {
@@ -139,19 +139,22 @@ public class ClaimCommands implements CommandExecutor {
                     }
                 } else if (args[0].equalsIgnoreCase("hide")) {
                     if (SPSSpigot.plugin().boards.get(player.getUniqueId()) != null && !SPSSpigot.plugin().boards.get(player.getUniqueId()).isDeleted()) {
-                        SPSSpigot.plugin().getMaps().get(player.getUniqueId()).shutdown();
-                        FastBoard board = SPSSpigot.plugin().boards.get(player.getUniqueId());
-                        board.delete();
+                        SPSSpigot.plugin().boards.get(player.getUniqueId()).delete();
+                        SPSSpigot.plugin().boards.remove(player.getUniqueId());
                         return true;
                     } else {
                         sender.sendMessage(ChatColor.RED + "Couldn't hide the claim map!");
                         return true;
                     }
                 } else if (args[0].equalsIgnoreCase("show")) {
-                    ClaimMap r = SPSSpigot.plugin().getMaps().get(player.getUniqueId());
-                    r.startup();
-                    SPSSpigot.showBoard(player);
-                    return true;
+                    if (!SPSSpigot.plugin().boards.containsKey(player.getUniqueId())) {
+                        FastBoard board = new FastBoard(player);
+                        SPSSpigot.plugin().boards.put(player.getUniqueId(), board);
+                        return true;
+                    } else {
+                        player.sendMessage(ChatColor.RED + "Claim map is already visible!");
+                        return true;
+                    }
                 } else {
                     // args[0] is invalid
                     return false;

@@ -27,7 +27,7 @@ commands:
     alias: permissions
   mod:
     description: Base command for SPSMC moderators
-    usage: "Usage: /<command> <banSPS>"
+    usage: "Usage: /<command> <banSPS|tpSPS>"
     permission: spsmc.mod
   wgroup:
     description: Manages world groups.

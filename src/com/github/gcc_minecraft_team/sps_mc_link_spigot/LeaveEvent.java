@@ -1,14 +1,12 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimMap;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
+import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
-
-import java.util.Map;
-import java.util.UUID;
 
 public class LeaveEvent implements Listener {
 
@@ -19,9 +17,12 @@ public class LeaveEvent implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         // shutdown and remove the map thread
-        Map<UUID, ClaimMap> m = SPSSpigot.plugin().getMaps();
-        m.get(event.getPlayer().getUniqueId()).shutdown();
-        m.remove(event.getPlayer().getUniqueId());
+        Player player = event.getPlayer();
+        FastBoard board = SPSSpigot.plugin().boards.remove(player.getUniqueId());
+
+        if (board != null) {
+            board.delete();
+        }
 
         event.setQuitMessage(ChatColor.BLUE.toString() + ChatColor.ITALIC.toString() + DatabaseLink.getSPSName(event.getPlayer().getUniqueId()) + " disconnected, bye!.");
     }
