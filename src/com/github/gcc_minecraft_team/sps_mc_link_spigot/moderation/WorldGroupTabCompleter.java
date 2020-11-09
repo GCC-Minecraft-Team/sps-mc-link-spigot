@@ -3,6 +3,7 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -77,7 +78,12 @@ public class WorldGroupTabCompleter implements TabCompleter {
                 return new ArrayList<>();
             }
         } else if (args[0].equals("claimable")) {
-            return new ArrayList<>();
+            if (args.length == 2) {
+                // wgroup claimable
+                return CMD.keepStarts(Arrays.asList("addworld", "remworld"), args[1]);
+            } else {
+                return new ArrayList<>();
+            }
         } else if (args[0].equals("list")) {
             if (args.length == 2) {
                 // /wgroup list <partial>

@@ -1,5 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import org.bson.codecs.pojo.annotations.BsonCreator;
 import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 import org.bson.codecs.pojo.annotations.BsonId;
@@ -17,7 +19,7 @@ public class WorldGroupSerializable {
     private final Set<String> worlds;
     private final Set<String> claimable;
     private final Set<TeamSerializable> teams;
-    private final Map<String, Set<Chunk>> claims;
+    private final Map<String, Set<DBObject>> claims;
     // Don't bother serializing join requests as they shouldn't leave memory
     //@BsonProperty(value = "joinRequests")
     //private Map<String, Team> joinRequests;
@@ -30,7 +32,7 @@ public class WorldGroupSerializable {
             @BsonProperty("worlds") final Set<String> worlds,
             @BsonProperty("claimable") final Set<String> claimable,
             @BsonProperty("teams") final Set<TeamSerializable> teams,
-            @BsonProperty("claims") final Map<String, Set<Chunk>> claims
+            @BsonProperty("claims") final Map<String, Set<DBObject>> claims
     ) {
         this.worldgroupId = WGID;
         this.name = name;
@@ -61,7 +63,15 @@ public class WorldGroupSerializable {
         }
         this.claims = new HashMap<>();
         for (Map.Entry<UUID, Set<Chunk>> c : wg.getClaims().entrySet()) {
-            this.claims.put(c.getKey().toString(), c.getValue());
+            Set<DBObject> claimChunks = new HashSet<>();
+            for (Chunk ch : c.getValue()) {
+                DBObject dbChunk = new BasicDBObject();
+                dbChunk.put("x", ch.getX());
+                dbChunk.put("z", ch.getZ());
+                dbChunk.put("world", ch.getWorld().getUID());
+                claimChunks.add(dbChunk);
+            }
+            this.claims.put(c.getKey().toString(), claimChunks);
         }
     }
 
@@ -91,7 +101,7 @@ public class WorldGroupSerializable {
     }
 
     @BsonProperty("claims")
-    public Map<String, Set<Chunk>> getClaims() {
+    public Map<String, Set<DBObject>> getClaims() {
         return claims;
     }
 

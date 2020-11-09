@@ -1,10 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.database;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.TeamSerializable;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroupSerializable;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.*;
 import com.mongodb.*;
 import com.mongodb.client.*;
 import com.mongodb.client.MongoClient;
@@ -116,9 +113,7 @@ public class DatabaseLink {
         Set<WorldGroup> output = new HashSet<>();
         while(cur.hasNext()) {
             WorldGroupSerializable wgs = (WorldGroupSerializable)cur.next();
-            System.out.println(wgs.getID());
             WorldGroup wg = new WorldGroup(wgs);
-            System.out.println(wg.getID());
             output.add(wg);
         }
         return output;
@@ -149,7 +144,7 @@ public class DatabaseLink {
      * @param team The {@link Team} to add.
      */
     public static void addTeam(@NotNull Team team) {
-        dbThreads.new UpdateTeam(new TeamSerializable(team)).run();
+        dbThreads.new UpdateWorldGroup(new WorldGroupSerializable(team.getWorldGroup())).run();
     }
 
     /**
@@ -157,7 +152,7 @@ public class DatabaseLink {
      * @param team The {@link Team} to update.
      */
     public static void updateTeam(@NotNull Team team) {
-        dbThreads.new UpdateTeam(new TeamSerializable(team)).run();
+        dbThreads.new UpdateWorldGroup(new WorldGroupSerializable(team.getWorldGroup())).run();
     }
 
     /**
@@ -208,6 +203,24 @@ public class DatabaseLink {
      */
     public static void removeWorld(@NotNull WorldGroup wg, @NotNull World world) {
         dbThreads.new RemoveWorld(wg, world).run();
+    }
+
+    /**
+     * Adds a new {@link World} to the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * @param wg The {@link WorldGroup} to add the world to.
+     * @param world The {@link World} to add.
+     */
+    public static void addWorldClaimable(@NotNull WorldGroup wg, @NotNull World world) {
+        dbThreads.new UpdateWorldClaimable(wg, world).run();
+    }
+
+    /**
+     * Removes a {@link World} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * @param wg The {@link WorldGroup} to add the world to.
+     * @param world The {@link World} to add.
+     */
+    public static void removeWorldClaimable(@NotNull WorldGroup wg, @NotNull World world) {
+        dbThreads.new RemoveWorldClaimable(wg, world).run();
     }
 
     /**
@@ -414,6 +427,10 @@ public class DatabaseLink {
         SPSSpigot.showBoard(player);
 
         // claim map
+        ClaimMap claimMap = new ClaimMap(player);
+        claimMap.start();
+        SPSSpigot.plugin().addMap(player.getUniqueId(), claimMap);
+
         BukkitScheduler scheduler = SPSSpigot.server().getScheduler();
         scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), () -> {
             // compass
@@ -422,8 +439,6 @@ public class DatabaseLink {
             if (chunkOwner != null) {
                 claimStatus = net.md_5.bungee.api.ChatColor.RED + DatabaseLink.getSPSName(chunkOwner);
             }
-
-            SPSSpigot.getWorldGroup(player.getWorld()).updateClaimMap(player);
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder().append("[" + SPSSpigot.getCardinalDirection(player) + "] " + claimStatus).create());
         }, 0, 10);
 

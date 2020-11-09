@@ -53,7 +53,6 @@ public class ClaimCommands implements CommandExecutor {
 
             Set<Chunk> unclaimed = worldGroup.unclaimChunkSet(chunks);
             sender.sendMessage(ChatColor.GREEN + "Unclaimed " + unclaimed.size() + "/" + chunks.size() + " chunks! You are now at " + worldGroup.getChunkCount(player.getUniqueId()) + "/" + worldGroup.getMaxChunks(player) + " chunks you can currently claim.");
-            worldGroup.updateClaimMap(player);
             return true;
 
         /*
@@ -84,8 +83,11 @@ public class ClaimCommands implements CommandExecutor {
                 }
 
                 Set<Chunk> claimed = worldGroup.claimChunkSet(player.getUniqueId(), chunks);
-                sender.sendMessage(ChatColor.GREEN + "Claimed " + claimed.size() + "/" + chunks.size() + " chunks! You are now at " + worldGroup.getChunkCount(player.getUniqueId()) + "/" + worldGroup.getMaxChunks(player) + " chunks you can currently claim.");
-                worldGroup.updateClaimMap(player);
+                if (claimed.size() == 0) {
+                    sender.sendMessage(ChatColor.RED + "You can't claim chunks here!");
+                } else {
+                    sender.sendMessage(ChatColor.GREEN + "Claimed " + claimed.size() + "/" + chunks.size() + " chunks! You are now at " + worldGroup.getChunkCount(player.getUniqueId()) + "/" + worldGroup.getMaxChunks(player) + " chunks you can currently claim.");
+                }
                 return true;
             } else {
                 /*
@@ -137,6 +139,7 @@ public class ClaimCommands implements CommandExecutor {
                     }
                 } else if (args[0].equalsIgnoreCase("hide")) {
                     if (SPSSpigot.plugin().boards.get(player.getUniqueId()) != null && !SPSSpigot.plugin().boards.get(player.getUniqueId()).isDeleted()) {
+                        SPSSpigot.plugin().getMaps().get(player.getUniqueId()).shutdown();
                         FastBoard board = SPSSpigot.plugin().boards.get(player.getUniqueId());
                         board.delete();
                         return true;
@@ -145,6 +148,8 @@ public class ClaimCommands implements CommandExecutor {
                         return true;
                     }
                 } else if (args[0].equalsIgnoreCase("show")) {
+                    ClaimMap r = SPSSpigot.plugin().getMaps().get(player.getUniqueId());
+                    r.startup();
                     SPSSpigot.showBoard(player);
                     return true;
                 } else {

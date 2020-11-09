@@ -30,6 +30,7 @@ public class SPSSpigot extends JavaPlugin {
     public PermissionsHandler perms;
     private Set<WorldGroup> worldGroups;
     public final Map<UUID, FastBoard> boards = new HashMap<>();
+    private Map<UUID, ClaimMap> maps = new HashMap<>();
 
     @Override
     public void onEnable() {
@@ -105,6 +106,18 @@ public class SPSSpigot extends JavaPlugin {
     @Override
     public void onDisable() {
 
+    }
+
+    public Map<UUID, ClaimMap> getMaps() {
+        return maps;
+    }
+
+    public void setMaps(Map<UUID, ClaimMap> maps) {
+        this.maps = maps;
+    }
+
+    public void addMap(UUID u, ClaimMap c) {
+        this.maps.put(u, c);
     }
 
     /**

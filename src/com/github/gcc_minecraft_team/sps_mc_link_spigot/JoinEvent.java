@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimMap;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
@@ -62,6 +63,10 @@ public class JoinEvent implements Listener {
                 // claim map
                 WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
 
+                ClaimMap claimMap = new ClaimMap(player);
+                claimMap.start();
+                SPSSpigot.plugin().addMap(player.getUniqueId(), claimMap);
+
                 BukkitScheduler scheduler = SPSSpigot.server().getScheduler();
                 scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), () -> {
                     // compass
@@ -70,15 +75,17 @@ public class JoinEvent implements Listener {
                     String claimStatus = net.md_5.bungee.api.ChatColor.DARK_GREEN + "Wilderness";
                     UUID chunkOwner = worldGroup.getChunkOwner(player.getLocation().getChunk());
                     Team playerTeam = worldGroup.getPlayerTeam(player.getUniqueId());
-                    if (chunkOwner != null) {
-                        if (playerTeam != null && playerTeam.getMembers().contains(chunkOwner)) {
-                            claimStatus = net.md_5.bungee.api.ChatColor.AQUA + "[" + playerTeam.getName() + "] " +  DatabaseLink.getSPSName(chunkOwner);
-                        } else {
-                            claimStatus = net.md_5.bungee.api.ChatColor.RED + DatabaseLink.getSPSName(chunkOwner);
+                    if (worldGroup.isInSpawn(player.getLocation())) {
+                        claimStatus = net.md_5.bungee.api.ChatColor.DARK_PURPLE + "[Spawn] Claiming Disabled";
+                    } else {
+                        if (chunkOwner != null) {
+                            if (playerTeam != null && playerTeam.getMembers().contains(chunkOwner)) {
+                                claimStatus = net.md_5.bungee.api.ChatColor.AQUA + "[" + playerTeam.getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
+                            } else {
+                                claimStatus = net.md_5.bungee.api.ChatColor.RED + DatabaseLink.getSPSName(chunkOwner);
+                            }
                         }
                     }
-
-                    worldGroup.updateClaimMap(player);
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder().append("[" + SPSSpigot.getCardinalDirection(player) + "] " + claimStatus).create());
                 }, 0, 10);
 
@@ -90,7 +97,11 @@ public class JoinEvent implements Listener {
                 Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), () -> {
                     NickAPI.nick(player, userNoFormat.substring(0, maxLength));
                     NickAPI.refreshPlayer(player);
-                    player.setFoodLevel(player.getFoodLevel() - 1);
+                    if (player.getFoodLevel() > 0) {
+                        player.setFoodLevel(player.getFoodLevel() - 1);
+                    } else if (player.getFoodLevel() < 20) {
+                        player.setFoodLevel(player.getFoodLevel() + 1);
+                    }
                 }, 20);
             }
         }

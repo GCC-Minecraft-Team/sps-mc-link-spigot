@@ -2,6 +2,8 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import fr.mrmicky.fastboard.FastBoard;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.*;
@@ -61,8 +63,12 @@ public class WorldGroup {
         }
 
         this.claims = new HashMap<>();
-        for (Map.Entry<String, Set<Chunk>> c : wg.getClaims().entrySet()) {
-            this.claims.put(UUID.fromString(c.getKey()), c.getValue());
+        for (Map.Entry<String, Set<DBObject>> c : wg.getClaims().entrySet()) {
+            Set<Chunk> claimChunks = new HashSet<>();
+            for (DBObject ch : c.getValue()) {
+                claimChunks.add(SPSSpigot.server().getWorld((UUID)ch.get("world")).getChunkAt((int)ch.get("x"), (int)ch.get("z")));
+            }
+            this.claims.put(UUID.fromString(c.getKey()), claimChunks);
         }
     }
 
@@ -144,6 +150,35 @@ public class WorldGroup {
         if (worlds.remove(world)) {
             claimable.remove(world);
             DatabaseLink.removeWorld(this, world);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Adds a {@link World} to this world group claimable if it is not in another one.
+     * @param world The {@link World} to add.
+     * @return {@code true} if successful, {@code false} if the {@code World} is already in a world group.
+     */
+    public boolean addWorldClaimable(World world) {
+        if (SPSSpigot.getWorldGroup(world) != null) {
+            claimable.add(world);
+            DatabaseLink.addWorldClaimable(this, world);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Removes a {@link World} claimable from this world group.
+     * @param world The {@link World} to remove.
+     * @return {@code true} if successful, {@code false} if the {@code World} was not in this world group..
+     */
+    public boolean removeWorldClaimable(World world) {
+        if (claimable.remove(world)) {
+            DatabaseLink.removeWorldClaimable(this, world);
             return true;
         } else {
             return false;
@@ -398,10 +433,14 @@ public class WorldGroup {
      */
     @Nullable
     public UUID getChunkOwner(@NotNull Chunk chunk) {
-        for (Map.Entry<UUID, Set<Chunk>> players : claims.entrySet()) {
-            for (Chunk c : players.getValue()) {
+        Iterator it = claims.entrySet().iterator();
+        while(it.hasNext()) {
+            Map.Entry<UUID, Set<Chunk>> player = (Map.Entry<UUID, Set<Chunk>>) it.next();
+            Iterator itChunk = player.getValue().iterator();
+            while(itChunk.hasNext()) {
+                Chunk c = (Chunk) itChunk.next();
                 if (c.getX() == chunk.getX() && c.getZ() == chunk.getZ()) {
-                    return players.getKey();
+                    return player.getKey();
                 }
             }
         }
@@ -437,7 +476,7 @@ public class WorldGroup {
      * @return {@code true} if successful. This means the {@link Chunk} is not already claimed, the player is not exceeding their claim limit, and the {@link World} is claimable by this {@link WorldGroup}.
      */
     public boolean claimChunk(@NotNull UUID player, @NotNull Chunk chunk) {
-        if (!claimable.contains(chunk.getWorld())) {
+        if (claimable == null || claimable.isEmpty() || !claimable.contains(chunk.getWorld())) {
             // Ensure the world is claimable in this
             return false;
         } else if (getChunkOwner(chunk) != null) {
@@ -466,12 +505,10 @@ public class WorldGroup {
     public Set<Chunk> claimChunkSet(@NotNull UUID player, @NotNull Set<Chunk> chunks) {
         Set<Chunk> successes = new HashSet<>();
         for (Chunk chunk : chunks) {
-            if (!claimable.contains(chunk.getWorld())) {
+            if (claimable == null || claimable.isEmpty() || !claimable.contains(chunk.getWorld())) {
                 // Ensure the world is claimable in this
-                System.out.println("World not claimable");
             } else if (getChunkOwner(chunk) != null) {
                 // Ensure the chunk isn't claimed
-                System.out.println("Chunk is already claimed");
             } else if (getChunkCount(player) >= getMaxChunks(player)) {
                 // Ensure this won't put the player over their claim limit
             } else {
@@ -496,11 +533,18 @@ public class WorldGroup {
         if (owner == null) {
             return false;
         } else {
-            claims.get(owner).forEach((x) -> {
-                if (x.getX() == chunk.getX() && x.getZ() == chunk.getZ()) {
-                    claims.get(owner).remove(x);
+            Iterator it = claims.entrySet().iterator();
+            while (it.hasNext())
+            {
+                Map.Entry<UUID, Set<Chunk>> e = (Map.Entry<UUID, Set<Chunk>>) it.next();
+                Iterator itChunk = e.getValue().iterator();
+                while(itChunk.hasNext()) {
+                    Chunk c = (Chunk) itChunk.next();
+                    if (c.equals(chunk)) {
+                        itChunk.remove();
+                    }
                 }
-            });
+            }
             saveCurrentClaims();
             return true;
         }
@@ -538,58 +582,6 @@ public class WorldGroup {
         } else {
             // We're just checking a player's permission in a chunk.
             return owner == null || owner.equals(player) || isOnSameTeam(player, owner);
-        }
-    }
-
-    /**
-     * updates the claim map in the scoreboard
-     * @param player
-     */
-    public void updateClaimMap(Player player) {
-        Chunk playerChunk = player.getLocation().getChunk();
-        FastBoard board = SPSSpigot.plugin().boards.get(player.getUniqueId());
-        if (board != null && !board.isDeleted()) {
-            // map
-            String[] rows = new String[7];
-
-            for (int z = -3; z <= 3; z++) {
-                StringBuilder bRow = new StringBuilder();
-                for (int x = -3; x <= 3; x++) {
-                    // get the surrounding chunks
-
-                    Chunk chunk = player.getWorld().getChunkAt(playerChunk.getX() + x, playerChunk.getZ() + z);
-                    UUID chunkOwner = getChunkOwner(chunk);
-                    if (x == 0 && z == 0) {
-                        bRow.append(ChatColor.BLUE).append("Ⓟ");
-                    } else {
-                        if (chunkOwner == null) {
-                            // Unowned / in spawn
-                            bRow.append(ChatColor.GRAY).append("▒");
-                        } else if (chunkOwner.equals(player.getUniqueId())) {
-                            // Player owns chunk
-                            bRow.append(ChatColor.GREEN).append("█");
-                        } else if (isOnSameTeam(player.getUniqueId(), chunkOwner)) {
-                            // Teammate owns chunk
-                            bRow.append(ChatColor.AQUA).append("▒");
-                        } else {
-                            // Other player owns chunk
-                            bRow.append(ChatColor.RED).append("▒");
-                        }
-                    }
-                }
-                rows[z + 3] = bRow.toString();
-            }
-
-            // update the board
-            board.updateLines(
-                    rows[0],
-                    rows[1],
-                    rows[2],
-                    rows[3],
-                    rows[4],
-                    rows[5],
-                    rows[6]
-            );
         }
     }
 }

@@ -166,7 +166,69 @@ public class WorldGroupCommands implements CommandExecutor {
                 }
             }
         } else if (args[0].equals("claimable")) {
-            return false;
+            if (args[1].equals("addworld")) {
+                // This one does not need confirmation because you can't add a taken world
+                if (args.length != 4) {
+                    // Incorrect number of arguments for /wgroup claimable addworld <world group> <world>
+                    sender.sendMessage(adminPrefix + ChatColor.RED + "Usage: /" + label + " claimable addworld <world group> <world>");
+                    return true;
+                } else {
+                    WorldGroup worldGroup = SPSSpigot.plugin().getWorldGroup(args[2]);
+                    World world = SPSSpigot.server().getWorld(args[3]);
+                    if (worldGroup == null) {
+                        sender.sendMessage(adminPrefix + ChatColor.RED + "World group '" + args[2] + "' was not recognized.");
+                        return true;
+                    } else if (world == null) {
+                        sender.sendMessage(adminPrefix + ChatColor.RED + "World '" + args[3] + "' was not recognized.");
+                        return true;
+                    } else {
+                        if (worldGroup.addWorldClaimable(world)) {
+                            sender.sendMessage(adminPrefix + ChatColor.GREEN + "Successfully added world " + world.getName() + " as claimable to " + worldGroup.getName() + "!");
+                            return true;
+                        } else {
+                            sender.sendMessage(adminPrefix + ChatColor.RED + "World " + world.getName() + " has not been added to " + worldGroup.getName() + "!");
+                            return true;
+                        }
+                    }
+                }
+            } else if (args[1].equals("remworld")) {
+                // arg[3] can equal "-confirm=<CASE-SENSITIVE WORLD NAME>" to skip confirmation. This is suggested by the tellraw in confirmation to force the player to rewrite the name.
+                if (args.length == 4) {
+                    // /wgroup claimable remworld <WORLD GROUP> <NON-CASE-SENSITIVE WORLD NAME> -confirm=<CASE-SENSITIVE WORLD NAME>
+                    WorldGroup worldGroup = SPSSpigot.plugin().getWorldGroup(args[2]);
+                    World world = SPSSpigot.server().getWorld(args[3]);
+                    if (worldGroup == null) {
+                        sender.sendMessage(adminPrefix + ChatColor.RED + "World group '" + args[2] + "' was not recognized.");
+                        return true;
+                    } else if (world == null) {
+                        sender.sendMessage(adminPrefix + ChatColor.RED + "World '" + args[3] + "' was not recognized.");
+                        return true;
+                    } else {
+                        worldGroup.removeWorldClaimable(world);
+                        sender.sendMessage(adminPrefix + ChatColor.GREEN + "Successfully disabled claiming for world " + worldGroup.getName() + " from " + worldGroup.getName() + "!");
+                        return true;
+                    }
+                } else if (args.length != 4) {
+                    // This excludes args[3] starting with "-confirm="
+                    // Either no arguments or too many for /wgroup remworld <world group> <world>
+                    sender.sendMessage(adminPrefix + ChatColor.RED + "Usage: /" + label + " claimable remworld <world group> <world>");
+                    return true;
+                } else {
+                    WorldGroup worldGroup = SPSSpigot.plugin().getWorldGroup(args[2]);
+                    World world = SPSSpigot.server().getWorld(args[3]);
+                    if (worldGroup == null) {
+                        sender.sendMessage(adminPrefix + ChatColor.RED + "World group '" + args[2] + "' was not recognized.");
+                        return true;
+                    } else if (world == null) {
+                        sender.sendMessage(adminPrefix + ChatColor.RED + "World '" + args[3] + "' was not recognized.");
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            } else {
+                return false;
+            }
         } else if (args[0].equals("list")) {
             if (args.length == 1) {
                 // List all world groups
