@@ -1,9 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import org.bukkit.Chunk;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -12,6 +10,7 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 
 import java.util.*;
@@ -195,6 +194,13 @@ public class ClaimEvents implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void onDeath(PlayerDeathEvent e) {
+        final Player p = e.getEntity();
+        p.sendTitle(ChatColor.DARK_RED + "You Died", "Auto Respawning", 10, 60, 10);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), () -> p.spigot().respawn(), 2);
     }
 
     @EventHandler

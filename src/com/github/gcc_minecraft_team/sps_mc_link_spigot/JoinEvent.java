@@ -100,7 +100,7 @@ public class JoinEvent implements Listener {
      * @param event The {@link PlayerRespawnEvent}.
      */
     @EventHandler
-    public void onPlayerSpawn(PlayerRespawnEvent event) {
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
         Location pLoc = event.getRespawnLocation();
         double zdist = pLoc.getZ() - event.getPlayer().getWorld().getSpawnLocation().getZ();
         double xdist = pLoc.getX() - event.getPlayer().getWorld().getSpawnLocation().getX();
