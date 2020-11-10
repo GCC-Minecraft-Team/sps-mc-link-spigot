@@ -182,7 +182,8 @@ public class SPSSpigot extends JavaPlugin {
                     rows[3],
                     rows[4],
                     rows[5],
-                    rows[6]
+                    rows[6],
+                    "(" + (int)player.getLocation().getX() + ", " + (int)player.getLocation().getY() + ", " + (int)player.getLocation().getZ() + ")"
             );
         }
     }
@@ -359,6 +360,8 @@ public class SPSSpigot extends JavaPlugin {
                     if (chunkOwner != null) {
                         if (playerTeam != null && playerTeam.getMembers().contains(chunkOwner)) {
                             claimStatus = net.md_5.bungee.api.ChatColor.AQUA + "[" + playerTeam.getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
+                        } else if(worldGroup.getPlayerTeam(chunkOwner) != null) {
+                            claimStatus = net.md_5.bungee.api.ChatColor.RED + "[" + worldGroup.getPlayerTeam(chunkOwner) + "] " + DatabaseLink.getSPSName(chunkOwner);
                         } else {
                             if (player.getUniqueId().equals(chunkOwner)) {
                                 claimStatus = net.md_5.bungee.api.ChatColor.GREEN + DatabaseLink.getSPSName(chunkOwner);
