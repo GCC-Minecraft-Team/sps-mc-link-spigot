@@ -40,10 +40,8 @@ public class DatabaseLink {
     private static MongoClient mongoClient;
     private static MongoDatabase mongoDatabase;
 
-    private static MongoCollection<Document> userCol;
-    private static MongoCollection<WorldGroupSerializable> wgCol;
-
-    private static DatabaseThreads dbThreads;
+    public static MongoCollection<Document> userCol;
+    public static MongoCollection<WorldGroupSerializable> wgCol;
 
     /**
      * Creates a connection to the MongoDB database.
@@ -83,9 +81,6 @@ public class DatabaseLink {
         } catch(MongoException exception) {
             SPSSpigot.logger().log(Level.SEVERE, "Something went wrong connecting to the MongoDB database, is " + DBFILE + " set up correctly?");
         }
-
-        // create an instance of DatabaseThreads with our connection info
-        dbThreads = new DatabaseThreads(mongoClient, mongoDatabase, userCol, wgCol);
     }
 
     /**
@@ -108,9 +103,10 @@ public class DatabaseLink {
      * Adds a {@link WorldGroup} to the database. This should not be called to update the {@link WorldGroup}.
      * @param worldGroup The {@link WorldGroup} to add.
      */
-    public static boolean addWorldGroup(@NotNull WorldGroup worldGroup) {
-        dbThreads.new AddWorldGroup(new WorldGroupSerializable(worldGroup)).run();
-        return true;
+    public static void addWorldGroup(@NotNull WorldGroup worldGroup) {
+        Thread thread = new Thread(new DatabaseThreads.AddWorldGroup(new WorldGroupSerializable(worldGroup)));
+        thread.setPriority(DatabaseThreads.PRIORITY);
+        thread.start();
     }
 
     /**
@@ -118,7 +114,9 @@ public class DatabaseLink {
      * @param worldGroup The {@link WorldGroup} to remove.
      */
     public static void removeWorldGroup(@NotNull WorldGroup worldGroup) {
-        dbThreads.new RemoveWorldGroup(worldGroup).run();
+        Thread thread = new Thread(new DatabaseThreads.RemoveWorldGroup(worldGroup));
+        thread.setPriority(DatabaseThreads.PRIORITY);
+        thread.start();
     }
 
     /**
@@ -127,7 +125,9 @@ public class DatabaseLink {
      * @param world The {@link World} to add.
      */
     public static void addWorld(@NotNull WorldGroup worldGroup, @NotNull World world) {
-        dbThreads.new UpdateWorld(worldGroup, world).run();
+        Thread thread = new Thread(new DatabaseThreads.UpdateWorld(worldGroup, world));
+        thread.setPriority(DatabaseThreads.PRIORITY);
+        thread.start();
     }
 
     /**
@@ -136,7 +136,9 @@ public class DatabaseLink {
      * @param world The {@link World} to remove.
      */
     public static void removeWorld(@NotNull WorldGroup worldGroup, @NotNull World world) {
-        dbThreads.new RemoveWorld(worldGroup, world).run();
+        Thread thread = new Thread(new DatabaseThreads.RemoveWorld(worldGroup, world));
+        thread.setPriority(DatabaseThreads.PRIORITY);
+        thread.start();
     }
 
     /**
@@ -145,7 +147,9 @@ public class DatabaseLink {
      * @param world The {@link World} to add.
      */
     public static void addWorldClaimable(@NotNull WorldGroup worldGroup, @NotNull World world) {
-        dbThreads.new UpdateWorldClaimable(worldGroup, world).run();
+        Thread thread = new Thread(new DatabaseThreads.UpdateWorldClaimable(worldGroup, world));
+        thread.setPriority(DatabaseThreads.PRIORITY);
+        thread.start();
     }
 
     /**
@@ -154,7 +158,9 @@ public class DatabaseLink {
      * @param world The {@link World} to remove.
      */
     public static void removeWorldClaimable(@NotNull WorldGroup worldGroup, @NotNull World world) {
-        dbThreads.new RemoveWorldClaimable(worldGroup, world).run();
+        Thread thread = new Thread(new DatabaseThreads.RemoveWorldClaimable(worldGroup, world));
+        thread.setPriority(DatabaseThreads.PRIORITY);
+        thread.start();
     }
 
     /**
@@ -178,7 +184,9 @@ public class DatabaseLink {
      * @param team The {@link Team} to add/update.
      */
     public static void updateTeam(@NotNull Team team) {
-        dbThreads.new UpdateWorldGroup(new WorldGroupSerializable(team.getWorldGroup())).run();
+        Thread thread = new Thread(new DatabaseThreads.UpdateWorldGroup(new WorldGroupSerializable(team.getWorldGroup())));
+        thread.setPriority(DatabaseThreads.PRIORITY);
+        thread.start();
     }
 
     /**
@@ -186,7 +194,9 @@ public class DatabaseLink {
      * @param team The {@link Team} to remove.
      */
     public static void removeTeam(@NotNull Team team) {
-        dbThreads.new UpdateWorldGroup(new WorldGroupSerializable(team.getWorldGroup())).run();
+        Thread thread = new Thread(new DatabaseThreads.UpdateWorldGroup(new WorldGroupSerializable(team.getWorldGroup())));
+        thread.setPriority(DatabaseThreads.PRIORITY);
+        thread.start();
     }
 
     /**
@@ -205,7 +215,9 @@ public class DatabaseLink {
      * @param worldGroup The {@link WorldGroup} to which to save the claims.
      */
     public static void saveClaims(@NotNull Map<UUID, Set<Chunk>> claims, @NotNull WorldGroup worldGroup) {
-        dbThreads.new UpdateClaims(claims, new WorldGroupSerializable(worldGroup)).run();
+        Thread thread = new Thread(new DatabaseThreads.UpdateClaims(claims, new WorldGroupSerializable(worldGroup)));
+        thread.setPriority(DatabaseThreads.PRIORITY);
+        thread.start();
     }
 
     /**
