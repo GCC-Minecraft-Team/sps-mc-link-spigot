@@ -4,6 +4,9 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
+import org.bukkit.entity.minecart.HopperMinecart;
+import org.bukkit.entity.minecart.PoweredMinecart;
+import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
@@ -76,9 +79,31 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getPlayer().getWorld());
-        if (worldGroup != null && worldGroup.isInSpawn(event.getPlayer().getLocation())) {
-            if (event.getRightClicked() instanceof ItemFrame && !((ItemFrame) event.getRightClicked()).getItem().getType().equals(Material.AIR)) { // We don't need to prevent put items into the empty item frame (that's out of scope of this plugin)
-                event.setCancelled(true);
+        if (worldGroup != null) {
+            if (worldGroup.isInSpawn(event.getPlayer().getLocation())) {
+                // We don't need to prevent put items into the empty item frame (that's out of scope of this plugin)
+                if (event.getRightClicked() instanceof ItemFrame && !((ItemFrame) event.getRightClicked()).getItem().getType().equals(Material.AIR)) {
+                    event.setCancelled(true);
+                }
+            } else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), event.getRightClicked().getLocation().getChunk())) {
+                // If a player is trying to interact with an entity in another player's claim.
+
+                // Get the item the player is using to interact with the entity:
+                Material interactItem = event.getPlayer().getInventory().getItem(event.getHand()).getType();
+
+                if (interactItem.equals(Material.NAME_TAG)) {
+                    // Don't let players rename in other people's claims.
+                    event.setCancelled(true);
+                } else if (interactItem.equals(Material.SHEARS)) {
+                    // Don't let players shear animals in other people's claims.
+                    event.setCancelled(true);
+                } else if (event.getRightClicked() instanceof ArmorStand || event.getRightClicked() instanceof ItemFrame) {
+                    // Don't let player interact with armor stands or item frames and steal stuff.
+                    event.setCancelled(true);
+                } else if (event.getRightClicked() instanceof StorageMinecart || event.getRightClicked() instanceof HopperMinecart || event.getRightClicked() instanceof PoweredMinecart) {
+                    // Don't let player steal from minecarts with inventories.
+                    event.setCancelled(true);
+                }
             }
         }
     }
