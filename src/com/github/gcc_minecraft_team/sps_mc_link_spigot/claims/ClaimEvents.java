@@ -43,6 +43,8 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onPlayerMoveEvent(PlayerMoveEvent event) {
         // Handle board updates here when the player rotates enough or changes chunks.
+        // Nathan: This doesn't work well on the server, it only updates like 30% of the time
+        /*
         Location from = event.getFrom();
         Location to = event.getTo();
         UUID player = event.getPlayer().getUniqueId();
@@ -55,6 +57,7 @@ public class ClaimEvents implements Listener {
             }
             prevSector.put(player, toSector);
         }
+         */
     }
 
     // ========[PLAYER BLOCK INTERACTION]========

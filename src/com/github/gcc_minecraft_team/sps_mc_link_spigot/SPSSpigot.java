@@ -103,13 +103,19 @@ public class SPSSpigot extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new LeaveEvent(), this);
         SPSSpigot.logger().log(Level.INFO, "SPS Spigot integration started.");
 
-        System.out.println("==[SPS MC INITIALIZED SUCCESSFULLY]==");
+        // update board every 10 ticks
+        getServer().getScheduler().runTaskTimer(this, () -> {
+            for (FastBoard board : boards.values()) {
+                updateBoard(board);
+            }
+        }, 0, 10);
     }
 
     /**
      * Updates the claim map scoreboard
      * @param board
      */
+    // TODO: Multithread this
     public void updateBoard(@NotNull FastBoard board) {
         Player player = board.getPlayer();
         Chunk playerChunk = player.getLocation().getChunk();
@@ -130,7 +136,7 @@ public class SPSSpigot extends JavaPlugin {
                         if (worldGroup.isInSpawn(player.getLocation()))
                             color = ChatColor.DARK_PURPLE; // In spawn
                         else if (chunkOwner == null)
-                            color = ChatColor.GRAY; // Unowned chunk outside spawn
+                            color = ChatColor.DARK_GRAY; // Unowned chunk outside spawn
                         else if (chunkOwner.equals(player.getUniqueId()))
                             color = ChatColor.GREEN; // Player owns chunk
                         else if (worldGroup.isOnSameTeam(player.getUniqueId(), chunkOwner))
@@ -141,13 +147,13 @@ public class SPSSpigot extends JavaPlugin {
                         String symbol;
                         float rotation = player.getLocation().getYaw();
                         if (45 <= rotation && rotation < 135)
-                            symbol = "⏴ ";
+                            symbol = "Ⓦ";
                         else if (135 <= rotation && rotation < 225)
-                            symbol = "⏶ ";
+                            symbol = "Ⓝ";
                         else if (225 <= rotation && rotation < 315)
-                            symbol = " ⏵";
+                            symbol = "Ⓔ";
                         else
-                            symbol = "⏷ ";
+                            symbol = "Ⓢ";
                         bRow.append(color).append(symbol);
                     } else {
                         if (worldGroup.isInSpawn(chunk.getBlock(0, 0, 0).getLocation())) {
@@ -158,7 +164,7 @@ public class SPSSpigot extends JavaPlugin {
                             bRow.append(ChatColor.GRAY).append("✖");
                         } else if (chunkOwner == null) {
                             // Unowned, claimable chunk outside spawn
-                            bRow.append(ChatColor.GRAY).append("▒");
+                            bRow.append(ChatColor.DARK_GRAY).append("▒");
                         } else if (chunkOwner.equals(player.getUniqueId())) {
                             // Player owns chunk
                             bRow.append(ChatColor.GREEN).append("█");
