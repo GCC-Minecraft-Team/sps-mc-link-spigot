@@ -1,6 +1,8 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
+import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
@@ -36,9 +38,23 @@ public class ClaimEvents implements Listener {
             // Ender chest
             Material.ENDER_CHEST);
 
+    private static Map<UUID, Integer> prevSector = new HashMap<>();
+
     @EventHandler
     public void onPlayerMoveEvent(PlayerMoveEvent event) {
-
+        // Handle board updates here when the player rotates enough or changes chunks.
+        Location from = event.getFrom();
+        Location to = event.getTo();
+        UUID player = event.getPlayer().getUniqueId();
+        FastBoard board = SPSSpigot.plugin().boards.get(player);
+        if (to != null && board != null && !board.isDeleted()) {
+            int toSector = CMD.sector(4, 45, to.getYaw());
+            if (!from.getChunk().equals(to.getChunk()) || !prevSector.containsKey(player) || toSector != prevSector.get(player)) {
+                // The player has either changed chunks or rotated towards another cardinal direction.
+                SPSSpigot.plugin().updateBoard(board);
+            }
+            prevSector.put(player, toSector);
+        }
     }
 
     // ========[PLAYER BLOCK INTERACTION]========

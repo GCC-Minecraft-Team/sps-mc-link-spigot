@@ -2,9 +2,7 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import org.bson.codecs.pojo.annotations.BsonCreator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
-import org.bukkit.Chunk;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 

@@ -112,4 +112,16 @@ public class CMD {
         newList.sort(String.CASE_INSENSITIVE_ORDER);
         return newList;
     }
+
+    /**
+     * Gets the sector of a circle that an angle falls at, given a set number of sectors.
+     * @param sectors The number of sectors to divide the circle into.
+     * @param start The position at which the first sector starts.
+     * @param value The value to check.
+     * @return The sector the value falls in. {@code 0 <= x < sectors}.
+     */
+    public static int sector(int sectors, float start, float value) {
+        float relativeValue = (value - start) % 360;
+        return (int) (relativeValue / (360.0 / sectors));
+    }
 }

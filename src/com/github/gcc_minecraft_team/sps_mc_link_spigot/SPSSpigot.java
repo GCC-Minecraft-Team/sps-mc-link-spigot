@@ -19,7 +19,6 @@ import org.bukkit.Chunk;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -62,12 +61,6 @@ public class SPSSpigot extends JavaPlugin {
 
         // map events
         getServer().getPluginManager().registerEvents(new MapEvents(), this);
-
-        getServer().getScheduler().runTaskTimer(this, () -> {
-            for (FastBoard board : boards.values()) {
-                updateBoard(board);
-            }
-        }, 0, 20);
 
         ClaimCommands claimCommands = new ClaimCommands();
         ClaimTabCompleter claimTabCompleter = new ClaimTabCompleter();
@@ -117,53 +110,65 @@ public class SPSSpigot extends JavaPlugin {
      * Updates the claim map scoreboard
      * @param board
      */
-    private void updateBoard(FastBoard board) {
+    public void updateBoard(@NotNull FastBoard board) {
         Player player = board.getPlayer();
         Chunk playerChunk = player.getLocation().getChunk();
-        WorldGroup wg = SPSSpigot.getWorldGroup(player.getWorld());
-        boolean isClaimable = false;
-        boolean inSpawn = false;
-        if (board != null && !board.isDeleted() && playerChunk != null && player != null) {
-            if (wg != null) {
-                isClaimable = wg.isClaimable(player.getWorld());
-                inSpawn = wg.isEntityInSpawn(player);
-            }
-
-            // map
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
+        if (worldGroup != null && !board.isDeleted()) {
+            // Map Strings
             String[] rows = new String[7];
 
             for (int z = -3; z <= 3; z++) {
                 StringBuilder bRow = new StringBuilder();
                 for (int x = -3; x <= 3; x++) {
-                    // get the surrounding chunks
+                    // Get the surrounding chunks
+                    Chunk chunk = player.getWorld().getChunkAt(playerChunk.getX() + x, playerChunk.getZ() + z);
+                    UUID chunkOwner = worldGroup.getChunkOwner(chunk);
+                    if (x == 0 && z == 0) {
+                        // Player location.
+                        ChatColor color;
+                        if (worldGroup.isInSpawn(player.getLocation()))
+                            color = ChatColor.DARK_PURPLE; // In spawn
+                        else if (chunkOwner == null)
+                            color = ChatColor.GRAY; // Unowned chunk outside spawn
+                        else if (chunkOwner.equals(player.getUniqueId()))
+                            color = ChatColor.GREEN; // Player owns chunk
+                        else if (worldGroup.isOnSameTeam(player.getUniqueId(), chunkOwner))
+                            color = ChatColor.AQUA; // Teammate owns chunk
+                        else
+                            color = ChatColor.RED; // Other player owns chunk
 
-                    if (isClaimable) {
-                        if (!inSpawn) {
-                            Chunk chunk = player.getWorld().getChunkAt(playerChunk.getX() + x, playerChunk.getZ() + z);
-                            UUID chunkOwner = wg.getChunkOwner(chunk);
-                            if (x == 0 && z == 0) {
-                                bRow.append(net.md_5.bungee.api.ChatColor.BLUE).append("Ⓟ");
-                            } else {
-                                if (chunkOwner == null) {
-                                    // Unowned / in spawn
-                                    bRow.append(net.md_5.bungee.api.ChatColor.GRAY).append("▒");
-                                } else if (chunkOwner.equals(player.getUniqueId())) {
-                                    // Player owns chunk
-                                    bRow.append(net.md_5.bungee.api.ChatColor.GREEN).append("█");
-                                } else if (wg.isOnSameTeam(player.getUniqueId(), chunkOwner)) {
-                                    // Teammate owns chunk
-                                    bRow.append(net.md_5.bungee.api.ChatColor.AQUA).append("▒");
-                                } else {
-                                    // Other player owns chunk
-                                    bRow.append(net.md_5.bungee.api.ChatColor.RED).append("▒");
-                                }
-                            }
-                        } else {
-                            // spawn
-                            bRow.append(net.md_5.bungee.api.ChatColor.DARK_PURPLE).append("Ⓢ");
-                        }
+                        String symbol;
+                        float rotation = player.getLocation().getYaw();
+                        if (45 <= rotation && rotation < 135)
+                            symbol = "⏴ ";
+                        else if (135 <= rotation && rotation < 225)
+                            symbol = "⏶ ";
+                        else if (225 <= rotation && rotation < 315)
+                            symbol = " ⏵";
+                        else
+                            symbol = "⏷ ";
+                        bRow.append(color).append(symbol);
                     } else {
-                        bRow.append(net.md_5.bungee.api.ChatColor.GRAY).append("✖");
+                        if (worldGroup.isInSpawn(chunk.getBlock(0, 0, 0).getLocation())) {
+                            // In spawn
+                            bRow.append(ChatColor.DARK_PURPLE).append("Ⓢ");
+                        } else if (!worldGroup.isClaimable(player.getWorld())) {
+                            // Un-claimable chunk outside spawn
+                            bRow.append(ChatColor.GRAY).append("✖");
+                        } else if (chunkOwner == null) {
+                            // Unowned, claimable chunk outside spawn
+                            bRow.append(ChatColor.GRAY).append("▒");
+                        } else if (chunkOwner.equals(player.getUniqueId())) {
+                            // Player owns chunk
+                            bRow.append(ChatColor.GREEN).append("█");
+                        } else if (worldGroup.isOnSameTeam(player.getUniqueId(), chunkOwner)) {
+                            // Teammate owns chunk
+                            bRow.append(ChatColor.AQUA).append("▒");
+                        } else {
+                            // Other player owns chunk
+                            bRow.append(ChatColor.RED).append("▒");
+                        }
                     }
                 }
                 rows[z + 3] = bRow.toString();

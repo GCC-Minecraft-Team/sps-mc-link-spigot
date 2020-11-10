@@ -3,13 +3,9 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import org.bson.codecs.pojo.annotations.BsonCreator;
-import org.bson.codecs.pojo.annotations.BsonDiscriminator;
-import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bukkit.Chunk;
 import org.bukkit.World;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 

@@ -1,14 +1,10 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import com.mongodb.BasicDBObject;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.mongodb.DBObject;
-import fr.mrmicky.fastboard.FastBoard;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -1,12 +1,9 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import fr.mrmicky.fastboard.FastBoard;
-import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -19,10 +16,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitScheduler;
 import xyz.haoshoku.nick.api.NickAPI;
-
-import java.util.UUID;
 
 public class JoinEvent implements Listener {
 
@@ -57,7 +51,7 @@ public class JoinEvent implements Listener {
                     NickAPI.refreshPlayer(player);
                 }, 20);
 
-                player.sendTitle("Welcome to" + ChatColor.BLUE +" SPS MC!", "Please use the link in chat to link your account!", 10, 160, 10);
+                player.sendTitle("Welcome to" + ChatColor.BLUE +" SPS MC!", "Please use the link in chat to link your account!", 10, 200, 10);
             } else {
                 FastBoard board = new FastBoard(player);
                 board.updateTitle("[N]");
