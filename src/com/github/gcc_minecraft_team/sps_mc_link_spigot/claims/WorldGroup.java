@@ -16,8 +16,8 @@ import java.util.*;
 
 public class WorldGroup {
 
-    private UUID id;
-    private String name;
+    private final UUID id;
+    private final String name;
     private Set<World> worlds;
     private Set<World> claimable;
     private Set<Team> teams;
@@ -75,14 +75,14 @@ public class WorldGroup {
     }
 
     /**
-     * Saves data from this {@link WorldGroup} to com.github.gcc_minecraft_team.sps_mc_link_spigot.database
+     * Saves data from this {@link WorldGroup} to the database.
      */
     public void saveCurrentClaims() {
         DatabaseLink.saveClaims(claims, this);
     }
 
     /**
-     * Loads data for this {@link WorldGroup} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database
+     * Loads data for this {@link WorldGroup} from the database.
      */
     public void loadFromDatabase() {
         teams = DatabaseLink.getTeams(this);
@@ -90,38 +90,30 @@ public class WorldGroup {
     }
 
     /**
-     * Getter for this worldGroup's claimables
-     * @return This worldGroup's claimables
-     */
-    public Set<World> getClaimable() {
-        return claimable;
-    }
-
-    /**
-     * Getter for this worldGroup's name.
-     * @return This worldGroup's name.
+     * Getter for this {@link WorldGroup}'s name.
+     * @return This {@link WorldGroup}'s name.
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Getter for this worldGroup's ID.
-     * @return This worldGroup's ID.
+     * Getter for this {@link WorldGroup}'s ID.
+     * @return This {@link WorldGroup}'s ID.
      */
     public UUID getID() { return id; }
 
     /**
-     * Gets whether this {@link WorldGroup}'s worldGroup contains the given {@link World}.
+     * Gets whether this {@link WorldGroup} contains the given {@link World}.
      * @param world The {@link World} to check for.
-     * @return {@code true} if this worldGroup contains the {@link World}.
+     * @return {@code true} if this {@link WorldGroup} contains the {@link World}.
      */
     public boolean hasWorld(World world) {
         return worlds.contains(world);
     }
 
     /**
-     * Gets all {@link World}s this world group contains.
+     * Gets all {@link World}s this {@link WorldGroup} contains.
      * @return An unmodifiable {@link Set} of {@link World}s.
      */
     public Set<World> getWorlds() {
@@ -129,9 +121,9 @@ public class WorldGroup {
     }
 
     /**
-     * Adds a {@link World} to this world group if it is not in another one.
+     * Adds a {@link World} to this {@link WorldGroup} if it is not in another one.
      * @param world The {@link World} to add.
-     * @return {@code true} if successful, {@code false} if the {@code World} is already in a world group.
+     * @return {@code true} if successful, {@code false} if the {@link World} is already in a {@link WorldGroup}.
      */
     public boolean addWorld(World world) {
         if (SPSSpigot.getWorldGroup(world) == null) {
@@ -144,9 +136,9 @@ public class WorldGroup {
     }
 
     /**
-     * Removes a {@link World} from this world group.
+     * Removes a {@link World} from this {@link WorldGroup}.
      * @param world The {@link World} to remove.
-     * @return {@code true} if successful, {@code false} if the {@code World} was not in this world group..
+     * @return {@code true} if successful, {@code false} if the {@link World} was not in this {@link WorldGroup}.
      */
     public boolean removeWorld(World world) {
         if (worlds.remove(world)) {
@@ -159,9 +151,26 @@ public class WorldGroup {
     }
 
     /**
-     * Adds a {@link World} to this world group claimable if it is not in another one.
+     * Getter for this {@link WorldGroup}'s claimable {@link World}s.
+     * @return An unmodifiable {@link Set} of {@link WorldGroup}'s claimable {@link World}s.
+     */
+    public Set<World> getClaimables() {
+        return Collections.unmodifiableSet(claimable);
+    }
+
+    /**
+     * Gets whether a specified {@link World} is claimable in this {@link WorldGroup}.
+     * @param world The {@link World} to check.
+     * @return {@code true} if this {@link WorldGroup}'s claimable list contains the {@link World}.
+     */
+    public boolean isClaimable(World world) {
+        return claimable.contains(world);
+    }
+
+    /**
+     * Adds a {@link World} to this {@link WorldGroup} claimable if it is not in another one.
      * @param world The {@link World} to add.
-     * @return {@code true} if successful, {@code false} if the {@code World} is already in a world group.
+     * @return {@code true} if successful, {@code false} if the {@link World} is already in a {@link WorldGroup}.
      */
     public boolean addWorldClaimable(World world) {
         if (SPSSpigot.getWorldGroup(world) != null) {
@@ -174,9 +183,9 @@ public class WorldGroup {
     }
 
     /**
-     * Removes a {@link World} claimable from this world group.
+     * Removes a {@link World} claimable from this {@link WorldGroup}.
      * @param world The {@link World} to remove.
-     * @return {@code true} if successful, {@code false} if the {@code World} was not in this world group..
+     * @return {@code true} if successful, {@code false} if the {@link World} was not in this {@link WorldGroup}.
      */
     public boolean removeWorldClaimable(World world) {
         if (claimable.remove(world)) {
@@ -198,10 +207,10 @@ public class WorldGroup {
         return Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius();
     }
 
-    /***
-     * Checks to see if entity is in spawn
-     * @param entity
-     * @return
+    /**
+     * Checks to see if entity is in spawn.
+     * @param entity The {@link Entity} to check.
+     * @return {@code true} if its {@link Location} {@link #isInSpawn(Location)}.
      */
     public boolean isEntityInSpawn(Entity entity) {
         return isInSpawn(entity.getLocation());
@@ -259,12 +268,12 @@ public class WorldGroup {
     /**
      * Adds a new {@link Team}.
      * @param team The {@link Team} to add.
-     * @return {@link true} if successful; {@link false} if the name is already taken or the leader is already on a team.
+     * @return {@link true} if successful; {@link false} if the name is already taken or the leader is already on a {@link Team}.
      */
     public boolean addTeam(@NotNull Team team) {
         if (getTeam(team.getName()) == null && getPlayerTeam(team.getLeader()) == null) {
             boolean out = teams.add(team);
-            DatabaseLink.addTeam(team);
+            DatabaseLink.updateTeam(team);
             return true;
         } else {
             return false;
@@ -365,7 +374,7 @@ public class WorldGroup {
      * Fulfills a join request, adding the player to the {@link Team}.
      * @param player The {@link UUID} of the player whose request should be fulfilled.
      * @return The {@link Team} that the player was added to, or {@code null} if no request was found.
-     * @throws IllegalStateException If the player was already on a team.
+     * @throws IllegalStateException If the player was already on a {@link Team}.
      */
     @Nullable
     public Team fulfillJoinRequest(@NotNull UUID player) {
@@ -601,9 +610,5 @@ public class WorldGroup {
             // We're just checking a player's permission in a chunk.
             return owner == null || owner.equals(player) || isOnSameTeam(player, owner);
         }
-    }
-
-    public boolean isClaimable(World world) {
-        return claimable.contains(world);
     }
 }

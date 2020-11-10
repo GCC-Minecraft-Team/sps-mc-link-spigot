@@ -43,6 +43,11 @@ public class Team {
     }
 
 
+    /**
+     * Getter for the {@link WorldGroup} that contains this {@link Team}.
+     * @return The {@link WorldGroup} containing this {@link Team}.
+     */
+    @NotNull
     public WorldGroup getWorldGroup() {
         return SPSSpigot.plugin().getWorldGroup(worldGroup);
     }
@@ -87,7 +92,7 @@ public class Team {
     }
 
     /**
-     * Adds a player to the team. Will not add if already a member of a team.
+     * Adds a player to the {@link Team}. Will not add if already a member of a {@link Team}.
      * @param player The {@link UUID} of the player to add.
      * @return {@code true} if successful.
      */
@@ -103,7 +108,7 @@ public class Team {
     }
 
     /**
-     * Adds a player to the team. Will not add if already a member of a team.
+     * Adds a player to the {@link Team}. Will not add if already a member of a {@link Team}.
      * @param player The {@link OfflinePlayer} to add.
      * @return {@code true} if successful.
      */
@@ -112,7 +117,7 @@ public class Team {
     }
 
     /**
-     * Adds a player to the team. The leader may not leave unless they are the last member.
+     * Removes a player from the {@link Team}. The leader may not leave unless they are the last member.
      * @param player The {@link UUID} of the player to remove.
      * @return {@code true} if successful.
      */
@@ -133,7 +138,7 @@ public class Team {
     }
 
     /**
-     * Removes a player from the team. The leader may not leave unless they are the last member.
+     * Removes a player from the {@link Team}. The leader may not leave unless they are the last member.
      * @param player The {@link OfflinePlayer} to remove.
      * @return {@code true} if successful.
      */
@@ -152,7 +157,7 @@ public class Team {
 
     /**
      * Changes the {@link Team}'s leader to another member.
-     * @param newLeader The {@link UUID} of the new leader. The new leader must be a player.
+     * @param newLeader The {@link UUID} of the new leader. The new leader must be a member.
      * @return {@code true} if successfully changed the leader.
      */
     public boolean changeLeader(@NotNull UUID newLeader) {

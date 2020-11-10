@@ -11,8 +11,6 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 import fr.mrmicky.fastboard.FastBoard;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -22,7 +20,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.haoshoku.nick.api.NickAPI;
@@ -49,7 +46,7 @@ public class DatabaseLink {
     private static DatabaseThreads dbThreads;
 
     /**
-     * Creates a connection to the MongoDB com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * Creates a connection to the MongoDB database.
      */
     public static void SetupDatabase() {
         // create config if it doesn't exist
@@ -65,25 +62,26 @@ public class DatabaseLink {
             e.printStackTrace();
         }
 
-        // set up info for com.github.gcc_minecraft_team.sps_mc_link_spigot.database
+        // set up info for database
         ConnectionString connectionString = new ConnectionString((String) dbConfig.get(CFGURI));
         String dbName = (String) dbConfig.get(CFGDB);
 
         CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
         CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodecRegistry);
 
+
         // set client settings
         MongoClientSettings clientSettings = MongoClientSettings.builder().applyConnectionString(connectionString)
                 .codecRegistry(codecRegistry).build();
 
-        // set com.github.gcc_minecraft_team.sps_mc_link_spigot.database and connect
+        // set database and connect
         try {
             mongoClient = MongoClients.create(clientSettings);
             mongoDatabase = mongoClient.getDatabase(dbName);
             userCol = mongoDatabase.getCollection("users");
             wgCol = mongoDatabase.getCollection("worldgroups", WorldGroupSerializable.class);
         } catch(MongoException exception) {
-            SPSSpigot.logger().log(Level.SEVERE, "Something went wrong connecting to the MongoDB com.github.gcc_minecraft_team.sps_mc_link_spigot.database, is " + DBFILE + " set up correctly?");
+            SPSSpigot.logger().log(Level.SEVERE, "Something went wrong connecting to the MongoDB database, is " + DBFILE + " set up correctly?");
         }
 
         // create an instance of DatabaseThreads with our connection info
@@ -91,29 +89,15 @@ public class DatabaseLink {
     }
 
     /**
-     * Gets whether a player is registered on the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
-     * @param uuid The {@link UUID} of the player to check.
-     * @return {@code true} if the player is registered.
+     * Gets all the {@link WorldGroup}s. Should generally be only called on startup.
+     * @return A {@link Set} of all {@link WorldGroup}s.
      */
-    public static boolean isRegistered(@NotNull UUID uuid) {
-        try {
-            // check if player is registered
-            return userCol.countDocuments(new Document("mcUUID", uuid.toString())) == 1;
-        } catch(MongoException exception) {
-            SPSSpigot.logger().log(Level.SEVERE, "Couldn't check user from com.github.gcc_minecraft_team.sps_mc_link_spigot.database! Error: " + exception.toString());
-            return false;
-        }
-    }
-
-    /**
-     * Gets all the world groups. Should generally be only called on startup.
-     * @return A {@link Set} of the {@link WorldGroup} world groups.
-     */
+    @NotNull
     public static Set<WorldGroup> getWorldGroups() {
         MongoCursor<WorldGroupSerializable> cur = wgCol.find().iterator();
         Set<WorldGroup> output = new HashSet<>();
         while(cur.hasNext()) {
-            WorldGroupSerializable wgs = (WorldGroupSerializable)cur.next();
+            WorldGroupSerializable wgs = cur.next();
             WorldGroup wg = new WorldGroup(wgs);
             output.add(wg);
         }
@@ -121,55 +105,64 @@ public class DatabaseLink {
     }
 
     /**
-     * Adds a world group to the database. This should not be called to update the world group.
-     * @param worldGroup The {@link WorldGroup} of the world group.
-     * @return {@code true} if successful.
+     * Adds a {@link WorldGroup} to the database. This should not be called to update the {@link WorldGroup}.
+     * @param worldGroup The {@link WorldGroup} to add.
      */
-    public static boolean addWorldGroup(WorldGroup worldGroup) {
+    public static boolean addWorldGroup(@NotNull WorldGroup worldGroup) {
         dbThreads.new AddWorldGroup(new WorldGroupSerializable(worldGroup)).run();
         return true;
     }
 
     /**
-     * Remove a world group from the database.
-     * @param worldGroup The {@link WorldGroup} of the world group.
-     * @return {@code true} if successful.
+     * Remove a {@link WorldGroup} from the database.
+     * @param worldGroup The {@link WorldGroup} to remove.
      */
-    public static boolean removeWorldGroup(WorldGroup worldGroup) {
+    public static void removeWorldGroup(@NotNull WorldGroup worldGroup) {
         dbThreads.new RemoveWorldGroup(worldGroup).run();
-        return true;
     }
 
     /**
-     * Adds a new {@link Team} to the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
-     * @param team The {@link Team} to add.
+     * Adds a new {@link World} to the database.
+     * @param worldGroup The {@link WorldGroup} to add the {@link World} to.
+     * @param world The {@link World} to add.
      */
-    public static void addTeam(@NotNull Team team) {
-        dbThreads.new UpdateWorldGroup(new WorldGroupSerializable(team.getWorldGroup())).run();
+    public static void addWorld(@NotNull WorldGroup worldGroup, @NotNull World world) {
+        dbThreads.new UpdateWorld(worldGroup, world).run();
     }
 
     /**
-     * Updates an existing {@link Team} in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
-     * @param team The {@link Team} to update.
+     * Removes a {@link World} from the database.
+     * @param worldGroup The {@link WorldGroup} to remove the {@link World} from.
+     * @param world The {@link World} to remove.
      */
-    public static void updateTeam(@NotNull Team team) {
-        dbThreads.new UpdateWorldGroup(new WorldGroupSerializable(team.getWorldGroup())).run();
+    public static void removeWorld(@NotNull WorldGroup worldGroup, @NotNull World world) {
+        dbThreads.new RemoveWorld(worldGroup, world).run();
     }
 
     /**
-     * Gets a {@link Team} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database. Unlikely to be used?
-     * @param team The {@link Team} to get.
-     * @return The team.
+     * Adds a new {@link World} to the claimable list on the database.
+     * @param worldGroup The {@link WorldGroup} to add the {@link World} to.
+     * @param world The {@link World} to add.
      */
-    public static Team getTeam(@NotNull Team team) {
-        return new WorldGroup(wgCol.find(Filters.eq("WGID", team.getWorldGroup().getID())).first()).getTeam(team.getName());
+    public static void addWorldClaimable(@NotNull WorldGroup worldGroup, @NotNull World world) {
+        dbThreads.new UpdateWorldClaimable(worldGroup, world).run();
     }
 
     /**
-     * Gets all {@link Team}s in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
-     * @param worldGroup The {@link WorldGroup} worldGroup from which to find the {@link Team}.
+     * Removes a {@link World} from the claimable list on the database.
+     * @param worldGroup The {@link WorldGroup} to remove the {@link World} from.
+     * @param world The {@link World} to remove.
+     */
+    public static void removeWorldClaimable(@NotNull WorldGroup worldGroup, @NotNull World world) {
+        dbThreads.new RemoveWorldClaimable(worldGroup, world).run();
+    }
+
+    /**
+     * Gets all {@link Team}s in the database.
+     * @param worldGroup The {@link WorldGroup} from which to find the {@link Team}.
      * @return A {@link Set} of {@link Team}s found.
      */
+    @NotNull
     public static Set<Team> getTeams(@NotNull WorldGroup worldGroup) {
         Set<TeamSerializable> cur = wgCol.find(Filters.eq("WGID", worldGroup.getID())).first().getTeams();
         Set<Team> output = new HashSet<>();
@@ -181,7 +174,15 @@ public class DatabaseLink {
     }
 
     /**
-     * Removes a {@link Team} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * Adds (if does not exist) or updates (if does exist) a {@link Team} in the database.
+     * @param team The {@link Team} to add/update.
+     */
+    public static void updateTeam(@NotNull Team team) {
+        dbThreads.new UpdateWorldGroup(new WorldGroupSerializable(team.getWorldGroup())).run();
+    }
+
+    /**
+     * Removes a {@link Team} from the database.
      * @param team The {@link Team} to remove.
      */
     public static void removeTeam(@NotNull Team team) {
@@ -189,59 +190,39 @@ public class DatabaseLink {
     }
 
     /**
-     * Adds a new {@link World} to the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
-     * @param wg The {@link WorldGroup} to add the world to.
-     * @param world The {@link World} to add.
+     * Gets claims from the database.
+     * @param worldGroup The {@link WorldGroup} from which to get claims.
+     * @return The {@link WorldGroup}'s claim {@link Map}.
      */
-    public static void addWorld(@NotNull WorldGroup wg, @NotNull World world) {
-        dbThreads.new UpdateWorld(wg, world).run();
+    @NotNull
+    public static Map<UUID, Set<Chunk>> getClaims(@NotNull WorldGroup worldGroup) {
+        return new WorldGroup(wgCol.find(Filters.eq("WGID", worldGroup.getID())).first()).getClaims();
     }
 
     /**
-     * Removes a {@link World} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
-     * @param wg The {@link WorldGroup} to add the world to.
-     * @param world The {@link World} to add.
-     */
-    public static void removeWorld(@NotNull WorldGroup wg, @NotNull World world) {
-        dbThreads.new RemoveWorld(wg, world).run();
-    }
-
-    /**
-     * Adds a new {@link World} to the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
-     * @param wg The {@link WorldGroup} to add the world to.
-     * @param world The {@link World} to add.
-     */
-    public static void addWorldClaimable(@NotNull WorldGroup wg, @NotNull World world) {
-        dbThreads.new UpdateWorldClaimable(wg, world).run();
-    }
-
-    /**
-     * Removes a {@link World} from the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
-     * @param wg The {@link WorldGroup} to add the world to.
-     * @param world The {@link World} to add.
-     */
-    public static void removeWorldClaimable(@NotNull WorldGroup wg, @NotNull World world) {
-        dbThreads.new RemoveWorldClaimable(wg, world).run();
-    }
-
-    /**
-     * Saves getWorldGroup to the database.
-     * @param claims The claim map to save.
-     * @param worldGroup The {@link WorldGroup} worldGroup to which to save the claims.
+     * Saves claims to the database.
+     * @param claims The claim {@link Map} to save.
+     * @param worldGroup The {@link WorldGroup} to which to save the claims.
      */
     public static void saveClaims(@NotNull Map<UUID, Set<Chunk>> claims, @NotNull WorldGroup worldGroup) {
         dbThreads.new UpdateClaims(claims, new WorldGroupSerializable(worldGroup)).run();
     }
 
     /**
-     * @param worldGroup The {@link WorldGroup} worldGroup from which to get claims.
-     * Gets getWorldGroup from the database.
-     * @return The worldGroup's claim map.
+     * Gets whether a player is registered on the database.
+     * @param uuid The {@link UUID} of the player to check.
+     * @return {@code true} if the player is registered.
      */
-    @NotNull
-    public static Map<UUID, Set<Chunk>> getClaims(@NotNull WorldGroup worldGroup) {
-        return new WorldGroup(wgCol.find(Filters.eq("WGID", worldGroup.getID())).first()).getClaims();
+    public static boolean isRegistered(@NotNull UUID uuid) {
+        try {
+            // check if player is registered
+            return userCol.countDocuments(new Document("mcUUID", uuid.toString())) == 1;
+        } catch(MongoException exception) {
+            SPSSpigot.logger().log(Level.SEVERE, "Couldn't check user from database! Error: " + exception.toString());
+            return false;
+        }
     }
+
 
     /**
      * Gets the MC names of all SPS users registered.
@@ -376,7 +357,7 @@ public class DatabaseLink {
     }
 
     /**
-     * Registers a new player in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database.
+     * Registers a new player in the database.
      * @param uuid The Minecraft {@link UUID} of the player.
      * @param SPSid The SPS ID of the player.
      * @param name The new name of the player.

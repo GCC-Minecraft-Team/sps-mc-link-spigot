@@ -1,7 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.database;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.TeamSerializable;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroupSerializable;
 import com.mongodb.BasicDBObject;
@@ -38,43 +37,43 @@ public class DatabaseThreads {
     /**
      * Adds a {@link WorldGroup} to the database on thread.
      */
-    class AddWorldGroup {
+    public class AddWorldGroup {
 
         private final WorldGroupSerializable worldGroup;
-        AddWorldGroup(WorldGroupSerializable worldGroup) {
+
+        public AddWorldGroup(WorldGroupSerializable worldGroup) {
             this.worldGroup = worldGroup;
         }
 
         public void run() {
             wgCol.insertOne(worldGroup);
-            return;
         }
     }
 
     /**
      * Removes a {@link WorldGroup} from the database on thread.
      */
-    class RemoveWorldGroup {
+    public class RemoveWorldGroup {
 
         private final WorldGroup worldGroup;
-        RemoveWorldGroup(WorldGroup worldGroup) {
+
+        public RemoveWorldGroup(WorldGroup worldGroup) {
             this.worldGroup = worldGroup;
         }
 
         public void run() {
             wgCol.deleteOne(new Document("WGID", worldGroup.getID()));
-            return;
         }
     }
 
     /**
-     * Adds (or updates) a {@link Team} to the database on thread.
+     * Adds (or updates) a {@link WorldGroup} to the database on thread.
      */
-    class UpdateWorldGroup {
+    public class UpdateWorldGroup {
 
         private final WorldGroupSerializable worldGroup;
 
-        UpdateWorldGroup(WorldGroupSerializable worldGroup) {
+        public UpdateWorldGroup(WorldGroupSerializable worldGroup) {
             this.worldGroup = worldGroup;
         }
 
@@ -84,97 +83,93 @@ public class DatabaseThreads {
     }
 
     /**
-     * Adds (or updates) a world ID to the database on thread.
+     * Adds a {@link World} to a {@link WorldGroup} on the database on thread.
      */
-    class UpdateWorld {
+    public class UpdateWorld {
 
         private final World world;
-        private final WorldGroup wg;
+        private final WorldGroup worldGroup;
 
-        UpdateWorld(WorldGroup wg, World world) {
-            this.wg = wg;
+        public UpdateWorld(WorldGroup worldGroup, World world) {
+            this.worldGroup = worldGroup;
             this.world = world;
         }
 
         public void run() {
-            if (wgCol.find(new Document("WGID", wg.getID())).first().getWorlds().contains(world)) {
-                wgCol.updateOne(Filters.eq("WGID", wg.getID()), new Document("$pull", new Document("worlds", world.getUID().toString())), new UpdateOptions().upsert(true));
-                wgCol.updateOne(Filters.eq("WGID", wg.getID()), new Document("$push", new Document("worlds", world.getUID().toString())), new UpdateOptions().upsert(true));
+            if (wgCol.find(new Document("WGID", worldGroup.getID())).first().getWorlds().contains(world)) {
+                wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("$pull", new Document("worlds", world.getUID().toString())), new UpdateOptions().upsert(true));
+                wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("$push", new Document("worlds", world.getUID().toString())), new UpdateOptions().upsert(true));
             }
-            wgCol.updateOne(Filters.eq("WGID", wg.getID()), Updates.addToSet("worlds", world.getUID().toString()), new UpdateOptions().upsert(true));
-            return;
+            wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), Updates.addToSet("worlds", world.getUID().toString()), new UpdateOptions().upsert(true));
         }
     }
 
     /**
-     * Removes a world ID from the database on thread.
+     * Removes a {@link World} from a {@link WorldGroup} on the database on thread.
      */
-    class RemoveWorld {
+    public class RemoveWorld {
 
         private final World world;
-        private final WorldGroup wg;
+        private final WorldGroup worldGroup;
 
-        RemoveWorld(WorldGroup wg, World world) {
-            this.wg = wg;
+        public RemoveWorld(WorldGroup worldGroup, World world) {
+            this.worldGroup = worldGroup;
             this.world = world;
         }
 
         public void run() {
-            wgCol.updateOne(Filters.eq("WGID", wg.getID()), new Document("$pull", new Document("worlds", world.getUID().toString())));
-            return;
+            wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("$pull", new Document("worlds", world.getUID().toString())));
         }
     }
 
     /**
-     * Adds (or updates) a world ID to the database on thread.
+     * Adds a {@link World} to the claimable list of a {@link WorldGroup} on the database on thread.
      */
-    class UpdateWorldClaimable {
+    public class UpdateWorldClaimable {
 
         private final World world;
-        private final WorldGroup wg;
+        private final WorldGroup worldGroup;
 
-        UpdateWorldClaimable(WorldGroup wg, World world) {
-            this.wg = wg;
+        public UpdateWorldClaimable(WorldGroup worldGroup, World world) {
+            this.worldGroup = worldGroup;
             this.world = world;
         }
 
         public void run() {
-            if (wgCol.find(new Document("WGID", wg.getID())).first().getWorlds().contains(world)) {
-                wgCol.updateOne(Filters.eq("WGID", wg.getID()), new Document("$pull", new Document("claimable", world.getUID().toString())), new UpdateOptions().upsert(true));
-                wgCol.updateOne(Filters.eq("WGID", wg.getID()), new Document("$push", new Document("claimable", world.getUID().toString())), new UpdateOptions().upsert(true));
+            if (wgCol.find(new Document("WGID", worldGroup.getID())).first().getWorlds().contains(world)) {
+                wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("$pull", new Document("claimable", world.getUID().toString())), new UpdateOptions().upsert(true));
+                wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("$push", new Document("claimable", world.getUID().toString())), new UpdateOptions().upsert(true));
             }
-            wgCol.updateOne(Filters.eq("WGID", wg.getID()), Updates.addToSet("claimable", world.getUID().toString()), new UpdateOptions().upsert(true));
-            return;
+            wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), Updates.addToSet("claimable", world.getUID().toString()), new UpdateOptions().upsert(true));
         }
     }
 
     /**
-     * Removes a world ID from the database on thread.
+     * Removes a {@link World} from the claimable list of a {@link WorldGroup} on the database on thread.
      */
-    class RemoveWorldClaimable {
+    public class RemoveWorldClaimable {
 
         private final World world;
-        private final WorldGroup wg;
+        private final WorldGroup worldGroup;
 
-        RemoveWorldClaimable(WorldGroup wg, World world) {
-            this.wg = wg;
+        public RemoveWorldClaimable(WorldGroup worldGroup, World world) {
+            this.worldGroup = worldGroup;
             this.world = world;
         }
 
         public void run() {
-            wgCol.updateOne(Filters.eq("WGID", wg.getID()), new Document("$pull", new Document("claimable", world.getUID().toString())));
-            return;
+            wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("$pull", new Document("claimable", world.getUID().toString())));
         }
     }
 
     /**
      * Updates the claims for a specified {@link WorldGroup};
      */
-    class UpdateClaims {
+    public class UpdateClaims {
         private final WorldGroupSerializable worldGroup;
         private final Map<UUID, Set<Chunk>> claims;
 
-        UpdateClaims(Map<UUID, Set<Chunk>> claims, WorldGroupSerializable worldGroup) {
+        public UpdateClaims(Map<UUID, Set<Chunk>> claims, WorldGroupSerializable worldGroup) {
             this.worldGroup = worldGroup;
             this.claims = claims;
         }
@@ -198,10 +193,7 @@ public class DatabaseThreads {
                 Document elementToArray = new Document("claims." + uuid.toString(), dbChunkSet);
                 wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("$set", elementToArray), new UpdateOptions().upsert(true));
             }
-
-            return;
         }
-
     }
 }
 
