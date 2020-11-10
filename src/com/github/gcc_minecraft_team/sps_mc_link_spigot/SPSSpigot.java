@@ -113,11 +113,22 @@ public class SPSSpigot extends JavaPlugin {
         System.out.println("==[SPS MC INITIALIZED SUCCESSFULLY]==");
     }
 
+    /**
+     * Updates the claim map scoreboard
+     * @param board
+     */
     private void updateBoard(FastBoard board) {
         Player player = board.getPlayer();
         Chunk playerChunk = player.getLocation().getChunk();
         WorldGroup wg = SPSSpigot.getWorldGroup(player.getWorld());
-        if (board != null && !board.isDeleted() && wg != null && playerChunk != null && player != null) {
+        boolean isClaimable = false;
+        boolean inSpawn = false;
+        if (board != null && !board.isDeleted() && playerChunk != null && player != null) {
+            if (wg != null) {
+                isClaimable = wg.isClaimable(player.getWorld());
+                inSpawn = wg.isEntityInSpawn(player);
+            }
+
             // map
             String[] rows = new String[7];
 
@@ -126,29 +137,33 @@ public class SPSSpigot extends JavaPlugin {
                 for (int x = -3; x <= 3; x++) {
                     // get the surrounding chunks
 
-                    if (!wg.isEntityInSpawn(player)) {
-                        Chunk chunk = player.getWorld().getChunkAt(playerChunk.getX() + x, playerChunk.getZ() + z);
-                        UUID chunkOwner = wg.getChunkOwner(chunk);
-                        if (x == 0 && z == 0) {
-                            bRow.append(net.md_5.bungee.api.ChatColor.BLUE).append("Ⓟ");
-                        } else {
-                            if (chunkOwner == null) {
-                                // Unowned / in spawn
-                                bRow.append(net.md_5.bungee.api.ChatColor.GRAY).append("▒");
-                            } else if (chunkOwner.equals(player.getUniqueId())) {
-                                // Player owns chunk
-                                bRow.append(net.md_5.bungee.api.ChatColor.GREEN).append("█");
-                            } else if (wg.isOnSameTeam(player.getUniqueId(), chunkOwner)) {
-                                // Teammate owns chunk
-                                bRow.append(net.md_5.bungee.api.ChatColor.AQUA).append("▒");
+                    if (isClaimable) {
+                        if (!inSpawn) {
+                            Chunk chunk = player.getWorld().getChunkAt(playerChunk.getX() + x, playerChunk.getZ() + z);
+                            UUID chunkOwner = wg.getChunkOwner(chunk);
+                            if (x == 0 && z == 0) {
+                                bRow.append(net.md_5.bungee.api.ChatColor.BLUE).append("Ⓟ");
                             } else {
-                                // Other player owns chunk
-                                bRow.append(net.md_5.bungee.api.ChatColor.RED).append("▒");
+                                if (chunkOwner == null) {
+                                    // Unowned / in spawn
+                                    bRow.append(net.md_5.bungee.api.ChatColor.GRAY).append("▒");
+                                } else if (chunkOwner.equals(player.getUniqueId())) {
+                                    // Player owns chunk
+                                    bRow.append(net.md_5.bungee.api.ChatColor.GREEN).append("█");
+                                } else if (wg.isOnSameTeam(player.getUniqueId(), chunkOwner)) {
+                                    // Teammate owns chunk
+                                    bRow.append(net.md_5.bungee.api.ChatColor.AQUA).append("▒");
+                                } else {
+                                    // Other player owns chunk
+                                    bRow.append(net.md_5.bungee.api.ChatColor.RED).append("▒");
+                                }
                             }
+                        } else {
+                            // spawn
+                            bRow.append(net.md_5.bungee.api.ChatColor.DARK_PURPLE).append("Ⓢ");
                         }
                     } else {
-                        // spawn
-                        bRow.append(net.md_5.bungee.api.ChatColor.DARK_PURPLE).append("Ⓢ");
+                        bRow.append(net.md_5.bungee.api.ChatColor.GRAY).append("✖");
                     }
                 }
                 rows[z + 3] = bRow.toString();
@@ -317,26 +332,34 @@ public class SPSSpigot extends JavaPlugin {
         }
     }
 
+    /**
+     * Starts ticking the compass at the bottom of the player's screen
+     * @param player the {@link Player} the compass should be applied to
+     * @param worldGroup the {@link WorldGroup} that player in currently in
+     */
     public void startCompass(Player player, WorldGroup worldGroup) {
         BukkitScheduler scheduler = SPSSpigot.server().getScheduler();
         scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), () -> {
             // compass
-            if (worldGroup == null)
-                return;
             String claimStatus = net.md_5.bungee.api.ChatColor.DARK_GREEN + "Wilderness";
-            UUID chunkOwner = worldGroup.getChunkOwner(player.getLocation().getChunk());
-            Team playerTeam = worldGroup.getPlayerTeam(player.getUniqueId());
-            if (worldGroup.isInSpawn(player.getLocation()) && worldGroup.isClaimable(player.getWorld())) {
-                claimStatus = net.md_5.bungee.api.ChatColor.DARK_PURPLE + "[Spawn] Claiming Disabled";
+
+            if (worldGroup == null || !worldGroup.isClaimable(player.getWorld())) {
+                claimStatus = net.md_5.bungee.api.ChatColor.GRAY + "World not claimable!";
             } else {
-                if (chunkOwner != null) {
-                    if (playerTeam != null && playerTeam.getMembers().contains(chunkOwner)) {
-                        claimStatus = net.md_5.bungee.api.ChatColor.AQUA + "[" + playerTeam.getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
-                    } else {
-                        if (player.getUniqueId().equals(chunkOwner)) {
-                            claimStatus = net.md_5.bungee.api.ChatColor.GREEN + DatabaseLink.getSPSName(chunkOwner);
+                UUID chunkOwner = worldGroup.getChunkOwner(player.getLocation().getChunk());
+                Team playerTeam = worldGroup.getPlayerTeam(player.getUniqueId());
+                if (worldGroup.isInSpawn(player.getLocation()) && worldGroup.isClaimable(player.getWorld())) {
+                    claimStatus = net.md_5.bungee.api.ChatColor.DARK_PURPLE + "[Spawn] Claiming Disabled";
+                } else {
+                    if (chunkOwner != null) {
+                        if (playerTeam != null && playerTeam.getMembers().contains(chunkOwner)) {
+                            claimStatus = net.md_5.bungee.api.ChatColor.AQUA + "[" + playerTeam.getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
                         } else {
-                            claimStatus = net.md_5.bungee.api.ChatColor.RED + DatabaseLink.getSPSName(chunkOwner);
+                            if (player.getUniqueId().equals(chunkOwner)) {
+                                claimStatus = net.md_5.bungee.api.ChatColor.GREEN + DatabaseLink.getSPSName(chunkOwner);
+                            } else {
+                                claimStatus = net.md_5.bungee.api.ChatColor.RED + DatabaseLink.getSPSName(chunkOwner);
+                            }
                         }
                     }
                 }

@@ -149,6 +149,7 @@ public class ClaimCommands implements CommandExecutor {
                 } else if (args[0].equalsIgnoreCase("show")) {
                     if (!SPSSpigot.plugin().boards.containsKey(player.getUniqueId())) {
                         FastBoard board = new FastBoard(player);
+                        board.updateTitle("[N]");
                         SPSSpigot.plugin().boards.put(player.getUniqueId(), board);
                         return true;
                     } else {

@@ -425,8 +425,9 @@ public class WorldGroup {
         } catch (IllegalArgumentException e) {
             playTicks = 0;
         }
-        // 16 + 8log_2(x+2)
-        return (int) (16 + 8 * Math.log((playTicks / (20.0 * 60.0 * 60.0)) + 2) / Math.log(2));
+        // 16 + 32log_2(x+2)
+        // Nathan: Increased max chunk scale
+        return (int) (16 + 32 * Math.log((playTicks / (20.0 * 60.0 * 60.0)) + 2) / Math.log(2));
     }
 
     /**

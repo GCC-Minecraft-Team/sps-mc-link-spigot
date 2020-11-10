@@ -60,6 +60,7 @@ public class JoinEvent implements Listener {
                 player.sendTitle("Welcome to" + ChatColor.BLUE +" SPS MC!", "Please use the link in chat to link your account!", 10, 160, 10);
             } else {
                 FastBoard board = new FastBoard(player);
+                board.updateTitle("[N]");
                 SPSSpigot.plugin().boards.put(player.getUniqueId(), board);
 
                 // claim map

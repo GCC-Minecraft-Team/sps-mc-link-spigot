@@ -33,6 +33,8 @@ public class DatabaseThreads {
         this.wgCol = wgCol;
     }
 
+    //TODO: Multithread all this
+
     /**
      * Adds a {@link WorldGroup} to the database on thread.
      */
