@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimBoard;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import fr.mrmicky.fastboard.FastBoard;
@@ -53,9 +54,7 @@ public class JoinEvent implements Listener {
 
                 player.sendTitle("Welcome to" + ChatColor.BLUE +" SPS MC!", "Please use the link in chat to link your account!", 10, 200, 10);
             } else {
-                FastBoard board = new FastBoard(player);
-                board.updateTitle("[N]");
-                SPSSpigot.plugin().boards.put(player.getUniqueId(), board);
+                ClaimBoard.addBoard(player);
 
                 // claim map
                 WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());

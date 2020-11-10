@@ -138,19 +138,16 @@ public class ClaimCommands implements CommandExecutor {
                         }
                     }
                 } else if (args[0].equalsIgnoreCase("hide")) {
-                    if (SPSSpigot.plugin().boards.get(player.getUniqueId()) != null && !SPSSpigot.plugin().boards.get(player.getUniqueId()).isDeleted()) {
-                        SPSSpigot.plugin().boards.get(player.getUniqueId()).delete();
-                        SPSSpigot.plugin().boards.remove(player.getUniqueId());
+                    if (ClaimBoard.hasBoard(player.getUniqueId())) {
+                        ClaimBoard.removeBoard(player.getUniqueId());
                         return true;
                     } else {
                         sender.sendMessage(ChatColor.RED + "Couldn't hide the claim map!");
                         return true;
                     }
                 } else if (args[0].equalsIgnoreCase("show")) {
-                    if (!SPSSpigot.plugin().boards.containsKey(player.getUniqueId())) {
-                        FastBoard board = new FastBoard(player);
-                        board.updateTitle("[N]");
-                        SPSSpigot.plugin().boards.put(player.getUniqueId(), board);
+                    if (!ClaimBoard.hasBoard(player.getUniqueId())) {
+                        ClaimBoard.addBoard(player);
                         return true;
                     } else {
                         player.sendMessage(ChatColor.RED + "Claim map is already visible!");

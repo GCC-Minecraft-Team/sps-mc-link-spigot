@@ -419,9 +419,7 @@ public class DatabaseLink {
         // give starting boat
         player.getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));
 
-        FastBoard board = new FastBoard(player);
-        board.updateTitle("[N]");
-        SPSSpigot.plugin().boards.put(player.getUniqueId(), board);
+        ClaimBoard.addBoard(player);
 
         SPSSpigot.plugin().startCompass(player, SPSSpigot.getWorldGroup(player.getWorld()));
 

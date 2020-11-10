@@ -33,7 +33,6 @@ public class SPSSpigot extends JavaPlugin {
 
     public PermissionsHandler perms;
     private Set<WorldGroup> worldGroups;
-    public final Map<UUID, FastBoard> boards = new HashMap<>();
 
     @Override
     public void onEnable() {
@@ -105,8 +104,8 @@ public class SPSSpigot extends JavaPlugin {
 
         // update board every 10 ticks
         getServer().getScheduler().runTaskTimer(this, () -> {
-            for (FastBoard board : boards.values()) {
-                updateBoard(board);
+            for (UUID player : ClaimBoard.getPlayers()) {
+                ClaimBoard.updateBoard(player);
             }
         }, 0, 10);
     }
@@ -117,81 +116,7 @@ public class SPSSpigot extends JavaPlugin {
      */
     // TODO: Multithread this
     public void updateBoard(@NotNull FastBoard board) {
-        Player player = board.getPlayer();
-        Chunk playerChunk = player.getLocation().getChunk();
-        WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
-        if (worldGroup != null && !board.isDeleted()) {
-            // Map Strings
-            String[] rows = new String[7];
 
-            for (int z = -3; z <= 3; z++) {
-                StringBuilder bRow = new StringBuilder();
-                for (int x = -3; x <= 3; x++) {
-                    // Get the surrounding chunks
-                    Chunk chunk = player.getWorld().getChunkAt(playerChunk.getX() + x, playerChunk.getZ() + z);
-                    UUID chunkOwner = worldGroup.getChunkOwner(chunk);
-                    if (x == 0 && z == 0) {
-                        // Player location.
-                        ChatColor color;
-                        if (worldGroup.isInSpawn(player.getLocation()))
-                            color = ChatColor.DARK_PURPLE; // In spawn
-                        else if (chunkOwner == null)
-                            color = ChatColor.DARK_GRAY; // Unowned chunk outside spawn
-                        else if (chunkOwner.equals(player.getUniqueId()))
-                            color = ChatColor.GREEN; // Player owns chunk
-                        else if (worldGroup.isOnSameTeam(player.getUniqueId(), chunkOwner))
-                            color = ChatColor.AQUA; // Teammate owns chunk
-                        else
-                            color = ChatColor.RED; // Other player owns chunk
-
-                        String symbol;
-                        float rotation = player.getLocation().getYaw();
-                        if (45 <= rotation && rotation < 135)
-                            symbol = "Ⓦ";
-                        else if (135 <= rotation && rotation < 225)
-                            symbol = "Ⓝ";
-                        else if (225 <= rotation && rotation < 315)
-                            symbol = "Ⓔ";
-                        else
-                            symbol = "Ⓢ";
-                        bRow.append(color).append(symbol);
-                    } else {
-                        if (worldGroup.isInSpawn(chunk.getBlock(0, 0, 0).getLocation())) {
-                            // In spawn
-                            bRow.append(ChatColor.DARK_PURPLE).append("Ⓢ");
-                        } else if (!worldGroup.isClaimable(player.getWorld())) {
-                            // Un-claimable chunk outside spawn
-                            bRow.append(ChatColor.GRAY).append("✖");
-                        } else if (chunkOwner == null) {
-                            // Unowned, claimable chunk outside spawn
-                            bRow.append(ChatColor.DARK_GRAY).append("▒");
-                        } else if (chunkOwner.equals(player.getUniqueId())) {
-                            // Player owns chunk
-                            bRow.append(ChatColor.GREEN).append("█");
-                        } else if (worldGroup.isOnSameTeam(player.getUniqueId(), chunkOwner)) {
-                            // Teammate owns chunk
-                            bRow.append(ChatColor.AQUA).append("▒");
-                        } else {
-                            // Other player owns chunk
-                            bRow.append(ChatColor.RED).append("▒");
-                        }
-                    }
-                }
-                rows[z + 3] = bRow.toString();
-            }
-
-            // update the board
-            board.updateLines(
-                    rows[0],
-                    rows[1],
-                    rows[2],
-                    rows[3],
-                    rows[4],
-                    rows[5],
-                    rows[6],
-                    "(" + (int)player.getLocation().getX() + ", " + (int)player.getLocation().getY() + ", " + (int)player.getLocation().getZ() + ")"
-            );
-        }
     }
 
     @Override
