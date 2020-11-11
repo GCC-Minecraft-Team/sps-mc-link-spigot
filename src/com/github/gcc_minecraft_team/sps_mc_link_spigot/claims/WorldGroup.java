@@ -462,15 +462,23 @@ public class WorldGroup {
      * @param chunk The {@link Chunk} to check.
      * @return The {@link UUID} of the owner, or {@code null} if unowned.
      */
+
+    // NOTE!!! READ ME!!! Don't remove this function or change it to use .equals() (for some reason that breaks the server a lot)
     @Nullable
     public UUID getChunkOwner(@NotNull Chunk chunk) {
-        for (Map.Entry<UUID, Set<Chunk>> player : claims.entrySet()) {
-            if (player.getValue().contains(chunk))
-                return player.getKey();
+        Iterator it = claims.entrySet().iterator();
+        while(it.hasNext()) {
+            Map.Entry<UUID, Set<Chunk>> player = (Map.Entry<UUID, Set<Chunk>>) it.next();
+            Iterator itChunk = player.getValue().iterator();
+            while(itChunk.hasNext()) {
+                Chunk c = (Chunk) itChunk.next();
+                if (c.getX() == chunk.getX() && c.getZ() == chunk.getZ()) {
+                    return player.getKey();
+                }
+            }
         }
         return null;
     }
-
     /**
      * Gets the owner of a chunk.
      * @param world The {@link World}.

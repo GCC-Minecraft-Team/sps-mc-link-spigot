@@ -126,7 +126,7 @@ public class ClaimBoard {
                                 symbol = "Ⓢ";
                             bRow.append(color).append(symbol);
                         } else {
-                            if (worldGroup.isInSpawn(chunk.getBlock(0, 0, 0).getLocation())) {
+                            if (worldGroup.isInSpawn(chunk.getBlock(0, 0, 0).getLocation()) && worldGroup.isClaimable(player.getWorld())) {
                                 // In spawn
                                 bRow.append(ChatColor.DARK_PURPLE).append("Ⓢ");
                             } else if (!worldGroup.isClaimable(player.getWorld())) {

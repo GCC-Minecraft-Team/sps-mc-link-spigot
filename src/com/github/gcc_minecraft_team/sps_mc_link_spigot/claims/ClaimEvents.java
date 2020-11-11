@@ -14,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.*;
+import org.bukkit.event.vehicle.VehicleDestroyEvent;
 
 import java.util.*;
 
@@ -61,6 +62,32 @@ public class ClaimEvents implements Listener {
     }
 
     // ========[PLAYER BLOCK INTERACTION]========
+
+    /*
+    Only disable vehicles in claims not spawn
+     */
+    @EventHandler
+    public void onVehicleDestroy(VehicleDestroyEvent event) {
+        Chunk chunk = event.getAttacker().getLocation().getChunk();
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+        if (worldGroup != null) {
+            if (!worldGroup.canModifyChunk(event.getAttacker().getUniqueId(), chunk)) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
+        Chunk chunk = event.getBlock().getChunk();
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+        if (worldGroup != null) {
+            if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && worldGroup.isClaimable(event.getPlayer().getWorld())) {
+                event.setCancelled(true);
+            } else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
+                event.setCancelled(true);
+        }
+    }
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {

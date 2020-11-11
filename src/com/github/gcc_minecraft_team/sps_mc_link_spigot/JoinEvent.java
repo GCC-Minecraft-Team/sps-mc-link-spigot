@@ -107,13 +107,17 @@ public class JoinEvent implements Listener {
         double zdist = pLoc.getZ() - event.getPlayer().getWorld().getSpawnLocation().getZ();
         double xdist = pLoc.getX() - event.getPlayer().getWorld().getSpawnLocation().getX();
         if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
-            // give starting boat
-            ItemStack its = new ItemStack(Material.OAK_BOAT);
-            its.getItemMeta().setDisplayName("This is a boat!");
-            ArrayList itsLore = new ArrayList<String>();
-            itsLore.add("Use this to leave spawn!");
-            its.getItemMeta().setLore(itsLore);
-            event.getPlayer().getInventory().setItemInMainHand(its);
+            // give starting boat and 5 cooked beef
+            ItemStack boat = new ItemStack(Material.OAK_BOAT);
+            boat.getItemMeta().setDisplayName("This is a boat!");
+            ArrayList boatLore = new ArrayList<String>();
+            boatLore.add("Use this to leave spawn!");
+            boat.getItemMeta().setLore(boatLore);
+
+            ItemStack beef = new ItemStack(Material.COOKED_BEEF);
+            beef.setAmount(5);
+
+            event.getPlayer().getInventory().setItemInMainHand(beef);
         }
     }
 
