@@ -1,12 +1,11 @@
-IF NOT EXIST TestServer\spigot.jar (
+IF NOT EXIST TestServer\tuinity.jar (
     mkdir BuildTools
     cd BuildTools
-    curl -z BuildTools.jar -o BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
-    java -jar BuildTools.jar
+    curl -o tuinity-paperclip.jar https://ci.codemc.io/job/Spottedleaf/job/Tuinity/lastSuccessfulBuild/artifact/tuinity-paperclip.jar
 
     cd ..
     mkdir TestServer
-    copy BuildTools\spigot-1.16.4.jar TestServer\spigot.jar
+    copy BuildTools\tuinity-paperclip.jar TestServer\tuinity.jar
 
     cd TestServer
     echo eula=true>eula.txt
@@ -19,5 +18,5 @@ cd ..
 copy target\sps-mc-link-spigot-1.0-SNAPSHOT-jar-with-dependencies.jar TestServer\plugins\sps-mc-link-spigot-latest.jar
 
 cd TestServer
-java -Xms8g -Xmx8g -XX:ActiveProcessorCount=8 -XX:+UseG1GC -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9585 -jar spigot.jar nogui
+java -Xms8g -Xmx24g -XX:ActiveProcessorCount=8 -XX:+UseG1GC -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9585 -jar tuinity.jar nogui
 pause

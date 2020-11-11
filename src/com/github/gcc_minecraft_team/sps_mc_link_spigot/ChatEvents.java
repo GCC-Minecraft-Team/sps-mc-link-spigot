@@ -5,6 +5,7 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.Rank;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommandYamlParser;
 import org.bukkit.entity.Entity;
@@ -80,6 +81,12 @@ public class ChatEvents implements Listener {
         } else {
             event.setDeathMessage(ChatColor.DARK_PURPLE + "[" + NickAPI.getName(event.getEntity()) + "] Was killed by " + dc.toString());
         }
+
+        Location deathLocation = event.getEntity().getLocation();
+        event.getEntity().sendMessage(ChatColor.DARK_PURPLE + "Your death coordinates are: " +
+                (int)deathLocation.getX() + ", " +
+                (int)deathLocation.getY() + ", " +
+                (int)deathLocation.getZ());
     }
 
     /**
