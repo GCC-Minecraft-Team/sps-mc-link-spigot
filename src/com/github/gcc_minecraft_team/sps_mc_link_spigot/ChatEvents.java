@@ -42,7 +42,7 @@ public class ChatEvents implements Listener {
                     + message.replaceAll(e.getPlayer().getDisplayName(), ""); // format the message
 
             for (Player on : SPSSpigot.server().getOnlinePlayers()) { // loop through all online players
-                SPSSpigot.logger().log(Level.INFO, newMessage);
+                //SPSSpigot.logger().log(Level.INFO, newMessage);
                 on.sendMessage(newMessage); // send the player the message
             }
 

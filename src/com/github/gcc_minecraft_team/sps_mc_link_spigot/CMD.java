@@ -106,8 +106,10 @@ public class CMD {
     public static List<String> keepStarts(@NotNull List<String> list, @NotNull String prefix) {
         List<String> newList = new ArrayList<>();
         for (String str : list) {
-            if (str.toLowerCase().startsWith(prefix.toLowerCase()))
-                newList.add(str);
+            if (str != null && prefix != null) {
+                if (str.toLowerCase().startsWith(prefix.toLowerCase()))
+                    newList.add(str);
+            }
         }
         newList.sort(String.CASE_INSENSITIVE_ORDER);
         return newList;
