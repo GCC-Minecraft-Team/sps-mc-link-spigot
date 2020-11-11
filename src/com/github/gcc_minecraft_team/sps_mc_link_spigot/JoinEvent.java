@@ -17,7 +17,10 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import xyz.haoshoku.nick.api.NickAPI;
+
+import java.util.ArrayList;
 
 public class JoinEvent implements Listener {
 
@@ -31,6 +34,12 @@ public class JoinEvent implements Listener {
         if (DatabaseLink.getIsBanned(player.getUniqueId())) {
             player.kickPlayer("The SPS account you linked has been banned! >:(");
         } else {
+            if (!SPSSpigot.plugin().mutedPlayers.contains(player.getUniqueId())) {
+                if (DatabaseLink.getIsMuted(player.getUniqueId())) {
+                    SPSSpigot.plugin().mutedPlayers.add(player.getUniqueId());
+                }
+            }
+
             SPSSpigot.perms().loadPermissions(player);
             player.sendMessage(PluginConfig.GetPluginMOTD());
 
@@ -100,7 +109,12 @@ public class JoinEvent implements Listener {
         double xdist = pLoc.getX() - event.getPlayer().getWorld().getSpawnLocation().getX();
         if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
             // give starting boat
-            event.getPlayer().getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));
+            ItemStack its = new ItemStack(Material.OAK_BOAT);
+            its.getItemMeta().setDisplayName("This is a boat!");
+            ArrayList itsLore = new ArrayList<String>();
+            itsLore.add("Use this to leave spawn!");
+            its.getItemMeta().setLore(itsLore);
+            event.getPlayer().getInventory().setItemInMainHand(its);
         }
     }
 

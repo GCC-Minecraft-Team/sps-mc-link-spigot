@@ -34,33 +34,38 @@ public class ChatEvents implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
         if (DatabaseLink.isRegistered(e.getPlayer().getUniqueId())) {
-            String message = e.getMessage(); // get the message
+            if (SPSSpigot.plugin().mutedPlayers.contains(e.getPlayer().getUniqueId())) {
+                e.setCancelled(true);
+                e.getPlayer().sendMessage(ChatColor.DARK_PURPLE + "Wooks  wike uwu've bewn chat banned! next time be a good wittwe minecwaft pwayew uwu!");
+            } else {
+                String message = e.getMessage(); // get the message
 
-            e.setCancelled(true); // Cancel the event, so no message is sent (yet)
+                e.setCancelled(true); // Cancel the event, so no message is sent (yet)
 
-            String newMessage = ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId())
-                    + "]" + SPSSpigot.plugin().getRankTag(e.getPlayer().getUniqueId()) + ": " + ChatColor.WHITE
-                    + message.replaceAll(e.getPlayer().getDisplayName(), ""); // format the message
+                String newMessage = ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId())
+                        + "]" + SPSSpigot.plugin().getRankTag(e.getPlayer().getUniqueId()) + ": " + ChatColor.WHITE
+                        + message.replaceAll(e.getPlayer().getDisplayName(), ""); // format the message
 
-            for (Player on : SPSSpigot.server().getOnlinePlayers()) { // loop through all online players
-                //SPSSpigot.logger().log(Level.INFO, newMessage);
-                on.sendMessage(newMessage); // send the player the message
-            }
+                for (Player on : SPSSpigot.server().getOnlinePlayers()) { // loop through all online players
+                    //SPSSpigot.logger().log(Level.INFO, newMessage);
+                    on.sendMessage(newMessage); // send the player the message
+                }
 
-            // send messages to a discord channel
-            if (!PluginConfig.GetChatWebhook().equals("")) {
-                DiscordWebhook webhook = new DiscordWebhook(PluginConfig.GetChatWebhook());
+                // send messages to a discord channel
+                if (!PluginConfig.GetChatWebhook().equals("")) {
+                    DiscordWebhook webhook = new DiscordWebhook(PluginConfig.GetChatWebhook());
 
-                String discordName = SPSSpigot.plugin().getRankTagNoFormat(e.getPlayer().getUniqueId()) + " " +
-                        NickAPI.getName(e.getPlayer());
-                webhook.setUsername(discordName);
-                String discordMsg = message.replaceAll(e.getPlayer().getDisplayName(), "");
-                webhook.setContent(discordMsg);
+                    String discordName = SPSSpigot.plugin().getRankTagNoFormat(e.getPlayer().getUniqueId()) + " " +
+                            NickAPI.getName(e.getPlayer());
+                    webhook.setUsername(discordName);
+                    String discordMsg = message.replaceAll(e.getPlayer().getDisplayName(), "");
+                    webhook.setContent(discordMsg);
 
-                try {
-                    webhook.execute();
-                } catch (IOException exception) {
-                    exception.printStackTrace();
+                    try {
+                        webhook.execute();
+                    } catch (IOException exception) {
+                        exception.printStackTrace();
+                    }
                 }
             }
         }

@@ -30,8 +30,8 @@ public class ModerationTabCompleter implements TabCompleter {
         // /mod (moderation commands)
         if (args.length == 1) {
             // /mod <partial>
-            return CMD.keepStarts(Arrays.asList("banSPS", "tpSPS"), args[0]);
-        } else if (args[0].equals("banSPS")) {
+            return CMD.keepStarts(Arrays.asList("banSPS", "tpSPS", "muteSPS", "unmuteSPS"), args[0]);
+        } else if (args[0].equals("banSPS") || args[0].equals("muteSPS") || args[0].equals("unmuteSPS")) {
             if (args.length == 2) {
                 // /mod banSPS <partial>
                 return CMD.keepStarts(new ArrayList<>(DatabaseLink.getAllSPSNames()), args[1]);

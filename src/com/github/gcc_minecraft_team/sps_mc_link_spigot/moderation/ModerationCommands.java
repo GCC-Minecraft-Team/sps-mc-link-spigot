@@ -46,6 +46,36 @@ public class ModerationCommands implements CommandExecutor {
                 ((Player) sender).teleport(NickAPI.getPlayerOfNickedName(args[1]).getLocation());
                 return true;
             }
+        } else if (args[0].equals("muteSPS")) {
+            if (args.length != 2) {
+                // No arguments or too many arguments for /mod muteSPS
+                sender.sendMessage(modPrefix + ChatColor.RED + "Usage: /" + label + " muteSPS <player>");
+                return true;
+            } else {
+                sender.sendMessage(modPrefix + ChatColor.YELLOW + "Muting account: " + args[1]);
+                if (DatabaseLink.setMutePlayer(args[1], true)) {
+                    sender.sendMessage(modPrefix + ChatColor.GREEN + "[Account muted]");
+                    return true;
+                } else {
+                    sender.sendMessage(modPrefix + ChatColor.RED + "[Account muting failed!]");
+                    return true;
+                }
+            }
+        } else if (args[0].equals("unmuteSPS")) {
+            if (args.length != 2) {
+                // No arguments or too many arguments for /mod muteSPS
+                sender.sendMessage(modPrefix + ChatColor.RED + "Usage: /" + label + " unmuteSPS <player>");
+                return true;
+            } else {
+                sender.sendMessage(modPrefix + ChatColor.YELLOW + "Unmuting account: " + args[1]);
+                if (DatabaseLink.setMutePlayer(args[1], false)) {
+                    sender.sendMessage(modPrefix + ChatColor.GREEN + "[Account unmuted]");
+                    return true;
+                } else {
+                    sender.sendMessage(modPrefix + ChatColor.RED + "[Account unmuting failed!]");
+                    return true;
+                }
+            }
         } else {
             // args[0] is invalid
             return false;

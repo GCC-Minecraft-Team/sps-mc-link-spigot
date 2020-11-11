@@ -369,6 +369,57 @@ public class DatabaseLink {
     }
 
     /**
+     * Checks if a player is muted.
+     * @param uuid The Minecraft {@link UUID} of the player to mute.
+     * @return {@code true} if the player is muted.
+     */
+    public static boolean getIsMuted(@NotNull UUID uuid) {
+        try {
+            return userCol.find(new Document("mcUUID", uuid.toString())).first().getBoolean("muted");
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
+    /**
+     * Mutes an SPS user in the database (stops them from talking)
+     * @param SPSUser
+     * @return
+     */
+    public static boolean setMutePlayer(@NotNull String SPSUser, @NotNull boolean muted) {
+        String spsEmail = SPSUser + "@seattleschools.org";
+
+        SPSSpigot.logger().log(Level.INFO, "Muting/Unmuting player with SPS email: " + spsEmail);
+
+        BasicDBObject updateFields = new BasicDBObject();
+        updateFields.append("muted", muted);
+        // set query
+        BasicDBObject setQuery = new BasicDBObject();
+        setQuery.append("$set", updateFields);
+
+        // ban the player in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database
+        try {
+            userCol.updateOne(new Document("oAuthEmail", spsEmail), setQuery);
+
+            // mute them on the server
+            OfflinePlayer oplayer = SPSSpigot.server().getOfflinePlayer(UUID.fromString(userCol.find(new Document("oAuthEmail", spsEmail)).first().getString("mcUUID")));
+            if (muted) {
+                SPSSpigot.plugin().mutedPlayers.add(oplayer.getUniqueId());
+            } else {
+                SPSSpigot.plugin().mutedPlayers.remove(oplayer.getUniqueId());
+            }
+
+            return true;
+        } catch (MongoException exception) {
+            SPSSpigot.logger().log(Level.SEVERE, "Something went wrong muting/unmuting a player!");
+            return false;
+        } catch (NullPointerException exception)  {
+            SPSSpigot.logger().log(Level.SEVERE, "Something went wrong looking up a user to player!");
+            return false;
+        }
+    }
+
+    /**
      * Registers a new player in the database.
      * @param uuid The Minecraft {@link UUID} of the player.
      * @param SPSid The SPS ID of the player.
@@ -380,6 +431,7 @@ public class DatabaseLink {
         updateFields.append("mcUUID", uuid.toString());
         updateFields.append("mcName", name);
         updateFields.append( "banned", false);
+        updateFields.append("muted", false);
 
         // set query
         BasicDBObject setQuery = new BasicDBObject();

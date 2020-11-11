@@ -33,9 +33,14 @@ public class SPSSpigot extends JavaPlugin {
 
     public PermissionsHandler perms;
     private Set<WorldGroup> worldGroups;
+    public Set<UUID> mutedPlayers;
 
     @Override
     public void onEnable() {
+
+        // initialize muted players
+        mutedPlayers = new HashSet<>();
+
         // Load plugin config
         PluginConfig.LoadConfig();
 
