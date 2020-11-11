@@ -49,7 +49,7 @@ public class WorldGroup {
         }
 
         this.claimable = new HashSet<>();
-        for (String w : wg.getWorlds()) {
+        for (String w : wg.getClaimable()) {
             this.claimable.add(Bukkit.getWorld(UUID.fromString(w)));
         }
 
