@@ -3,3 +3,4 @@ webAppURL: ""
 pluginMOTD: ""
 reportWebhook: ""
 messageWebhook: ""
+enable-claim-map: True

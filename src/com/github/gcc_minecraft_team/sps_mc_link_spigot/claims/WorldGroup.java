@@ -318,7 +318,7 @@ public class WorldGroup {
      * Finds whether or not two players are on the same {@link Team}.
      * @param player1 The {@link UUID} of the first player to check.
      * @param player2 The {@link UUID} of the second player to check.
-     * @return {@link true} if both players are on the same {@link Team}. Both being independent does not count.
+     * @return {@code true} if both players are on the same {@link Team}. Both being independent does not count.
      */
     public boolean isOnSameTeam(@NotNull UUID player1, @NotNull UUID player2) {
         Team team = getPlayerTeam(player1);
@@ -464,18 +464,42 @@ public class WorldGroup {
      */
     @Nullable
     public UUID getChunkOwner(@NotNull Chunk chunk) {
-        Iterator it = claims.entrySet().iterator();
-        while(it.hasNext()) {
-            Map.Entry<UUID, Set<Chunk>> player = (Map.Entry<UUID, Set<Chunk>>) it.next();
-            Iterator itChunk = player.getValue().iterator();
-            while(itChunk.hasNext()) {
-                Chunk c = (Chunk) itChunk.next();
-                if (c.getX() == chunk.getX() && c.getZ() == chunk.getZ()) {
+        for (Map.Entry<UUID, Set<Chunk>> player : claims.entrySet()) {
+            if (player.getValue().contains(chunk))
+                return player.getKey();
+        }
+        return null;
+    }
+
+    /**
+     * Gets the owner of a chunk.
+     * @param world The {@link World}.
+     * @param x The chunk X.
+     * @param z The chunk Z.
+     * @return The {@link UUID} of the owner or {@code null} if unowned.
+     */
+    @Nullable
+    public UUID getChunkOwner(@NotNull World world, int x, int z) {
+        for (Map.Entry<UUID, Set<Chunk>> player : claims.entrySet()) {
+            for (Chunk chunk : player.getValue()) {
+                if (chunk.getWorld().equals(world) && chunk.getX() == x && chunk.getZ() == z) {
                     return player.getKey();
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * Gets the owner of a location.
+     * @param world The {@link World}.
+     * @param x The block X.
+     * @param z The block Z.
+     * @return The {@link UUID} of the owner or {@code null} if unowned.
+     */
+    @Nullable
+    public UUID getOwner(@NotNull World world, int x, int z) {
+        return getChunkOwner(world, Math.floorDiv(x, 16), Math.floorDiv(z, 16));
     }
 
     /**

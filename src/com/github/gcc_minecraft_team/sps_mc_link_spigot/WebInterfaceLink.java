@@ -86,7 +86,7 @@ public class WebInterfaceLink {
         Date now = new Date(nowMillis);
 
         //We will sign our JWT with our ApiKey secret
-        byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(PluginConfig.GetJWTSecret());
+        byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(PluginConfig.getJWTSecret());
         Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
 
         //Let's set the JWT Claims
@@ -110,7 +110,7 @@ public class WebInterfaceLink {
     public static Claims DecodeJWT(@NotNull String jwt) {
         //This line will throw an exception if it is not a signed JWS (as expected)
         Claims claims = Jwts.parser()
-                .setSigningKey(DatatypeConverter.parseBase64Binary(PluginConfig.GetJWTSecret()))
+                .setSigningKey(DatatypeConverter.parseBase64Binary(PluginConfig.getJWTSecret()))
                 .parseClaimsJws(jwt).getBody();
         return claims;
     }

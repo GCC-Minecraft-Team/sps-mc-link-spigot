@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.ClaimMapRenderer;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,13 +19,14 @@ public class PluginConfig {
     public static final String REPORTWEBHOOK = "reportWebhook";
     public static final String MESSAGEWEBHOOK = "messageWebhook";
     public static final String CHATWEBHOOK = "chatWebhook";
+    public static final String ENABLECLAIMMAP = "enable-claim-map";
 
     private static FileConfiguration pluginCfg;
 
     /**
      * Loads the plugin's {@link FileConfiguration} from {@value PLFILE}.
      */
-    public static void LoadConfig() {
+    public static void loadConfig() {
         // create config if it doesn't exist
         SPSSpigot.plugin().saveResource(PLFILE, false);
         pluginCfg = YamlConfiguration.loadConfiguration(new File(SPSSpigot.plugin().getDataFolder(), PLFILE));
@@ -34,6 +36,7 @@ public class PluginConfig {
         pluginCfg.addDefault(REPORTWEBHOOK, "");
         pluginCfg.addDefault(MESSAGEWEBHOOK, "");
         pluginCfg.addDefault(CHATWEBHOOK, "");
+        pluginCfg.addDefault(ENABLECLAIMMAP, true);
 
         // load config
         try {
@@ -50,7 +53,7 @@ public class PluginConfig {
      * @return The JWT secret key.
      */
     @NotNull
-    public static String GetJWTSecret() {
+    public static String getJWTSecret() {
         String key = "";
         if (pluginCfg != null) {
             key = (String) pluginCfg.get(JWTSECRET);
@@ -82,7 +85,7 @@ public class PluginConfig {
      * Gets the URL we should listen on for the web app from {@value WEBAPPURL} in {@value PLFILE}.
      * @return The URL to listen on for the web app.
      */
-    public static String GetWebAppURL() {
+    public static String getWebAppURL() {
         if (pluginCfg != null) {
             return (String) pluginCfg.get(WEBAPPURL);
         } else {
@@ -94,7 +97,7 @@ public class PluginConfig {
      * Gets the plugin MOTD from {@value PLUGINMOTD} in {@value PLFILE}.
      * @return The MOTD.
      */
-    public static String GetPluginMOTD() {
+    public static String getPluginMOTD() {
         if (pluginCfg != null) {
             return (String) pluginCfg.get(PLUGINMOTD);
         } else {
@@ -106,7 +109,7 @@ public class PluginConfig {
      * Gets the plugin webhook from {@value REPORTWEBHOOK} in {@value PLFILE}.
      * @return The Report Webhook URL.
      */
-    public static String GetReportWebhook() {
+    public static String getReportWebhook() {
         if (pluginCfg != null) {
             return (String) pluginCfg.get(REPORTWEBHOOK);
         } else {
@@ -118,7 +121,7 @@ public class PluginConfig {
      * Gets the plugin webhook from {@value MESSAGEWEBHOOK} in {@value PLFILE}.
      * @return The Message Webhook URL.
      */
-    public static String GetMessageWebhook() {
+    public static String getMessageWebhook() {
         if (pluginCfg != null) {
             return (String) pluginCfg.get(MESSAGEWEBHOOK);
         } else {
@@ -130,11 +133,22 @@ public class PluginConfig {
      * Gets the plugin webhook from {@value CHATWEBHOOK} in {@value PLFILE}.
      * @return The Chat Webhook URL.
      */
-    public static String GetChatWebhook() {
+    public static String getChatWebhook() {
         if (pluginCfg != null) {
             return (String) pluginCfg.get(CHATWEBHOOK);
         } else {
             return "";
         }
+    }
+
+    /**
+     * Gets config option "{@value ENABLECLAIMMAP}" to decide if {@link ClaimMapRenderer} is enabled.
+     * @return {@code true} if {@value ENABLECLAIMMAP} is set to true.
+     */
+    public static boolean isClaimMapEnabled() {
+        if (pluginCfg != null)
+            return pluginCfg.getBoolean(ENABLECLAIMMAP);
+        else
+            return true;
     }
 }

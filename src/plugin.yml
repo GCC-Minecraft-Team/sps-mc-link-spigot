@@ -20,6 +20,9 @@ commands:
     description: Base command for the teams system.
     usage: "Usage: /<command> <create|join|kick|leave|list|requests>"
     permission: spsmc.team
+  maps:
+    description: Base command for generating special maps.
+    usage: "Usage: /<command> <image|players|claims>"
   perms:
     description: Controls SPSMC's permissions systems.
     usage: "Usage: /<command> <members|rank|player|reload>"
@@ -60,6 +63,15 @@ permissions:
     default: true
   spsmc.team:
     description: Allows member team commands.
+    default: true
+  spsmc.map.players:
+    description: Allows creation of players maps.
+    default: op
+  spsmc.map.image:
+    description: Allows the creation of image maps.
+    default: op
+  spsmc.map.claims:
+    descriptions: Allows the creation of claim maps.
     default: true
   spsmc.perms:
     description: Gives control over server permissions commands. Effectively op-level control.

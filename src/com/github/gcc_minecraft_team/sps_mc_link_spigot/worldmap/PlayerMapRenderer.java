@@ -6,7 +6,10 @@ import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.map.*;
+import org.bukkit.map.MapCanvas;
+import org.bukkit.map.MapPalette;
+import org.bukkit.map.MapRenderer;
+import org.bukkit.map.MapView;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,7 +21,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class PlayerRenderer extends MapRenderer {
+public class PlayerMapRenderer extends MapRenderer {
 
     private static final int UPDATE_DELAY = 5;
 
@@ -40,14 +43,13 @@ public class PlayerRenderer extends MapRenderer {
     private BufferedImage background;
     private BufferedImage frame;
 
-    /**
-     * Sets the map offset in blocks.
-     * @param x The X offset.
-     * @param z The Z offset.
-     */
-    public void setOffest(int x, int z) {
-        offsetX = x;
-        offsetZ = z;
+    public PlayerMapRenderer(int xOffset, int zOffset) {
+        this.offsetX = xOffset;
+        this.offsetZ = zOffset;
+    }
+
+    public PlayerMapRenderer(MapRegistry.PlayerMap playerMap) {
+        this(playerMap.xOffset, playerMap.zOffset);
     }
 
     /**
@@ -65,7 +67,8 @@ public class PlayerRenderer extends MapRenderer {
     public void initialize(@NotNull MapView map) {
          // load map frame
         try {
-            frame = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(),"frame.png")).getSubimage((offsetX / 16) + 128, (offsetZ / 16) + 128, 128, 128);
+            BufferedImage image = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(),"frame.png"));
+            frame = image.getSubimage((offsetX / 16 + image.getWidth()/2)/128 * 128, (offsetZ / 16 + image.getHeight()/2)/128 * 128, 128, 128);
         } catch (IOException exception) {
             exception.printStackTrace();
         }
@@ -79,7 +82,7 @@ public class PlayerRenderer extends MapRenderer {
 
         // load generated images
         try {
-            background = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(),"worldCache" + offsetZ + offsetX +".png"));
+            background = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(),"worldCache" + offsetZ + "," +  offsetX +".png"));
         } catch (IOException exception) {
             exception.printStackTrace();
         }
@@ -158,7 +161,7 @@ public class PlayerRenderer extends MapRenderer {
         g2d.drawImage(frame, 0, 0, null);
 
         // write background to file
-        File file = new File(SPSSpigot.plugin().getDataFolder(),"worldCache" + offsetZ + offsetX +".png");
+        File file = new File(SPSSpigot.plugin().getDataFolder(),"worldCache" + offsetZ + "," + offsetX +".png");
         ImageIO.write(img, "png", file);
     }
 }

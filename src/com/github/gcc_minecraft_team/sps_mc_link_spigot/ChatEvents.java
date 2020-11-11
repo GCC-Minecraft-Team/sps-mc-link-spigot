@@ -52,8 +52,8 @@ public class ChatEvents implements Listener {
                 }
 
                 // send messages to a discord channel
-                if (!PluginConfig.GetChatWebhook().equals("")) {
-                    DiscordWebhook webhook = new DiscordWebhook(PluginConfig.GetChatWebhook());
+                if (!PluginConfig.getChatWebhook().equals("")) {
+                    DiscordWebhook webhook = new DiscordWebhook(PluginConfig.getChatWebhook());
 
                     String discordName = SPSSpigot.plugin().getRankTagNoFormat(e.getPlayer().getUniqueId()) + " " +
                             NickAPI.getName(e.getPlayer());

@@ -1,6 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.*;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.discord.DiscordCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.discord.DiscordTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.general.GeneralCommands;
@@ -9,13 +10,14 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationTab
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.WorldGroupCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.WorldGroupTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.*;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapEvents;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapRegistry;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapTabCompleter;
 import fr.mrmicky.fastboard.FastBoard;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -25,7 +27,10 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,7 +47,7 @@ public class SPSSpigot extends JavaPlugin {
         mutedPlayers = new HashSet<>();
 
         // Load plugin config
-        PluginConfig.LoadConfig();
+        PluginConfig.loadConfig();
 
         // Setup Database
         DatabaseLink.SetupDatabase();
@@ -63,9 +68,6 @@ public class SPSSpigot extends JavaPlugin {
         // register chat events
         getServer().getPluginManager().registerEvents(new ChatEvents(), this);
 
-        // map events
-        getServer().getPluginManager().registerEvents(new MapEvents(), this);
-
         ClaimCommands claimCommands = new ClaimCommands();
         ClaimTabCompleter claimTabCompleter = new ClaimTabCompleter();
 
@@ -77,6 +79,9 @@ public class SPSSpigot extends JavaPlugin {
 
         this.getCommand("team").setExecutor(new TeamCommands());
         this.getCommand("team").setTabCompleter(new TeamTabCompleter());
+
+        this.getCommand("maps").setExecutor(new MapCommands());
+        this.getCommand("maps").setTabCompleter(new MapTabCompleter());
 
         this.getCommand("perms").setExecutor(new PermissionsCommands());
         this.getCommand("perms").setTabCompleter(new PermissionsTabCompleter());
@@ -101,6 +106,10 @@ public class SPSSpigot extends JavaPlugin {
 
         this.getCommand("modmail").setExecutor(discordCommands);
         this.getCommand("modmail").setTabCompleter(discordTabCompleter);
+
+        // map events
+        getServer().getPluginManager().registerEvents(new MapEvents(), this);
+        MapRegistry.initConfig();
 
         // Setup other stuff
         getServer().getPluginManager().registerEvents(new JoinEvent(), this);

@@ -34,8 +34,8 @@ public class DiscordCommands implements CommandExecutor {
             } else {
                 String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 
-                if (!PluginConfig.GetReportWebhook().equals("")) {
-                    DiscordWebhook webhook = new DiscordWebhook(PluginConfig.GetReportWebhook());
+                if (!PluginConfig.getReportWebhook().equals("")) {
+                    DiscordWebhook webhook = new DiscordWebhook(PluginConfig.getReportWebhook());
                     webhook.setUsername("Reports");
                     webhook.addEmbed(new DiscordWebhook.EmbedObject()
                             .addField("Reporter", senderName, true)
@@ -59,8 +59,8 @@ public class DiscordCommands implements CommandExecutor {
             } else {
                 String message = String.join(" ", args);
 
-                if (!PluginConfig.GetMessageWebhook().equals("")) {
-                    DiscordWebhook webhook = new DiscordWebhook(PluginConfig.GetMessageWebhook());
+                if (!PluginConfig.getMessageWebhook().equals("")) {
+                    DiscordWebhook webhook = new DiscordWebhook(PluginConfig.getMessageWebhook());
                     webhook.setUsername("Modmail");
                     webhook.addEmbed(new DiscordWebhook.EmbedObject()
                             .addField("Sender", senderName, false)

@@ -127,7 +127,7 @@
       <artifactId>nickapi</artifactId>
       <version>5.0.1-SNAPSHOT</version>
       <scope>system</scope>
-      <systemPath>${project.basedir}/NickAPI/NickAPI-v6.0.3.jar</systemPath>
+      <systemPath>${project.basedir}/NickAPI/NickAPI-v6.0.4.jar</systemPath>
     </dependency>
   </dependencies>
 </project>

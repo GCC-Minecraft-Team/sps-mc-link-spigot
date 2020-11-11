@@ -12,7 +12,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class SignboardRenderer extends MapRenderer {
+public class ImageMapRenderer extends MapRenderer {
 
     private boolean hasRendered;
     private int offsetX;
@@ -20,14 +20,18 @@ public class SignboardRenderer extends MapRenderer {
 
     private BufferedImage image;
 
-    /**
-     * Sets the map offset in blocks.
-     * @param x The x offset.
-     * @param z The y offset.
-     */
-    public void setOffest(int x, int z) {
-        offsetX = x;
-        offsetZ = z;
+    public ImageMapRenderer(int xOffset, int zOffset, String file) {
+        this.offsetX = xOffset;
+        this.offsetZ = zOffset;
+        try {
+            this.loadImage(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ImageMapRenderer(MapRegistry.ImageMap imageMap) {
+        this(imageMap.xOffset, imageMap.yOffset, imageMap.file);
     }
 
     /**

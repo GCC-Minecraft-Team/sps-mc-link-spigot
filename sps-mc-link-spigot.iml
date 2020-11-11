@@ -60,7 +60,7 @@
     <orderEntry type="module-library">
       <library name="Maven: xyz.haoshoku.nick:nickapi:5.0.1-SNAPSHOT">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/NickAPI/NickAPI-v6.0.3.jar!/" />
+          <root url="jar://$MODULE_DIR$/NickAPI/NickAPI-v6.0.4.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

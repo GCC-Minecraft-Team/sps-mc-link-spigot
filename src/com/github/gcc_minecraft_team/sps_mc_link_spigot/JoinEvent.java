@@ -3,7 +3,6 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimBoard;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
-import fr.mrmicky.fastboard.FastBoard;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -41,7 +40,7 @@ public class JoinEvent implements Listener {
             }
 
             SPSSpigot.perms().loadPermissions(player);
-            player.sendMessage(PluginConfig.GetPluginMOTD());
+            player.sendMessage(PluginConfig.getPluginMOTD());
 
             if (!DatabaseLink.isRegistered(player.getUniqueId())) {
                 event.setJoinMessage("A player is joining the server!");
@@ -51,7 +50,7 @@ public class JoinEvent implements Listener {
 
                 TextComponent message = new TextComponent(">> CLICK HERE <<");
                 message.setColor(net.md_5.bungee.api.ChatColor.AQUA);
-                message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, PluginConfig.GetWebAppURL() + "/register?token=" + jwt));
+                message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, PluginConfig.getWebAppURL() + "/register?token=" + jwt));
 
                 player.sendMessage(ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + "Connect to your SPS profile to play!");
                 player.spigot().sendMessage(message);
