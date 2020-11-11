@@ -16,10 +16,12 @@ import org.jetbrains.annotations.NotNull;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.RasterFormatException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.logging.Level;
 
 public class PlayerMapRenderer extends MapRenderer {
 
@@ -70,12 +72,14 @@ public class PlayerMapRenderer extends MapRenderer {
             BufferedImage image = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(),"frame.png"));
             frame = image.getSubimage((offsetX / 16 + image.getWidth()/2)/128 * 128, (offsetZ / 16 + image.getHeight()/2)/128 * 128, 128, 128);
         } catch (IOException exception) {
-            exception.printStackTrace();
+            SPSSpigot.logger().log(Level.WARNING, "Failed to load frame image file for PlayerMap.");
+        } catch (RasterFormatException e) {
+            SPSSpigot.logger().log(Level.WARNING, "Failed to render frame for PlayerMap for offset (X: " + offsetX + ", Z: " + offsetZ + ") due to invalid image size.");
         }
 
          // generate images
         try {
-            GenerateWorldBackground();
+            generateWorldBackground();
         } catch (IOException exception) {
             exception.printStackTrace();
         }
@@ -111,12 +115,12 @@ public class PlayerMapRenderer extends MapRenderer {
                     Location spawn = world.getSpawnLocation();
 
                     // player detection
-                    for(Player p : onlinePlayers) {
                         try {
                             if (p.getLocation().getX() < (((x + 1) * 16) + offsetX) + 32 && p.getLocation().getX() >= (((x + 1) * 16) + offsetX) - 16) {
                                 if (p.getLocation().getZ() < (((z + 1) * 16) + offsetZ) + 32 && p.getLocation().getZ() >= (((z + 1) * 16) + offsetZ) - 16) {
                                     canvas.setPixel(x, z, MapPalette.matchColor(255, 255, 255));
                                 }
+                    for (Player p : onlinePlayers) {
                             }
                         } catch (Exception exception) {
                             exception.printStackTrace();
@@ -131,7 +135,7 @@ public class PlayerMapRenderer extends MapRenderer {
     /**
      * Generates the image used as the background of the map
      */
-    private void GenerateWorldBackground() throws IOException {
+    private void generateWorldBackground() throws IOException {
         BufferedImage img = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = img.createGraphics();
 
@@ -157,8 +161,11 @@ public class PlayerMapRenderer extends MapRenderer {
                 }
             }
         }
-
-        g2d.drawImage(frame, 0, 0, null);
+        try {
+            g2d.drawImage(frame, 0, 0, null);
+        } catch (Exception e) {
+            // we just don't get a frame.
+        }
 
         // write background to file
         File file = new File(SPSSpigot.plugin().getDataFolder(),"worldCache" + offsetZ + "," + offsetX +".png");

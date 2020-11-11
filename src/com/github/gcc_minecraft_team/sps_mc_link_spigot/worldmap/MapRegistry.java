@@ -9,7 +9,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
-import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -61,6 +60,7 @@ public class MapRegistry {
             // We need to check that this ID still exists, otherwise it could be taken by a new map that shouldn't be custom.
             if (SPSSpigot.server().getMap(mapID) != null) {
                 maps.put(mapID, (CustomMap) mapsSection.get(key));
+                MapEvents.initMap(mapID);
             }
         }
 

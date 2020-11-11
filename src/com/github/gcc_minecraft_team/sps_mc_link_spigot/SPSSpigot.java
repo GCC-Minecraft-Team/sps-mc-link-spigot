@@ -11,7 +11,6 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.WorldGroupCom
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.WorldGroupTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.*;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapCommands;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapEvents;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapRegistry;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapTabCompleter;
 import fr.mrmicky.fastboard.FastBoard;
