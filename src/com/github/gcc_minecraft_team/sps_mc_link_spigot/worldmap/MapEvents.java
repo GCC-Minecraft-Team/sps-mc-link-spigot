@@ -12,8 +12,11 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.server.MapInitializeEvent;
+import org.bukkit.event.world.ChunkEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkPopulateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapView;
@@ -25,6 +28,28 @@ public class MapEvents implements Listener {
 
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent event)
+    {
+        for (Entity entity : event.getChunk().getEntities())
+        {
+            if (entity instanceof ItemFrame)
+            {
+                initMap(((ItemFrame)entity).getItem());
+            }
+        }
+    }
+
+    @EventHandler void onPlayerMove(PlayerMoveEvent event) {
+        if (!event.getFrom().getChunk().equals(event.getTo().getChunk())) {
+            for (Entity entity : event.getTo().getChunk().getEntities()) {
+                if (entity instanceof ItemFrame) {
+                    initMap(((ItemFrame) entity).getItem());
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onChunkPopulate(ChunkPopulateEvent event)
     {
         for (Entity entity : event.getChunk().getEntities())
         {
