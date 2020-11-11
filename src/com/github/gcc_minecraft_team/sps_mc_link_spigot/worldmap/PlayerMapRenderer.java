@@ -115,12 +115,12 @@ public class PlayerMapRenderer extends MapRenderer {
                     Location spawn = world.getSpawnLocation();
 
                     // player detection
+                    for (Player p : onlinePlayers) {
                         try {
                             if (p.getLocation().getX() < (((x + 1) * 16) + offsetX) + 32 && p.getLocation().getX() >= (((x + 1) * 16) + offsetX) - 16) {
                                 if (p.getLocation().getZ() < (((z + 1) * 16) + offsetZ) + 32 && p.getLocation().getZ() >= (((z + 1) * 16) + offsetZ) - 16) {
                                     canvas.setPixel(x, z, MapPalette.matchColor(255, 255, 255));
                                 }
-                    for (Player p : onlinePlayers) {
                             }
                         } catch (Exception exception) {
                             exception.printStackTrace();
