@@ -108,7 +108,6 @@ public class SPSSpigot extends JavaPlugin {
         this.getCommand("modmail").setTabCompleter(discordTabCompleter);
 
         // map events
-        getServer().getPluginManager().registerEvents(new MapEvents(), this);
         MapRegistry.initConfig();
 
         // Setup other stuff

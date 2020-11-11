@@ -11,6 +11,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapView;
 import org.jetbrains.annotations.NotNull;
@@ -61,6 +62,21 @@ public class MapRegistry {
                 maps.put(mapID, (CustomMap) mapsSection.get(key));
             }
         }
+
+        SPSSpigot.server().getPluginManager().registerEvents(new MapEvents(), SPSSpigot.plugin());
+    }
+
+    /**
+     * Returns the map ID from an ItemStack
+     * @param item The item stack
+     * @return The map ID, or 0 if invalid.
+     */
+    static public int getMapIdFromItemStack(final ItemStack item)
+    {
+        final ItemMeta meta = item.getItemMeta();
+        if (!(meta instanceof MapMeta)) return 0;
+
+        return ((MapMeta) meta).hasMapId() ? ((MapMeta) meta).getMapId() : 0;
     }
 
     public static void saveConfig() {
