@@ -292,6 +292,42 @@ public class DatabaseLink {
     }
 
     /**
+     * Gets the shcool a player goes to
+     * @param uuid
+     * @return
+     */
+    public static String getSchoolTag(@NotNull UUID uuid) {
+        if (isRegistered(uuid)) {
+            String fullName = userCol.find(new Document("mcUUID", uuid.toString())).first().getString("oAuthName");
+            if (fullName != null) {
+                return fullName.split(" ")[4].trim();
+            } else {
+                return "";
+            }
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Gets the grade level of a player
+     * @param uuid
+     * @return
+     */
+    public static String getGradeTag(@NotNull UUID uuid) {
+        if (isRegistered(uuid)) {
+            String fullName = userCol.find(new Document("mcUUID", uuid.toString())).first().getString("oAuthName");
+            if (fullName != null) {
+                return fullName.split(" ")[5].trim();
+            } else {
+                return "";
+            }
+        } else {
+            return "";
+        }
+    }
+
+    /**
      * Gets the {@link UUID} of the Minecraft player from their SPS username.
      * @param SPSName The SPS username to check.
      * @return The {@link UUID} of the Minecraft player if they are linked, otherwise {@code null}.
@@ -469,7 +505,9 @@ public class DatabaseLink {
         }
 
         // give starting boat
-        player.getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));
+        if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
+            player.getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));
+        }
 
         ClaimBoard.addBoard(player);
 
@@ -478,5 +516,4 @@ public class DatabaseLink {
         player.sendMessage("You've spawned in the lobby, please use the included " + ChatColor.BLUE +"Starting Boat" + ChatColor.WHITE + " to leave the island!");
 
     }
-
 }

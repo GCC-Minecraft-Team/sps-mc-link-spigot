@@ -42,12 +42,15 @@ public class ChatEvents implements Listener {
 
                 e.setCancelled(true); // Cancel the event, so no message is sent (yet)
 
-                String newMessage = ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId())
+                String newMessage =
+                        "[" + ChatColor.ITALIC.toString() + ChatColor.GRAY + DatabaseLink.getSchoolTag(e.getPlayer().getUniqueId()) + ChatColor.RESET + "]"
+                        + "[" + ChatColor.ITALIC.toString() + ChatColor.GRAY + DatabaseLink.getGradeTag(e.getPlayer().getUniqueId()) + ChatColor.RESET + "]"
+                        + ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId())
                         + "]" + SPSSpigot.plugin().getRankTag(e.getPlayer().getUniqueId()) + ": " + ChatColor.WHITE
                         + message.replaceAll(e.getPlayer().getDisplayName(), ""); // format the message
 
+                SPSSpigot.logger().log(Level.INFO, newMessage);
                 for (Player on : SPSSpigot.server().getOnlinePlayers()) { // loop through all online players
-                    //SPSSpigot.logger().log(Level.INFO, newMessage);
                     on.sendMessage(newMessage); // send the player the message
                 }
 

@@ -126,24 +126,25 @@ public class ClaimBoard {
                                 symbol = "Ⓢ";
                             bRow.append(color).append(symbol);
                         } else {
-                            if (worldGroup.isInSpawn(chunk.getBlock(0, 0, 0).getLocation()) && worldGroup.isClaimable(player.getWorld())) {
-                                // In spawn
-                                bRow.append(ChatColor.DARK_PURPLE).append("Ⓢ");
-                            } else if (!worldGroup.isClaimable(player.getWorld())) {
-                                // Un-claimable chunk outside spawn
-                                bRow.append(ChatColor.GRAY).append("✖");
-                            } else if (chunkOwner == null) {
-                                // Unowned, claimable chunk outside spawn
-                                bRow.append(ChatColor.DARK_GRAY).append("▒");
-                            } else if (chunkOwner.equals(player.getUniqueId())) {
-                                // Player owns chunk
-                                bRow.append(ChatColor.GREEN).append("█");
-                            } else if (worldGroup.isOnSameTeam(player.getUniqueId(), chunkOwner)) {
-                                // Teammate owns chunk
-                                bRow.append(ChatColor.AQUA).append("▒");
+                            if (worldGroup.isClaimable(player.getWorld())) {
+                                if (worldGroup.isInSpawn(chunk.getBlock(0, 0, 0).getLocation())) {
+                                    // In spawn
+                                    bRow.append(ChatColor.DARK_PURPLE).append("Ⓢ");
+                                } else if (chunkOwner == null) {
+                                    // Unowned, claimable chunk outside spawn
+                                    bRow.append(ChatColor.DARK_GRAY).append("▒");
+                                } else if (chunkOwner.equals(player.getUniqueId())) {
+                                    // Player owns chunk
+                                    bRow.append(ChatColor.GREEN).append("█");
+                                } else if (worldGroup.isOnSameTeam(player.getUniqueId(), chunkOwner)) {
+                                    // Teammate owns chunk
+                                    bRow.append(ChatColor.AQUA).append("▒");
+                                } else {
+                                    // Other player owns chunk
+                                    bRow.append(ChatColor.RED).append("▒");
+                                }
                             } else {
-                                // Other player owns chunk
-                                bRow.append(ChatColor.RED).append("▒");
+                                bRow.append(ChatColor.GRAY).append("✖");
                             }
                         }
                     }
