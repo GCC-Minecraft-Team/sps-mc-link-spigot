@@ -150,7 +150,7 @@ public class WorldGroup {
      * Getter for this {@link WorldGroup}'s claimable {@link World}s.
      * @return An unmodifiable {@link Set} of {@link WorldGroup}'s claimable {@link World}s.
      */
-    public Set<World> getClaimables() {
+    public Set<World> getClaimable() {
         return Collections.unmodifiableSet(claimable);
     }
 

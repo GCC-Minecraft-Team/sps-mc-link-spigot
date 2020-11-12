@@ -49,7 +49,7 @@ public class WorldGroupSerializable {
         }
 
         this.claimable = new HashSet<>();
-        for (World w : wg.getWorlds()) {
+        for (World w : wg.getClaimable()) {
             this.claimable.add(w.getUID().toString());
         }
 
