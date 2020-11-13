@@ -8,11 +8,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommandYamlParser;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -84,17 +87,23 @@ public class ChatEvents implements Listener {
         EntityDamageEvent ede = ent.getLastDamageCause();
         EntityDamageEvent.DamageCause dc = ede.getCause();
 
-        if (ent.getLastDamageCause() instanceof Player) {
-            event.setDeathMessage(ChatColor.DARK_PURPLE + "[" + NickAPI.getName(event.getEntity()) + "] Was killed by " + NickAPI.getName((Player) ent.getLastDamageCause()));
+        String deathMessage;
+        if (event.getDeathMessage() != null) {
+            deathMessage = event.getDeathMessage();
+            for (Player player : SPSSpigot.server().getOnlinePlayers()) {
+                deathMessage = deathMessage.replaceAll(player.getName(), "[" + NickAPI.getName(player) + "]");
+            }
         } else {
-            event.setDeathMessage(ChatColor.DARK_PURPLE + "[" + NickAPI.getName(event.getEntity()) + "] Was killed by " + dc.toString());
+            deathMessage = "[" + NickAPI.getName(event.getEntity()) + "] was killed by " + dc.toString();
         }
 
+        event.setDeathMessage(ChatColor.DARK_PURPLE + deathMessage);
+
         Location deathLocation = event.getEntity().getLocation();
-        event.getEntity().sendMessage(ChatColor.DARK_PURPLE + "Your death coordinates are: " +
+        event.getEntity().sendMessage(ChatColor.DARK_PURPLE + "Your death coordinates are: (" +
                 (int)deathLocation.getX() + ", " +
                 (int)deathLocation.getY() + ", " +
-                (int)deathLocation.getZ());
+                (int)deathLocation.getZ() + ").");
     }
 
     /**

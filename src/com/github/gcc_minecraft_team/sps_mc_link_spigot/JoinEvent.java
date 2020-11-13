@@ -15,11 +15,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import xyz.haoshoku.nick.api.NickAPI;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class JoinEvent implements Listener {
 
@@ -118,6 +119,15 @@ public class JoinEvent implements Listener {
             beef.setAmount(5);
 
             event.getPlayer().getInventory().setItemInMainHand(beef);
+        }
+    }
+
+    @EventHandler
+    public void onServerListPing(ServerListPingEvent event) {
+        Iterator<Player> it = event.iterator();
+        while (it.hasNext()) {
+            it.next();
+            it.remove();
         }
     }
 
