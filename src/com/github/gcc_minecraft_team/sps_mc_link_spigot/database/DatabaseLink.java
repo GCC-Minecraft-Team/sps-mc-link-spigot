@@ -461,9 +461,12 @@ public class DatabaseLink {
      * @param SPSid The SPS ID of the player.
      * @param name The new name of the player.
      */
-    public static void registerPlayer(@NotNull UUID uuid, @NotNull String SPSid, @NotNull String name) {
+    public static void registerPlayer(@NotNull UUID uuid, @NotNull String SPSid, @NotNull String name, @NotNull String SPSemail) {
         // set UUID and Name
         BasicDBObject updateFields = new BasicDBObject();
+        updateFields.append("oAuthId", SPSid);
+        updateFields.append("oAuthEmail", SPSemail);
+
         updateFields.append("mcUUID", uuid.toString());
         updateFields.append("mcName", name);
         updateFields.append( "banned", false);

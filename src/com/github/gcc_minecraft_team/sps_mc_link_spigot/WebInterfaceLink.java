@@ -67,7 +67,7 @@ public class WebInterfaceLink {
 
             // send response and load com.github.gcc_minecraft_team.sps_mc_link_spigot.database data
             if (newUUID != null) {
-                DatabaseLink.registerPlayer(newUUID, newUser.get("id").asText(), newUser.get("nick").asText());
+                DatabaseLink.registerPlayer(newUUID, newUser.get("id").asText(), newUser.get("nick").asText(), newUser.get("email").asText());
                 // success
                 ctx.status(200);
             } else {
