@@ -380,7 +380,7 @@ public class PermissionsCommands implements CommandExecutor {
         } else if (args[0].equals("devreg")) {
             try {
                 Player player = SPSSpigot.server().getPlayer(args[1]);
-                DatabaseLink.registerPlayer(player.getUniqueId(), "test", "test", "test@seattleschools.org");
+                DatabaseLink.registerPlayer(player.getUniqueId(), "test", "test", "test@seattleschools.org", "Test Name 1234");
                 return true;
             } catch (Exception e) {
                 sender.sendMessage("oops");
