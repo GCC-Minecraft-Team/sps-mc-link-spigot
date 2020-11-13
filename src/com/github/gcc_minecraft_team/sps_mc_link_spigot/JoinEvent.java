@@ -1,10 +1,9 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimHandler;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
-import net.md_5.bungee.api.ChatMessageType;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimBoard;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -16,11 +15,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitScheduler;
 import xyz.haoshoku.nick.api.NickAPI;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class JoinEvent implements Listener {
 
@@ -34,8 +34,14 @@ public class JoinEvent implements Listener {
         if (DatabaseLink.getIsBanned(player.getUniqueId())) {
             player.kickPlayer("The SPS account you linked has been banned! >:(");
         } else {
+            if (!SPSSpigot.plugin().mutedPlayers.contains(player.getUniqueId())) {
+                if (DatabaseLink.getIsMuted(player.getUniqueId())) {
+                    SPSSpigot.plugin().mutedPlayers.add(player.getUniqueId());
+                }
+            }
+
             SPSSpigot.perms().loadPermissions(player);
-            player.sendMessage(PluginConfig.GetPluginMOTD());
+            player.sendMessage(PluginConfig.getPluginMOTD());
 
             if (!DatabaseLink.isRegistered(player.getUniqueId())) {
                 event.setJoinMessage("A player is joining the server!");
@@ -45,7 +51,7 @@ public class JoinEvent implements Listener {
 
                 TextComponent message = new TextComponent(">> CLICK HERE <<");
                 message.setColor(net.md_5.bungee.api.ChatColor.AQUA);
-                message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, PluginConfig.GetWebAppURL() + "/register?token=" + jwt));
+                message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, PluginConfig.getWebAppURL() + "/register?token=" + jwt));
 
                 player.sendMessage(ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + "Connect to your SPS profile to play!");
                 player.spigot().sendMessage(message);
@@ -55,31 +61,14 @@ public class JoinEvent implements Listener {
                     NickAPI.refreshPlayer(player);
                 }, 20);
 
-                player.sendTitle("Welcome to" + ChatColor.BLUE +" SPS MC!", "Please use the link in chat to link your account!", 10, 160, 10);
-
+                player.sendTitle("Welcome to" + ChatColor.BLUE +" SPS MC!", "Please use the link in chat to link your account!", 10, 200, 10);
             } else {
+                ClaimBoard.addBoard(player);
+
                 // claim map
-                ClaimHandler worldGroup = SPSSpigot.claims(player.getWorld());
+                WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
 
-                BukkitScheduler scheduler = SPSSpigot.server().getScheduler();
-                scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), () -> {
-                    // compass
-                    if (worldGroup == null)
-                        return;
-                    String claimStatus = net.md_5.bungee.api.ChatColor.DARK_GREEN + "Wilderness";
-                    UUID chunkOwner = worldGroup.getChunkOwner(player.getLocation().getChunk());
-                    Team playerTeam = worldGroup.getPlayerTeam(player.getUniqueId());
-                    if (chunkOwner != null) {
-                        if (playerTeam != null && playerTeam.getMembers().contains(chunkOwner)) {
-                            claimStatus = net.md_5.bungee.api.ChatColor.AQUA + "[" + playerTeam.getName() + "] " +  DatabaseLink.getSPSName(chunkOwner);
-                        } else {
-                            claimStatus = net.md_5.bungee.api.ChatColor.RED + DatabaseLink.getSPSName(chunkOwner);
-                        }
-                    }
-
-                    worldGroup.updateClaimMap(player);
-                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder().append("[" + SPSSpigot.getCardinalDirection(player) + "] " + claimStatus).create());
-                }, 0, 10);
+                SPSSpigot.plugin().startCompass(player, worldGroup);
 
                 String userNoFormat =  DatabaseLink.getSPSName(player.getUniqueId());
                 String newUser = ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + userNoFormat;
@@ -89,15 +78,19 @@ public class JoinEvent implements Listener {
                 Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), () -> {
                     NickAPI.nick(player, userNoFormat.substring(0, maxLength));
                     NickAPI.refreshPlayer(player);
-                    player.setFoodLevel(player.getFoodLevel() - 1);
+                    if (player.getFoodLevel() > 0) {
+                        player.setFoodLevel(player.getFoodLevel() - 1);
+                    } else if (player.getFoodLevel() < 20) {
+                        player.setFoodLevel(player.getFoodLevel() + 1);
+                    }
                 }, 20);
             }
         }
     }
 
     /**
-     * Fired on player leave
-     * @param event
+     * Fired on player leave.
+     * @param event The {@link PlayerQuitEvent}.
      */
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) {
@@ -105,15 +98,36 @@ public class JoinEvent implements Listener {
         SPSSpigot.perms().removeAttachment(event.getPlayer());
     }
 
+    /**
+     * Fired on player spawn in.
+     * @param event The {@link PlayerRespawnEvent}.
+     */
     @EventHandler
-    public void onPlayerSpawn(PlayerRespawnEvent event) {
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
         Location pLoc = event.getRespawnLocation();
         double zdist = pLoc.getZ() - event.getPlayer().getWorld().getSpawnLocation().getZ();
         double xdist = pLoc.getX() - event.getPlayer().getWorld().getSpawnLocation().getX();
         if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
-            // give starting boat
-            event.getPlayer().getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));
-            SPSSpigot.showBoard(event.getPlayer());
+            // give starting boat and 5 cooked beef
+            ItemStack boat = new ItemStack(Material.OAK_BOAT);
+            boat.getItemMeta().setDisplayName("This is a boat!");
+            ArrayList boatLore = new ArrayList<String>();
+            boatLore.add("Use this to leave spawn!");
+            boat.getItemMeta().setLore(boatLore);
+
+            ItemStack beef = new ItemStack(Material.COOKED_BEEF);
+            beef.setAmount(5);
+
+            event.getPlayer().getInventory().setItemInMainHand(beef);
+        }
+    }
+
+    @EventHandler
+    public void onServerListPing(ServerListPingEvent event) {
+        Iterator<Player> it = event.iterator();
+        while (it.hasNext()) {
+            it.next();
+            it.remove();
         }
     }
 

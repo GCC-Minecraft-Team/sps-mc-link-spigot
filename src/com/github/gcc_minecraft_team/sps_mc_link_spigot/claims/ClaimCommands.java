@@ -1,6 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.ChatColor;
@@ -24,7 +24,7 @@ public class ClaimCommands implements CommandExecutor {
             return true;
         }
         Player player = (Player) sender;
-        ClaimHandler worldGroup = SPSSpigot.claims(player.getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
         if (worldGroup == null) {
             sender.sendMessage(ChatColor.RED + "This world is not in a world group, so claims cannot be made.");
             return true;
@@ -51,9 +51,8 @@ public class ClaimCommands implements CommandExecutor {
                 }
             }
 
-            Set<Chunk> unclaimed = worldGroup.unclaimChunkSet(chunks);
+            Set<Chunk> unclaimed = worldGroup.unclaimChunkSet(chunks, player.getUniqueId());
             sender.sendMessage(ChatColor.GREEN + "Unclaimed " + unclaimed.size() + "/" + chunks.size() + " chunks! You are now at " + worldGroup.getChunkCount(player.getUniqueId()) + "/" + worldGroup.getMaxChunks(player) + " chunks you can currently claim.");
-            worldGroup.updateClaimMap(player);
             return true;
 
         /*
@@ -84,8 +83,11 @@ public class ClaimCommands implements CommandExecutor {
                 }
 
                 Set<Chunk> claimed = worldGroup.claimChunkSet(player.getUniqueId(), chunks);
-                sender.sendMessage(ChatColor.GREEN + "Unclaimed " + claimed.size() + "/" + chunks.size() + " chunks! You are now at " + worldGroup.getChunkCount(player.getUniqueId()) + "/" + worldGroup.getMaxChunks(player) + " chunks you can currently claim.");
-                worldGroup.updateClaimMap(player);
+                if (claimed.size() == 0) {
+                    sender.sendMessage(ChatColor.RED + "You can't claim chunks here!");
+                } else {
+                    sender.sendMessage(ChatColor.GREEN + "Claimed " + claimed.size() + "/" + chunks.size() + " chunks! You are now at " + worldGroup.getChunkCount(player.getUniqueId()) + "/" + worldGroup.getMaxChunks(player) + " chunks you can currently claim.");
+                }
                 return true;
             } else {
                 /*
@@ -127,7 +129,7 @@ public class ClaimCommands implements CommandExecutor {
                         return true;
                     } else {
                         // TODO: Decide if we need a confirmation system
-                        if (worldGroup.unclaimChunk(chunk)) {
+                        if (worldGroup.unclaimChunk(chunk, player.getUniqueId())) {
                             sender.sendMessage(ChatColor.GREEN + "Successfully unclaimed chunk! You are now at " + worldGroup.getChunkCount(player.getUniqueId()) + "/" + worldGroup.getMaxChunks(player) + " chunks you can currently claim.");
                             return true;
                         } else {
@@ -136,17 +138,21 @@ public class ClaimCommands implements CommandExecutor {
                         }
                     }
                 } else if (args[0].equalsIgnoreCase("hide")) {
-                    if (SPSSpigot.plugin().boards.get(player.getUniqueId()) != null && !SPSSpigot.plugin().boards.get(player.getUniqueId()).isDeleted()) {
-                        FastBoard board = SPSSpigot.plugin().boards.get(player.getUniqueId());
-                        board.delete();
+                    if (ClaimBoard.hasBoard(player.getUniqueId())) {
+                        ClaimBoard.removeBoard(player.getUniqueId());
                         return true;
                     } else {
                         sender.sendMessage(ChatColor.RED + "Couldn't hide the claim map!");
                         return true;
                     }
                 } else if (args[0].equalsIgnoreCase("show")) {
-                    SPSSpigot.showBoard(player);
-                    return true;
+                    if (!ClaimBoard.hasBoard(player.getUniqueId())) {
+                        ClaimBoard.addBoard(player);
+                        return true;
+                    } else {
+                        player.sendMessage(ChatColor.RED + "Claim map is already visible!");
+                        return true;
+                    }
                 } else {
                     // args[0] is invalid
                     return false;

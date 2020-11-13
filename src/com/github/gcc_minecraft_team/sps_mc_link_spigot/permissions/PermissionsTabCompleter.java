@@ -1,7 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -16,10 +16,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class PermissionsTabCompleter implements TabCompleter {
-    
+
     @Override
     @Nullable
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         // /perms a.k.a. /permissions
         if (args.length == 1) {
             // /perms <partial>

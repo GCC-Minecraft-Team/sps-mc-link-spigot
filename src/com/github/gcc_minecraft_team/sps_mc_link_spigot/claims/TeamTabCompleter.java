@@ -1,7 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,15 +16,15 @@ import java.util.List;
 import java.util.UUID;
 
 public class TeamTabCompleter implements TabCompleter {
-    
-    @Nullable
+
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+    @Nullable
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player)) {
             return new ArrayList<>();
         }
         Player player = (Player) sender;
-        ClaimHandler worldGroup = SPSSpigot.claims(player.getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
         if (worldGroup == null) {
             // This world is not in a worldGroup
             return new ArrayList<>();

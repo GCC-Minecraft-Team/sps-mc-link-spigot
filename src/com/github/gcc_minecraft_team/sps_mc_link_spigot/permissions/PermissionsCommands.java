@@ -1,7 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -20,7 +20,7 @@ import java.util.Map;
 public class PermissionsCommands implements CommandExecutor {
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         // /perms a.k.a. /permissions
         if (args.length == 0) {
             // No arguments
@@ -84,7 +84,7 @@ public class PermissionsCommands implements CommandExecutor {
                 Map<String, Boolean> perms = new HashMap<>();
                 for (Map.Entry<Permission, Boolean> p : SPSSpigot.perms().getMemberPerms().entrySet())
                     perms.put(p.getKey().getName(), p.getValue());
-                sender.sendMessage(CMD.buildListBooleanText("MEMBERS", perms));
+                sender.spigot().sendMessage(CMD.buildListBooleanTellraw("MEMBERS", perms, "/perms members set %s %b"));
                 return true;
             } else {
                 // args[1] is invalid
@@ -138,7 +138,7 @@ public class PermissionsCommands implements CommandExecutor {
                     return true;
                 } else if (args.length == 2) {
                     // List all ranks
-                    sender.sendMessage(CMD.buildListText("RANKS", new ArrayList<>(SPSSpigot.perms().getRankNames())));
+                    sender.spigot().sendMessage(CMD.buildListTellraw("RANKS", new ArrayList<>(SPSSpigot.perms().getRankNames()), "/perms rank list %s"));
                     return true;
                 } else {
                     Rank rank = SPSSpigot.perms().getRank(args[2]);
@@ -148,11 +148,10 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     } else {
                         // A valid, existing rank is chosen.
-                        // TODO: Make this in alphabetical order
                         Map<String, Boolean> permStrs = new HashMap<>();
                         for (Map.Entry<Permission, Boolean> perm : rank.getPerms().entrySet())
                             permStrs.put(perm.getKey().getName(), perm.getValue());
-                        sender.sendMessage(CMD.buildListBooleanText(rank.getColor() + rank.getName(), permStrs));
+                        sender.spigot().sendMessage(CMD.buildListBooleanTellraw(rank.getColor() + rank.getName(), permStrs, "/perms rank set " + rank.getName() + " %s %b"));
                         return true;
                     }
                 }
@@ -381,7 +380,7 @@ public class PermissionsCommands implements CommandExecutor {
         } else if (args[0].equals("devreg")) {
             try {
                 Player player = SPSSpigot.server().getPlayer(args[1]);
-                DatabaseLink.registerPlayer(player.getUniqueId(), "test", "test");
+                DatabaseLink.registerPlayer(player.getUniqueId(), "test", "test", "test@seattleschools.org", "Test Name 1234");
                 return true;
             } catch (Exception e) {
                 sender.sendMessage("oops");

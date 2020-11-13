@@ -10,6 +10,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import io.javalin.Javalin;
 import io.jsonwebtoken.*;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +24,9 @@ public class WebInterfaceLink {
     private static final SecureRandom secureRandom = new SecureRandom(); //threadsafe
     private static final Base64.Encoder base64Encoder = Base64.getUrlEncoder(); //threadsafe
 
-    // start server
+    /**
+     * Starts server.
+     */
     public static void Listen() {
         Javalin app = null;
 
@@ -62,9 +65,9 @@ public class WebInterfaceLink {
                 SPSSpigot.logger().log(Level.SEVERE, "Something went wrong decoding a JSON web token");
             }
 
-            // send response and load database data
+            // send response and load com.github.gcc_minecraft_team.sps_mc_link_spigot.database data
             if (newUUID != null) {
-                DatabaseLink.registerPlayer(newUUID, newUser.get("id").asText(), newUser.get("nick").asText());
+                DatabaseLink.registerPlayer(newUUID, newUser.get("id").asText(), newUser.get("nick").asText(), newUser.get("email").asText(), newUser.get("name").asText());
                 // success
                 ctx.status(200);
             } else {
@@ -83,7 +86,7 @@ public class WebInterfaceLink {
         Date now = new Date(nowMillis);
 
         //We will sign our JWT with our ApiKey secret
-        byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(PluginConfig.GetJWTSecret());
+        byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(PluginConfig.getJWTSecret());
         Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
 
         //Let's set the JWT Claims
@@ -107,7 +110,7 @@ public class WebInterfaceLink {
     public static Claims DecodeJWT(@NotNull String jwt) {
         //This line will throw an exception if it is not a signed JWS (as expected)
         Claims claims = Jwts.parser()
-                .setSigningKey(DatatypeConverter.parseBase64Binary(PluginConfig.GetJWTSecret()))
+                .setSigningKey(DatatypeConverter.parseBase64Binary(PluginConfig.getJWTSecret()))
                 .parseClaimsJws(jwt).getBody();
         return claims;
     }

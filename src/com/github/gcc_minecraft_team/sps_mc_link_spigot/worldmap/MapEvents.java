@@ -1,83 +1,84 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.server.MapInitializeEvent;
-import org.bukkit.map.MapRenderer;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapView;
-
-import java.io.IOException;
 
 public class MapEvents implements Listener {
 
-    private int curMaxMaps = 0;
-
     @EventHandler
-    public void onMap(MapInitializeEvent e) {
-
-        if (e.getMap().getId() == 0) {
-            drawMap(e, -1, -1);
-        } else if (e.getMap().getId() == 1) {
-            drawMap(e, 0, -1);
-        } else if (e.getMap().getId() == 2) {
-            drawMap(e, -1, 0);
-        } else if (e.getMap().getId() == 3) {
-            drawMap(e, 0, 0);
-        } else if (e.getMap().getId() > 3) {
-            // spawn signboards
-            // TODO: support adding and removing images and stuff
-            assignMaps(e, "rules.png", 4);
-            assignMaps(e, "info.png", 8);
-            assignMaps(e, "staff.png", 12);
-            if (e.getMap().getId() == 16) {
-                drawSignboard(e, 0, 0, "tf.jpg");
+    public void onChunkLoad(ChunkLoadEvent event) {
+        for (Entity entity : event.getChunk().getEntities()) {
+            if (entity instanceof ItemFrame) {
+                initMap(((ItemFrame)entity).getItem());
             }
         }
     }
 
-    void assignMaps(MapInitializeEvent e, String filename, int curMaxMaps) {
-        if (e.getMap().getId() == curMaxMaps) {
-            drawSignboard(e, 0, 0, filename);
-        }
-        if (e.getMap().getId() == curMaxMaps + 1) {
-            drawSignboard(e, 1, 0, filename);
-        }
-        if (e.getMap().getId() == curMaxMaps + 2) {
-            drawSignboard(e, 0, 1, filename);
-        }
-        if (e.getMap().getId() == curMaxMaps + 3) {
-            drawSignboard(e, 1, 1, filename);
+    @EventHandler
+    public void onPlayerItemHeld(PlayerItemHeldEvent event) {
+        ItemStack item = event.getPlayer().getInventory().getItem(event.getNewSlot());
+        initMap(item);
+    }
+
+    static public void initMap(ItemStack item) {
+        if (item != null && item.getType() == Material.FILLED_MAP) {
+            initMap(MapRegistry.getMapIdFromItemStack(item));
         }
     }
 
-    void drawSignboard(MapInitializeEvent e, int offsetX, int offsetZ, String filename) {
-        for (MapRenderer r : e.getMap().getRenderers()) {
-            e.getMap().removeRenderer(r);
-        }
-
-        MapView map = e.getMap();
-
-        SignboardRenderer sr = new SignboardRenderer();
-        sr.setOffest(offsetX * 128, offsetZ * 128);
-        try {
-            sr.loadIamge(filename);
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
-
-        map.addRenderer(sr);
+    static public void initMap(int id) {
+        initMap(Bukkit.getServer().getMap(id));
     }
 
-    void drawMap(MapInitializeEvent e, int offsetX, int offsetZ) {
-        for (MapRenderer r : e.getMap().getRenderers()) {
-            e.getMap().removeRenderer(r);
+    static public void initMap(MapView map) {
+        if (map == null || map.isVirtual()) {
+            return;
         }
 
-        MapView map = e.getMap();
+        if (MapRegistry.maps.containsKey(map.getId())) {
+            MapRegistry.CustomMap mapSerial = MapRegistry.maps.get(map.getId());
+            if (mapSerial instanceof MapRegistry.PlayerMap) {
+                map.getRenderers().clear();
+                map.addRenderer(new PlayerMapRenderer((MapRegistry.PlayerMap) mapSerial));
+            } else if (mapSerial instanceof MapRegistry.ImageMap) {
+                map.getRenderers().clear();
+                map.addRenderer(new ImageMapRenderer((MapRegistry.ImageMap) mapSerial));
+            } else if (mapSerial instanceof MapRegistry.ClaimMap) {
+                map.getRenderers().clear();
+                map.addRenderer(new ClaimMapRenderer());
+            }
+        }
+    }
 
-        PlayerRenderer pr = new PlayerRenderer();
-        pr.setOffest(offsetX * 2048, offsetZ * 2048);
-
-        map.addRenderer(pr);
+    @EventHandler
+    public void onPlayerItemDrop(PlayerDropItemEvent event) {
+        ItemStack stack = event.getItemDrop().getItemStack();
+        // Faction map scaling
+        if (MapRegistry.isClaimMap(stack)) {
+            if (event.getPlayer().isSneaking()) {
+                MapView view = ((MapMeta) stack.getItemMeta()).getMapView();
+                if (view.getScale().equals(MapView.Scale.CLOSEST))
+                    view.setScale(MapView.Scale.CLOSE);
+                else if (view.getScale().equals(MapView.Scale.CLOSE))
+                    view.setScale(MapView.Scale.NORMAL);
+                else if (view.getScale().equals(MapView.Scale.NORMAL))
+                    view.setScale(MapView.Scale.FAR);
+                else if (view.getScale().equals(MapView.Scale.FAR))
+                    view.setScale(MapView.Scale.FARTHEST);
+                else if (view.getScale().equals(MapView.Scale.FARTHEST))
+                    view.setScale(MapView.Scale.CLOSEST);
+                event.setCancelled(true);
+            }
+        }
     }
 }

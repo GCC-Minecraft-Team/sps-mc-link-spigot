@@ -11,7 +11,8 @@ import org.bukkit.event.player.*;
 
 public class PermissionsEvents implements Listener {
 
-    // Clicks
+    // ========[CLICKS]========
+
     @EventHandler
     public void onPlayerInteractEvent(PlayerInteractEvent event) {
         if (!event.getPlayer().hasPermission("spsmc.basic.interact"))
@@ -36,7 +37,8 @@ public class PermissionsEvents implements Listener {
             event.setCancelled(true);
     }
 
-    // Moving
+    // ========[MOVING]========
+
     @EventHandler
     public void onPlayerMoveEvent(PlayerMoveEvent event) {
         // Stop movement but not rotation
@@ -45,7 +47,8 @@ public class PermissionsEvents implements Listener {
                 event.setCancelled(true);
     }
 
-    // Items
+    // ========[ITEMS]========
+
     @EventHandler
     public void onEntityPickupItemEvent(EntityPickupItemEvent event) {
         if (event.getEntity() instanceof Player && !event.getEntity().hasPermission("spsmc.basic.itempickup"))
@@ -58,7 +61,8 @@ public class PermissionsEvents implements Listener {
             event.setCancelled(true);
     }
 
-    // Chat
+    // ========[CHAT]========
+
     @EventHandler
     public void onPlayerChatEvent(AsyncPlayerChatEvent event) {
         if (!event.getPlayer().hasPermission("spsmc.basic.chat"))

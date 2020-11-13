@@ -1,20 +1,19 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import fr.mrmicky.fastboard.FastBoard;
-import net.md_5.bungee.api.ChatColor;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
+import com.mongodb.DBObject;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class ClaimHandler {
+public class WorldGroup {
 
-    private String name;
+    private final UUID id;
+    private final String name;
     private Set<World> worlds;
     private Set<World> claimable;
     private Set<Team> teams;
@@ -25,7 +24,8 @@ public class ClaimHandler {
      * This is the simple constructor, generally for new instances not loaded from file.
      * @param name The name of this worldGroup.
      */
-    public ClaimHandler(String name) {
+    public WorldGroup(String name) {
+        id = UUID.randomUUID();
         this.name = name;
         worlds = new HashSet<>();
         claimable = new HashSet<>();
@@ -35,17 +35,50 @@ public class ClaimHandler {
         saveCurrentClaims();
     }
 
+    /**
+     * This constructor is used to initialize the class with a serialized worldgroup
+     * @param wg
+     */
+    public WorldGroup(WorldGroupSerializable wg) {
+        this.id = wg.getID();
+        this.name = wg.getName();
 
+        this.worlds = new HashSet<>();
+        for (String w : wg.getWorlds()) {
+            this.worlds.add(Bukkit.getWorld(UUID.fromString(w)));
+        }
+
+        this.claimable = new HashSet<>();
+        for (String w : wg.getClaimable()) {
+            this.claimable.add(Bukkit.getWorld(UUID.fromString(w)));
+        }
+
+        this.teams = new HashSet<>();
+        for (TeamSerializable ts : wg.getTeams()) {
+            this.teams.add(new Team(ts));
+        }
+
+        this.claims = new HashMap<>();
+        for (Map.Entry<String, Set<DBObject>> c : wg.getClaims().entrySet()) {
+            Set<Chunk> claimChunks = new HashSet<>();
+            for (DBObject ch : c.getValue()) {
+                claimChunks.add(SPSSpigot.server().getWorld((UUID)ch.get("world")).getChunkAt((int)ch.get("x"), (int)ch.get("z")));
+            }
+            this.claims.put(UUID.fromString(c.getKey()), claimChunks);
+        }
+
+        this.joinRequests = new HashMap<>();
+    }
 
     /**
-     * Saves data from this {@link ClaimHandler} to database
+     * Saves data from this {@link WorldGroup} to the database.
      */
     public void saveCurrentClaims() {
         DatabaseLink.saveClaims(claims, this);
     }
 
     /**
-     * Loads data for this {@link ClaimHandler} from the database
+     * Loads data for this {@link WorldGroup} from the database.
      */
     public void loadFromDatabase() {
         teams = DatabaseLink.getTeams(this);
@@ -53,20 +86,110 @@ public class ClaimHandler {
     }
 
     /**
-     * Getter for this worldGroup's name.
-     * @return This worldGroup's name.
+     * Getter for this {@link WorldGroup}'s name.
+     * @return This {@link WorldGroup}'s name.
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Gets whether this {@link ClaimHandler}'s worldGroup contains the given {@link World}.
+     * Getter for this {@link WorldGroup}'s ID.
+     * @return This {@link WorldGroup}'s ID.
+     */
+    public UUID getID() { return id; }
+
+    /**
+     * Gets whether this {@link WorldGroup} contains the given {@link World}.
      * @param world The {@link World} to check for.
-     * @return {@code true} if this worldGroup contains the {@link World}.
+     * @return {@code true} if this {@link WorldGroup} contains the {@link World}.
      */
     public boolean hasWorld(World world) {
         return worlds.contains(world);
+    }
+
+    /**
+     * Gets all {@link World}s this {@link WorldGroup} contains.
+     * @return An unmodifiable {@link Set} of {@link World}s.
+     */
+    public Set<World> getWorlds() {
+        return Collections.unmodifiableSet(worlds);
+    }
+
+    /**
+     * Adds a {@link World} to this {@link WorldGroup} if it is not in another one.
+     * @param world The {@link World} to add.
+     * @return {@code true} if successful, {@code false} if the {@link World} is already in a {@link WorldGroup}.
+     */
+    public boolean addWorld(World world) {
+        if (SPSSpigot.getWorldGroup(world) == null) {
+            worlds.add(world);
+            DatabaseLink.addWorld(this, world);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Removes a {@link World} from this {@link WorldGroup}.
+     * @param world The {@link World} to remove.
+     * @return {@code true} if successful, {@code false} if the {@link World} was not in this {@link WorldGroup}.
+     */
+    public boolean removeWorld(World world) {
+        if (worlds.remove(world)) {
+            claimable.remove(world);
+            DatabaseLink.removeWorld(this, world);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Getter for this {@link WorldGroup}'s claimable {@link World}s.
+     * @return An unmodifiable {@link Set} of {@link WorldGroup}'s claimable {@link World}s.
+     */
+    public Set<World> getClaimable() {
+        return Collections.unmodifiableSet(claimable);
+    }
+
+    /**
+     * Gets whether a specified {@link World} is claimable in this {@link WorldGroup}.
+     * @param world The {@link World} to check.
+     * @return {@code true} if this {@link WorldGroup}'s claimable list contains the {@link World}.
+     */
+    public boolean isClaimable(World world) {
+        return claimable.contains(world);
+    }
+
+    /**
+     * Adds a {@link World} to this {@link WorldGroup} claimable if it is not in another one.
+     * @param world The {@link World} to add.
+     * @return {@code true} if successful, {@code false} if the {@link World} is already in a {@link WorldGroup}.
+     */
+    public boolean addWorldClaimable(World world) {
+        if (SPSSpigot.getWorldGroup(world) != null) {
+            claimable.add(world);
+            DatabaseLink.addWorldClaimable(this, world);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Removes a {@link World} claimable from this {@link WorldGroup}.
+     * @param world The {@link World} to remove.
+     * @return {@code true} if successful, {@code false} if the {@link World} was not in this {@link WorldGroup}.
+     */
+    public boolean removeWorldClaimable(World world) {
+        if (claimable.remove(world)) {
+            DatabaseLink.removeWorldClaimable(this, world);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -80,10 +203,10 @@ public class ClaimHandler {
         return Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius();
     }
 
-    /***
-     * Checks to see if entity is in spawn
-     * @param entity
-     * @return
+    /**
+     * Checks to see if entity is in spawn.
+     * @param entity The {@link Entity} to check.
+     * @return {@code true} if its {@link Location} {@link #isInSpawn(Location)}.
      */
     public boolean isEntityInSpawn(Entity entity) {
         return isInSpawn(entity.getLocation());
@@ -141,12 +264,12 @@ public class ClaimHandler {
     /**
      * Adds a new {@link Team}.
      * @param team The {@link Team} to add.
-     * @return {@link true} if successful; {@link false} if the name is already taken or the leader is already on a team.
+     * @return {@link true} if successful; {@link false} if the name is already taken or the leader is already on a {@link Team}.
      */
     public boolean addTeam(@NotNull Team team) {
         if (getTeam(team.getName()) == null && getPlayerTeam(team.getLeader()) == null) {
             boolean out = teams.add(team);
-            DatabaseLink.addTeam(team);
+            DatabaseLink.updateTeam(team);
             return true;
         } else {
             return false;
@@ -161,12 +284,16 @@ public class ClaimHandler {
         teams.remove(team);
         // Delete all join requests for this team
         Set<UUID> remove = new HashSet<>();
-        for (Map.Entry<UUID, Team> request : joinRequests.entrySet()) {
-            if (request.getValue() == team)
-                remove.add(request.getKey());
+        try {
+            for (Map.Entry<UUID, Team> request : joinRequests.entrySet()) {
+                if (request.getValue() == team)
+                    remove.add(request.getKey());
+            }
+            for (UUID request : remove)
+                joinRequests.remove(request);
+        } catch (NullPointerException exception) {
+            // do nothing
         }
-        for (UUID request : remove)
-            joinRequests.remove(request);
         DatabaseLink.removeTeam(team);
     }
 
@@ -191,7 +318,7 @@ public class ClaimHandler {
      * Finds whether or not two players are on the same {@link Team}.
      * @param player1 The {@link UUID} of the first player to check.
      * @param player2 The {@link UUID} of the second player to check.
-     * @return {@link true} if both players are on the same {@link Team}. Both being independent does not count.
+     * @return {@code true} if both players are on the same {@link Team}. Both being independent does not count.
      */
     public boolean isOnSameTeam(@NotNull UUID player1, @NotNull UUID player2) {
         Team team = getPlayerTeam(player1);
@@ -210,9 +337,16 @@ public class ClaimHandler {
         if (getPlayerTeam(player) != null)
             throw new IllegalStateException("Cannot create join request for player (UUID: " + player.toString() + ") because they are already on a team.");
         // Get the previous team - will be null if none found.
-        Team old = joinRequests.get(player);
+        System.out.println(player);
+        System.out.println(team.getLeader());
         joinRequests.put(player, team);
-        return old;
+
+        try {
+            Team old = joinRequests.get(player);
+            return old;
+        } catch (NullPointerException exception) {
+            return null;
+        }
     }
 
     /**
@@ -222,27 +356,35 @@ public class ClaimHandler {
      */
     @Nullable
     public Team cancelJoinRequest(@NotNull UUID player) {
-        Team team = joinRequests.get(player);
-        if (team != null)
-            joinRequests.remove(player);
-        return team;
+        try {
+            Team team = joinRequests.get(player);
+            if (team != null)
+                joinRequests.remove(player);
+            return team;
+        } catch (NullPointerException exception) {
+            return null;
+        }
     }
 
     /**
      * Fulfills a join request, adding the player to the {@link Team}.
      * @param player The {@link UUID} of the player whose request should be fulfilled.
      * @return The {@link Team} that the player was added to, or {@code null} if no request was found.
-     * @throws IllegalStateException If the player was already on a team.
+     * @throws IllegalStateException If the player was already on a {@link Team}.
      */
     @Nullable
     public Team fulfillJoinRequest(@NotNull UUID player) {
         if (getPlayerTeam(player) != null)
             throw new IllegalStateException("Cannot fulfill a join request for player (UUID: " + player.toString() + ") because they are already on a team.");
-        Team team = joinRequests.get(player);
-        if (team != null)
-            team.addMember(player);
+        try {
+            Team team = joinRequests.get(player);
+            if (team != null)
+                team.addMember(player);
             joinRequests.remove(player);
-        return team;
+            return team;
+        } catch (NullPointerException exception) {
+            return null;
+        }
     }
 
     /**
@@ -252,7 +394,11 @@ public class ClaimHandler {
      */
     @Nullable
     public Team getJoinRequest(@NotNull UUID player) {
-        return joinRequests.get(player);
+        try {
+            return joinRequests.get(player);
+        } catch (NullPointerException exception) {
+            return null;
+        }
     }
 
     /**
@@ -284,8 +430,9 @@ public class ClaimHandler {
         } catch (IllegalArgumentException e) {
             playTicks = 0;
         }
-        // 16 + 8log_2(x+2)
-        return (int) (16 + 8 * Math.log((playTicks / (20.0 * 60.0 * 60.0)) + 2) / Math.log(2));
+        // 16 + 32log_2(x+2)
+        // Nathan: Increased max chunk scale
+        return (int) (16 + 32 * Math.log((playTicks / (20.0 * 60.0 * 60.0)) + 2) / Math.log(2));
     }
 
     /**
@@ -315,16 +462,52 @@ public class ClaimHandler {
      * @param chunk The {@link Chunk} to check.
      * @return The {@link UUID} of the owner, or {@code null} if unowned.
      */
+
+    // NOTE!!! READ ME!!! Don't remove this function or change it to use .equals() (for some reason that breaks the server a lot)
     @Nullable
     public UUID getChunkOwner(@NotNull Chunk chunk) {
-        for (Map.Entry<UUID, Set<Chunk>> players : claims.entrySet()) {
-            for (Chunk c : players.getValue()) {
+        Iterator it = claims.entrySet().iterator();
+        while(it.hasNext()) {
+            Map.Entry<UUID, Set<Chunk>> player = (Map.Entry<UUID, Set<Chunk>>) it.next();
+            Iterator itChunk = player.getValue().iterator();
+            while(itChunk.hasNext()) {
+                Chunk c = (Chunk) itChunk.next();
                 if (c.getX() == chunk.getX() && c.getZ() == chunk.getZ()) {
-                    return players.getKey();
+                    return player.getKey();
                 }
             }
         }
         return null;
+    }
+    /**
+     * Gets the owner of a chunk.
+     * @param world The {@link World}.
+     * @param x The chunk X.
+     * @param z The chunk Z.
+     * @return The {@link UUID} of the owner or {@code null} if unowned.
+     */
+    @Nullable
+    public UUID getChunkOwner(@NotNull World world, int x, int z) {
+        for (Map.Entry<UUID, Set<Chunk>> player : claims.entrySet()) {
+            for (Chunk chunk : player.getValue()) {
+                if (chunk.getWorld().equals(world) && chunk.getX() == x && chunk.getZ() == z) {
+                    return player.getKey();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the owner of a location.
+     * @param world The {@link World}.
+     * @param x The block X.
+     * @param z The block Z.
+     * @return The {@link UUID} of the owner or {@code null} if unowned.
+     */
+    @Nullable
+    public UUID getOwner(@NotNull World world, int x, int z) {
+        return getChunkOwner(world, Math.floorDiv(x, 16), Math.floorDiv(z, 16));
     }
 
     /**
@@ -341,13 +524,22 @@ public class ClaimHandler {
     }
 
     /**
+     * Gets all claims in this {@link WorldGroup}
+     * @return
+     */
+    @NotNull
+    public Map<UUID, Set<Chunk>> getClaims() {
+        return claims;
+    }
+
+    /**
      * Claims a {@link Chunk} for a given player.
      * @param player The {@link UUID} of the player.
      * @param chunk The {@link Chunk} to be claimed.
-     * @return {@code true} if successful. This means the {@link Chunk} is not already claimed, the player is not exceeding their claim limit, and the {@link World} is claimable by this {@link ClaimHandler}.
+     * @return {@code true} if successful. This means the {@link Chunk} is not already claimed, the player is not exceeding their claim limit, and the {@link World} is claimable by this {@link WorldGroup}.
      */
     public boolean claimChunk(@NotNull UUID player, @NotNull Chunk chunk) {
-        if (!claimable.contains(chunk.getWorld())) {
+        if (claimable == null || claimable.isEmpty() || !claimable.contains(chunk.getWorld())) {
             // Ensure the world is claimable in this
             return false;
         } else if (getChunkOwner(chunk) != null) {
@@ -376,15 +568,12 @@ public class ClaimHandler {
     public Set<Chunk> claimChunkSet(@NotNull UUID player, @NotNull Set<Chunk> chunks) {
         Set<Chunk> successes = new HashSet<>();
         for (Chunk chunk : chunks) {
-            if (!claimable.contains(chunk.getWorld())) {
+            if (claimable == null || claimable.isEmpty() || !claimable.contains(chunk.getWorld())) {
                 // Ensure the world is claimable in this
-                continue;
             } else if (getChunkOwner(chunk) != null) {
                 // Ensure the chunk isn't claimed
-                continue;
             } else if (getChunkCount(player) >= getMaxChunks(player)) {
                 // Ensure this won't put the player over their claim limit
-                continue;
             } else {
                 if (!claims.containsKey(player)) {
                     claims.put(player, new HashSet<>());
@@ -402,19 +591,19 @@ public class ClaimHandler {
      * @param chunk The {@link Chunk} to be unclaimed.
      * @return {@code true} if successful; {@code false} if already not claimed.
      */
-    public boolean unclaimChunk(@NotNull Chunk chunk) {
-        UUID owner = getChunkOwner(chunk);
-        if (owner == null) {
-            return false;
-        } else {
-            claims.get(owner).forEach((x) -> {
-                if (x.getX() == chunk.getX() && x.getZ() == chunk.getZ()) {
-                    claims.get(owner).remove(x);
+    public boolean unclaimChunk(@NotNull Chunk chunk, UUID owner) {
+        for (Map.Entry<UUID, Set<Chunk>> e : claims.entrySet())
+        {
+            if (e.getKey().equals(owner)) {
+                try {
+                    e.getValue().remove(chunk);
+                } catch(NullPointerException exception) {
+                    // do nothing
                 }
-            });
-            saveCurrentClaims();
-            return true;
+            }
         }
+        saveCurrentClaims();
+        return true;
     }
 
     /**
@@ -423,10 +612,9 @@ public class ClaimHandler {
      * @return A {@link Set} of the {@link Chunk}s that were successfully unclaimed.
      */
     @NotNull
-    public Set<Chunk> unclaimChunkSet(@NotNull Set<Chunk> chunks) {
+    public Set<Chunk> unclaimChunkSet(@NotNull Set<Chunk> chunks, UUID owner) {
         Set<Chunk> successes = new HashSet<>();
         for (Chunk chunk : chunks) {
-            UUID owner = getChunkOwner(chunk);
             if (owner != null && claims.get(owner).remove(chunk)) {
                 successes.add(chunk);
             }
@@ -449,58 +637,6 @@ public class ClaimHandler {
         } else {
             // We're just checking a player's permission in a chunk.
             return owner == null || owner.equals(player) || isOnSameTeam(player, owner);
-        }
-    }
-
-    /**
-     * updates the claim map in the scoreboard
-     * @param player
-     */
-    public void updateClaimMap(Player player) {
-        Chunk playerChunk = player.getLocation().getChunk();
-        FastBoard board = SPSSpigot.plugin().boards.get(player.getUniqueId());
-        if (board != null && !board.isDeleted()) {
-            // map
-            String[] rows = new String[7];
-
-            for (int z = -3; z <= 3; z++) {
-                StringBuilder bRow = new StringBuilder();
-                for (int x = -3; x <= 3; x++) {
-                    // get the surrounding chunks
-
-                    Chunk chunk = player.getWorld().getChunkAt(playerChunk.getX() + x, playerChunk.getZ() + z);
-                    UUID chunkOwner = getChunkOwner(chunk);
-                    if (x == 0 && z == 0) {
-                        bRow.append(ChatColor.BLUE).append("Ⓟ");
-                    } else {
-                        if (chunkOwner == null) {
-                            // Unowned / in spawn
-                            bRow.append(ChatColor.GRAY).append("▒");
-                        } else if (chunkOwner.equals(player.getUniqueId())) {
-                            // Player owns chunk
-                            bRow.append(ChatColor.GREEN).append("█");
-                        } else if (isOnSameTeam(player.getUniqueId(), chunkOwner)) {
-                            // Teammate owns chunk
-                            bRow.append(ChatColor.AQUA).append("▒");
-                        } else {
-                            // Other player owns chunk
-                            bRow.append(ChatColor.RED).append("▒");
-                        }
-                    }
-                }
-                rows[z + 3] = bRow.toString();
-            }
-
-            // update the board
-            board.updateLines(
-                    rows[0],
-                    rows[1],
-                    rows[2],
-                    rows[3],
-                    rows[4],
-                    rows[5],
-                    rows[6]
-            );
         }
     }
 }

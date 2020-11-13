@@ -1,25 +1,28 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import fr.mrmicky.fastboard.FastBoard;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
+import org.bukkit.entity.minecart.HopperMinecart;
+import org.bukkit.entity.minecart.PoweredMinecart;
+import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.*;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.vehicle.VehicleDestroyEvent;
 
 import java.util.*;
 
 public class ClaimEvents implements Listener {
 
+    /**
+     * A {@link List} of all the {@link Material}s that players are allowed to interact with in others' claims.
+     */
     List<Material> interactExceptions = Arrays.asList(
             // Doors (not iron)
             Material.OAK_DOOR, Material.BIRCH_DOOR, Material.SPRUCE_DOOR, Material.JUNGLE_DOOR,
@@ -36,57 +39,50 @@ public class ClaimEvents implements Listener {
             // Ender chest
             Material.ENDER_CHEST);
 
+    private static Map<UUID, Integer> prevSector = new HashMap<>();
+
     @EventHandler
     public void onPlayerMoveEvent(PlayerMoveEvent event) {
-
-
-    }
-
-    @EventHandler
-    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-        ClaimHandler worldGroup = SPSSpigot.claims(event.getPlayer().getWorld());
-        if (worldGroup != null && worldGroup.isInSpawn(event.getPlayer().getLocation())) {
-            if (event.getRightClicked() instanceof ItemFrame && !((ItemFrame) event.getRightClicked()).getItem().getType().equals(Material.AIR)) { // We don't need to prevent put items into the empty item frame (that's out of scope of this plugin)
-                event.setCancelled(true);
+        // Handle board updates here when the player rotates enough or changes chunks.
+        // Nathan: This doesn't work well on the server, it only updates like 30% of the time
+        /*
+        Location from = event.getFrom();
+        Location to = event.getTo();
+        UUID player = event.getPlayer().getUniqueId();
+        FastBoard board = SPSSpigot.plugin().boards.get(player);
+        if (to != null && board != null && !board.isDeleted()) {
+            int toSector = CMD.sector(4, 45, to.getYaw());
+            if (!from.getChunk().equals(to.getChunk()) || !prevSector.containsKey(player) || toSector != prevSector.get(player)) {
+                // The player has either changed chunks or rotated towards another cardinal direction.
+                SPSSpigot.plugin().updateBoard(board);
             }
+            prevSector.put(player, toSector);
         }
+         */
     }
 
-    // Claim modification
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.hasBlock() && !interactExceptions.contains(event.getClickedBlock().getType())) {
-            Chunk chunk = event.getClickedBlock().getChunk();
-            ClaimHandler worldGroup = SPSSpigot.claims(chunk.getWorld());
-            if (worldGroup != null && !worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
-                event.setCancelled(true);
-        }
-    }
+    // ========[PLAYER BLOCK INTERACTION]========
 
+    /*
+    Only disable vehicles in claims not spawn
+     */
     @EventHandler
-    public void onEntitySpawn(EntitySpawnEvent event) {
-        ClaimHandler worldGroup = SPSSpigot.claims(event.getLocation().getWorld());
-        if (!event.getEntity().getType().equals(EntityType.DROPPED_ITEM)) {
-            if (worldGroup != null && worldGroup.isEntityInSpawn(event.getEntity()) && event.getEntity().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
-                event.setCancelled(true);
-            }
-        }
-    }
-
-    @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event) {
-        Chunk chunk = event.getBlock().getChunk();
-        ClaimHandler worldGroup = SPSSpigot.claims(chunk.getWorld());
-        if (worldGroup != null && !worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
-            event.setCancelled(true);
-    }
-
-    @EventHandler
-    public void onBlockDamage(BlockDamageEvent event) {
-        Chunk chunk = event.getBlock().getChunk();
-        ClaimHandler worldGroup = SPSSpigot.claims(chunk.getWorld());
+    public void onVehicleDestroy(VehicleDestroyEvent event) {
+        Chunk chunk = event.getAttacker().getLocation().getChunk();
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
         if (worldGroup != null) {
-            if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && event.getPlayer().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
+            if (!worldGroup.canModifyChunk(event.getAttacker().getUniqueId(), chunk)) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
+        Chunk chunk = event.getBlock().getChunk();
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+        if (worldGroup != null) {
+            if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && worldGroup.isClaimable(event.getPlayer().getWorld())) {
                 event.setCancelled(true);
             } else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
                 event.setCancelled(true);
@@ -94,24 +90,61 @@ public class ClaimEvents implements Listener {
     }
 
     @EventHandler
-    public void onEntityDamageEvent(EntityDamageByEntityEvent event) {
-        Entity target = event.getEntity();
-        ClaimHandler worldGroup = SPSSpigot.claims(target.getWorld());
-        if (worldGroup != null) {
-            if (worldGroup.isEntityInSpawn(event.getDamager()) && event.getEntity().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        if (event.hasBlock() && !interactExceptions.contains(event.getClickedBlock().getType())) {
+            Chunk chunk = event.getClickedBlock().getChunk();
+            WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+            if (worldGroup != null && !worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
                 event.setCancelled(true);
-            } else if (event.getDamager() instanceof Player && !worldGroup.canModifyChunk(event.getDamager().getUniqueId(), target.getLocation().getChunk())) {
-                if (event.getEntity() instanceof Mob) {
-                    Mob mob = (Mob) event.getEntity();
-                    if (mob instanceof Animals || mob instanceof WaterMob || mob instanceof NPC) {
-                        // Allow defense against actively hostile animals like aggro wolves or polar bears
-                        // Otherwise, cancel:
-                        if (mob.getTarget() == null) {
-                            event.setCancelled(true);
-                        }
-                    }
-                } else if (!(event.getEntity() instanceof Projectile)) {
-                    // It's not a mob at all. It's a tile entity or something like that.
+        }
+    }
+
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent event) {
+        Chunk chunk = event.getBlock().getChunk();
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+        if (worldGroup != null && !worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
+            event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onBlockDamage(BlockDamageEvent event) {
+        Chunk chunk = event.getBlock().getChunk();
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+        if (worldGroup != null) {
+            if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && worldGroup.isClaimable(event.getPlayer().getWorld())) {
+                event.setCancelled(true);
+            } else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
+                event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getPlayer().getWorld());
+        if (worldGroup != null) {
+            if (worldGroup.isInSpawn(event.getPlayer().getLocation())) {
+                // We don't need to prevent put items into the empty item frame (that's out of scope of this plugin)
+                if (event.getRightClicked() instanceof ItemFrame && !((ItemFrame) event.getRightClicked()).getItem().getType().equals(Material.AIR)) {
+                    event.setCancelled(true);
+                }
+            } else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), event.getRightClicked().getLocation().getChunk())) {
+                // If a player is trying to interact with an entity in another player's claim.
+
+                // Get the item the player is using to interact with the entity:
+                Material interactItem = event.getPlayer().getInventory().getItem(event.getHand()).getType();
+
+                if (interactItem.equals(Material.NAME_TAG)) {
+                    // Don't let players rename in other people's claims.
+                    event.setCancelled(true);
+                } else if (interactItem.equals(Material.SHEARS)) {
+                    // Don't let players shear animals in other people's claims.
+                    event.setCancelled(true);
+                } else if (event.getRightClicked() instanceof ArmorStand || event.getRightClicked() instanceof ItemFrame) {
+                    // Don't let player interact with armor stands or item frames and steal stuff.
+                    event.setCancelled(true);
+                } else if (event.getRightClicked() instanceof StorageMinecart || event.getRightClicked() instanceof HopperMinecart || event.getRightClicked() instanceof PoweredMinecart) {
+                    // Don't let player steal from minecarts with inventories.
                     event.setCancelled(true);
                 }
             }
@@ -120,22 +153,23 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onBlockIgnite(BlockIgniteEvent event) {
-        Chunk toChunk = event.getBlock().getChunk();
-        ClaimHandler worldGroup = SPSSpigot.claims(toChunk.getWorld());
-        if (worldGroup != null) {
-            if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && event.getPlayer().getWorld().getEnvironment().equals(World.Environment.NORMAL)) {
-                event.setCancelled(true);
-            } else if (event.getPlayer() != null) {
-                if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), toChunk))
-                    event.setCancelled(true);
-            } else if (event.getIgnitingEntity() != null) {
-                // It was done by a non-player entity.
-                // I guess let it happen.
-            } else if (event.getIgnitingBlock() != null) {
-                // It was done by a block.
-                // Cancel if the source block's owner is not allowed to modify the fire block.
-                if (!worldGroup.canModifyChunk(worldGroup.getChunkOwner(event.getIgnitingBlock().getChunk()), toChunk))
-                    event.setCancelled(true);
+        if (event.getPlayer() != null) {
+            if (!event.getPlayer().isOp()) {
+                Chunk toChunk = event.getBlock().getChunk();
+                WorldGroup worldGroup = SPSSpigot.getWorldGroup(toChunk.getWorld());
+                if (worldGroup != null) {
+                    if (worldGroup.isInSpawn(event.getBlock().getLocation()) && worldGroup.isClaimable(event.getPlayer().getWorld())) {
+                        event.setCancelled(true);
+                    } else if (event.getPlayer() != null) {
+                        if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), toChunk))
+                            event.setCancelled(true);
+                    } else if (event.getIgnitingBlock() != null) {
+                        // It was done by a block.
+                        // Cancel if the source block's owner is not allowed to modify the fire block.
+                        if (!worldGroup.canModifyChunk(worldGroup.getChunkOwner(event.getIgnitingBlock().getChunk()), toChunk))
+                            event.setCancelled(true);
+                    }
+                }
             }
         }
     }
@@ -143,14 +177,16 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onPlayerTakeLecternBook(PlayerTakeLecternBookEvent event) {
         Chunk chunk = event.getLectern().getChunk();
-        ClaimHandler worldGroup = SPSSpigot.claims(chunk.getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
         if (worldGroup != null && !worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk))
             event.setCancelled(true);
     }
 
+    // ========[BLOCKS]========
+
     @EventHandler
     public void onBlockPistonExtendEvent(BlockPistonExtendEvent event) {
-        ClaimHandler worldGroup = SPSSpigot.claims(event.getBlock().getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
         if (worldGroup != null) {
             UUID piston = worldGroup.getChunkOwner(event.getBlock().getChunk());
             Set<Chunk> moveCurrent = new HashSet<>();
@@ -178,7 +214,7 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onBlockPistonRetractEvent(BlockPistonRetractEvent event) {
-        ClaimHandler worldGroup = SPSSpigot.claims(event.getBlock().getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
         if (worldGroup != null) {
             UUID piston = worldGroup.getChunkOwner(event.getBlock().getChunk());
             Set<Chunk> moveCurrent = new HashSet<>();
@@ -208,24 +244,74 @@ public class ClaimEvents implements Listener {
     public void onBlockSpreadEvent(BlockSpreadEvent event) {
         // Only CLAIMS (and you) can prevent forest fires!
         if (event.getBlock().getType().equals(Material.FIRE)) {
-            ClaimHandler worldGroup = SPSSpigot.claims(event.getBlock().getWorld());
+            WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
             if (worldGroup != null && !worldGroup.canModifyChunk(worldGroup.getChunkOwner(event.getSource().getChunk()), event.getBlock().getChunk())) {
                 event.setCancelled(true);
             }
         }
     }
 
+    // ========[ENTITIES]========
+
     @EventHandler
     public void onEntityExplodeEvent(EntityExplodeEvent event) {
         // Stop TNT explosions from breaking claimed blocks
         if (!event.getEntityType().isAlive()) {
-            ClaimHandler worldGroup = SPSSpigot.claims(event.getEntity().getWorld());
+            WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getEntity().getWorld());
             if (worldGroup != null) {
                 for (int i = event.blockList().size() - 1; i >= 0; i--) {
                     if (worldGroup.getChunkOwner(event.blockList().get(i).getChunk()) != null) {
                         event.blockList().remove(i);
                     }
                 }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onDeath(PlayerDeathEvent e) {
+        final Player p = e.getEntity();
+        p.sendTitle(ChatColor.DARK_RED + "You Died", "Auto Respawning", 10, 60, 10);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), () -> p.spigot().respawn(), 2);
+    }
+
+    @EventHandler
+    public void onEntityDamageEvent(EntityDamageByEntityEvent event) {
+        Entity target = event.getEntity();
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(target.getWorld());
+        if (worldGroup != null) {
+            if (worldGroup.isEntityInSpawn(event.getDamager()) && worldGroup.isClaimable(event.getEntity().getWorld())) {
+                event.setCancelled(true);
+            } else if (event.getDamager() instanceof Player && !worldGroup.canModifyChunk(event.getDamager().getUniqueId(), target.getLocation().getChunk())) {
+                if (event.getEntity() instanceof Mob) {
+                    Mob mob = (Mob) event.getEntity();
+                    if (mob instanceof Animals || mob instanceof WaterMob || mob instanceof NPC) {
+                        // Allow defense against actively hostile animals like aggro wolves or polar bears
+                        // Otherwise, cancel:
+                        if (mob.getTarget() == null) {
+                            event.setCancelled(true);
+                        }
+                    }
+                } else {
+                    // It's not a mob at all. It's a tile entity or something like that.
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    private void onProjectileLaunchEvent(ProjectileLaunchEvent event) {
+        Projectile p = event.getEntity();
+        if (p.getShooter() instanceof Player) {
+            Player player = (Player) p.getShooter();
+            Chunk chunk = event.getLocation().getChunk();
+            WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+            if (worldGroup != null) {
+                if (worldGroup.isInSpawn(player.getLocation()) && worldGroup.isClaimable(player.getWorld())) {
+                    event.setCancelled(true);
+                } else if (!worldGroup.canModifyChunk(player.getUniqueId(), chunk))
+                    event.setCancelled(true);
             }
         }
     }

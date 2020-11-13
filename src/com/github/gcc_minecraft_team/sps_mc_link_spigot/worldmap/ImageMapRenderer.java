@@ -12,7 +12,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class SignboardRenderer extends MapRenderer {
+public class ImageMapRenderer extends MapRenderer {
 
     private boolean hasRendered;
     private int offsetX;
@@ -20,22 +20,26 @@ public class SignboardRenderer extends MapRenderer {
 
     private BufferedImage image;
 
-    /**
-     * Sets the map offset in blocks
-     * @param x
-     * @param z
-     */
-    public void setOffest(int x, int z) {
-        offsetX = x;
-        offsetZ = z;
+    public ImageMapRenderer(int xOffset, int zOffset, String file) {
+        this.offsetX = xOffset;
+        this.offsetZ = zOffset;
+        try {
+            this.loadImage(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ImageMapRenderer(MapRegistry.ImageMap imageMap) {
+        this(imageMap.xOffset, imageMap.yOffset, imageMap.file);
     }
 
     /**
-     * Loads an image from the plugin data directory
-     * @param filename
+     * Loads an image from the plugin data directory.
+     * @param filename The name of the file to load.
      * @throws IOException
      */
-    public void loadIamge(String filename) throws IOException {
+    public void loadImage(String filename) throws IOException {
         image = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(), filename));
     }
 

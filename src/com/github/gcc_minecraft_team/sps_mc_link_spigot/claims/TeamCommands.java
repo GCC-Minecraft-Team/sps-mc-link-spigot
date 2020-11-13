@@ -1,7 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -24,7 +24,7 @@ public class TeamCommands implements CommandExecutor {
             return true;
         }
         Player player = (Player) sender;
-        ClaimHandler worldGroup = SPSSpigot.claims(player.getWorld());
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
         if (worldGroup == null) {
             sender.sendMessage(ChatColor.RED + "This world is not in a world group, so teams cannot be made.");
             return true;
@@ -142,7 +142,7 @@ public class TeamCommands implements CommandExecutor {
                 // List all teams
                 List<String> names = new ArrayList<>(worldGroup.getTeamNames());
                 names.sort(String.CASE_INSENSITIVE_ORDER);
-                sender.sendMessage(CMD.buildListText("TEAMS", names));
+                sender.spigot().sendMessage(CMD.buildListTellraw("TEAMS", names, "/team list %s"));
                 return true;
             } else if (args.length == 2) {
                 Team team = worldGroup.getTeam(args[1]);

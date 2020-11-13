@@ -1,5 +1,7 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimBoard;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,6 +15,9 @@ public class LeaveEvent implements Listener {
      */
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        event.setQuitMessage(ChatColor.DARK_BLUE.toString() + ChatColor.DARK_BLUE.toString() + DatabaseLink.getSPSName(event.getPlayer().getUniqueId()) + " disconnected, bye!.");
+        // shutdown and remove the map thread
+        ClaimBoard.removeBoard(event.getPlayer().getUniqueId());
+
+        event.setQuitMessage(ChatColor.BLUE.toString() + ChatColor.ITALIC.toString() + DatabaseLink.getSPSName(event.getPlayer().getUniqueId()) + " disconnected, bye!.");
     }
 }

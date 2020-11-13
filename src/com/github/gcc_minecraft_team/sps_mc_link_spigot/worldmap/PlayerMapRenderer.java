@@ -6,19 +6,24 @@ import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.map.*;
+import org.bukkit.map.MapCanvas;
+import org.bukkit.map.MapPalette;
+import org.bukkit.map.MapRenderer;
+import org.bukkit.map.MapView;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.RasterFormatException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.logging.Level;
 
-public class PlayerRenderer extends MapRenderer {
+public class PlayerMapRenderer extends MapRenderer {
 
     private static final int UPDATE_DELAY = 5;
 
@@ -40,52 +45,48 @@ public class PlayerRenderer extends MapRenderer {
     private BufferedImage background;
     private BufferedImage frame;
 
-    /**
-     * Sets the map offset in blocks
-     * @param x
-     * @param z
-     */
-    public void setOffest(int x, int z) {
-        offsetX = x;
-        offsetZ = z;
+    public PlayerMapRenderer(int xOffset, int zOffset) {
+        this.offsetX = xOffset;
+        this.offsetZ = zOffset;
+    }
+
+    public PlayerMapRenderer(MapRegistry.PlayerMap playerMap) {
+        this(playerMap.xOffset, playerMap.zOffset);
     }
 
     /**
-     * Checks if a block is within
-     * the spawn protection radius
-     * @param x
-     * @param z
+     * Checks if a block is within the spawn protection radius.
+     * @param x The X offset.
+     * @param z The Z offset.
      */
      private boolean CheckInSpawnRadius(int x, int z) {
-        double zdist = z - SPSSpigot.server().getWorlds().get(0).getSpawnLocation().getZ();
-        double xdist = x - SPSSpigot.server().getWorlds().get(0).getSpawnLocation().getX();
-        if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
-            return true;
-        } else {
-            return false;
-        }
+         double zdist = z - SPSSpigot.server().getWorlds().get(0).getSpawnLocation().getZ();
+         double xdist = x - SPSSpigot.server().getWorlds().get(0).getSpawnLocation().getX();
+         return Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius();
     }
 
     @Override
     public void initialize(@NotNull MapView map) {
-
          // load map frame
         try {
-            frame = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(),"frame.png")).getSubimage((offsetX / 16) + 128, (offsetZ / 16) + 128, 128, 128);
+            BufferedImage image = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(),"frame.png"));
+            frame = image.getSubimage((offsetX / 16 + image.getWidth()/2)/128 * 128, (offsetZ / 16 + image.getHeight()/2)/128 * 128, 128, 128);
         } catch (IOException exception) {
-            exception.printStackTrace();
+            SPSSpigot.logger().log(Level.WARNING, "Failed to load frame image file for PlayerMap.");
+        } catch (RasterFormatException e) {
+            SPSSpigot.logger().log(Level.WARNING, "Failed to render frame for PlayerMap for offset (X: " + offsetX + ", Z: " + offsetZ + ") due to invalid image size.");
         }
 
          // generate images
         try {
-            GenerateWorldBackground();
+            generateWorldBackground();
         } catch (IOException exception) {
             exception.printStackTrace();
         }
 
         // load generated images
         try {
-            background = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(),"worldCache" + offsetZ + offsetX +".png"));
+            background = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(),"worldCache" + offsetZ + "," +  offsetX +".png"));
         } catch (IOException exception) {
             exception.printStackTrace();
         }
@@ -99,7 +100,6 @@ public class PlayerRenderer extends MapRenderer {
 
     @Override
     public void render(@NotNull MapView view, @NotNull MapCanvas canvas, @NotNull Player player) {
-
         // render map background
         if (!hasRendered) {
             Collection<Player> onlinePlayers = (Collection<Player>) SPSSpigot.server().getOnlinePlayers();
@@ -115,7 +115,7 @@ public class PlayerRenderer extends MapRenderer {
                     Location spawn = world.getSpawnLocation();
 
                     // player detection
-                    for(Player p : onlinePlayers) {
+                    for (Player p : onlinePlayers) {
                         try {
                             if (p.getLocation().getX() < (((x + 1) * 16) + offsetX) + 32 && p.getLocation().getX() >= (((x + 1) * 16) + offsetX) - 16) {
                                 if (p.getLocation().getZ() < (((z + 1) * 16) + offsetZ) + 32 && p.getLocation().getZ() >= (((z + 1) * 16) + offsetZ) - 16) {
@@ -129,16 +129,14 @@ public class PlayerRenderer extends MapRenderer {
                 }
             }
         }
-
         hasRendered = true;
     }
 
     /**
      * Generates the image used as the background of the map
      */
-    private void GenerateWorldBackground() throws IOException {
+    private void generateWorldBackground() throws IOException {
         BufferedImage img = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
-
         Graphics2D g2d = img.createGraphics();
 
         World world = SPSSpigot.server().getWorlds().get(0);
@@ -163,11 +161,14 @@ public class PlayerRenderer extends MapRenderer {
                 }
             }
         }
-
-        g2d.drawImage(frame, 0, 0, null);
+        try {
+            g2d.drawImage(frame, 0, 0, null);
+        } catch (Exception e) {
+            // we just don't get a frame.
+        }
 
         // write background to file
-        File file = new File(SPSSpigot.plugin().getDataFolder(),"worldCache" + offsetZ + offsetX +".png");
+        File file = new File(SPSSpigot.plugin().getDataFolder(),"worldCache" + offsetZ + "," + offsetX +".png");
         ImageIO.write(img, "png", file);
     }
 }

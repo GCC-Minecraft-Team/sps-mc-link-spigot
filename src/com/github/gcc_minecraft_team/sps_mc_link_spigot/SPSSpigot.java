@@ -1,38 +1,56 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.*;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.discord.DiscordCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.discord.DiscordTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.general.GeneralCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationTabCompleter;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.WorldGroupCommands;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.WorldGroupTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.*;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapEvents;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapCommands;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapRegistry;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapTabCompleter;
 import fr.mrmicky.fastboard.FastBoard;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitScheduler;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SPSSpigot extends JavaPlugin {
 
     public PermissionsHandler perms;
-    public Set<ClaimHandler> worldGroups;
-    public final Map<UUID, FastBoard> boards = new HashMap<>();
+    private Set<WorldGroup> worldGroups;
+    public Set<UUID> mutedPlayers;
 
     @Override
     public void onEnable() {
+
+        // initialize muted players
+        mutedPlayers = new HashSet<>();
+
         // Load plugin config
-        PluginConfig.LoadConfig();
+        PluginConfig.loadConfig();
 
         // Setup Database
         DatabaseLink.SetupDatabase();
+        worldGroups = DatabaseLink.getWorldGroups();
 
         // Start listen server
         WebInterfaceLink.Listen();
@@ -44,16 +62,10 @@ public class SPSSpigot extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PermissionsEvents(), this);
 
         // Setup Claims
-        ConfigurationSerialization.registerClass(Team.class);
-
-        worldGroups = new HashSet<>();
         getServer().getPluginManager().registerEvents(new ClaimEvents(), this);
 
         // register chat events
         getServer().getPluginManager().registerEvents(new ChatEvents(), this);
-
-        // map events
-        getServer().getPluginManager().registerEvents(new MapEvents(), this);
 
         ClaimCommands claimCommands = new ClaimCommands();
         ClaimTabCompleter claimTabCompleter = new ClaimTabCompleter();
@@ -67,11 +79,17 @@ public class SPSSpigot extends JavaPlugin {
         this.getCommand("team").setExecutor(new TeamCommands());
         this.getCommand("team").setTabCompleter(new TeamTabCompleter());
 
+        this.getCommand("maps").setExecutor(new MapCommands());
+        this.getCommand("maps").setTabCompleter(new MapTabCompleter());
+
         this.getCommand("perms").setExecutor(new PermissionsCommands());
         this.getCommand("perms").setTabCompleter(new PermissionsTabCompleter());
 
         this.getCommand("mod").setExecutor(new ModerationCommands());
         this.getCommand("mod").setTabCompleter(new ModerationTabCompleter());
+
+        this.getCommand("wgroup").setExecutor(new WorldGroupCommands());
+        this.getCommand("wgroup").setTabCompleter(new WorldGroupTabCompleter());
 
         // General utility commands for players
         GeneralCommands generalCommands = new GeneralCommands();
@@ -88,12 +106,29 @@ public class SPSSpigot extends JavaPlugin {
         this.getCommand("modmail").setExecutor(discordCommands);
         this.getCommand("modmail").setTabCompleter(discordTabCompleter);
 
+        // map events
+        MapRegistry.initConfig();
+
         // Setup other stuff
         getServer().getPluginManager().registerEvents(new JoinEvent(), this);
         getServer().getPluginManager().registerEvents(new LeaveEvent(), this);
         SPSSpigot.logger().log(Level.INFO, "SPS Spigot integration started.");
 
-        System.out.println("==[SPS MC INITIALIZED SUCCESSFULLY]==");
+        // update board every 10 ticks
+        getServer().getScheduler().runTaskTimer(this, () -> {
+            for (UUID player : ClaimBoard.getPlayers()) {
+                ClaimBoard.updateBoard(player);
+            }
+        }, 0, 10);
+    }
+
+    /**
+     * Updates the claim map scoreboard
+     * @param board
+     */
+    // TODO: Multithread this
+    public void updateBoard(@NotNull FastBoard board) {
+
     }
 
     @Override
@@ -102,34 +137,122 @@ public class SPSSpigot extends JavaPlugin {
     }
 
     /**
-     * Gets a chat friendly colored string of player ranks
-     * @param p player
-     * @return string with ranks
+     * Getter for a world group.
+     * @param name The name of the world group.
+     * @return The world group's {@link WorldGroup}.
      */
-    public static String GetRankTag(Player p) {
-        // set rank tag formatting
+    @Nullable
+    public WorldGroup getWorldGroup(@NotNull String name) {
+        for (WorldGroup worldGroup : worldGroups) {
+            if (worldGroup.getName().equalsIgnoreCase(name))
+                return worldGroup;
+        }
+        return null;
+    }
+
+    /**
+     * Getter for a world group.
+     * @param id The UUID of the world group.
+     * @return The world group's {@link WorldGroup}.
+     */
+    @Nullable
+    public WorldGroup getWorldGroup(@NotNull UUID id) {
+        for (WorldGroup worldGroup : worldGroups) {
+            if (worldGroup.getID().toString().equals(id.toString()))
+                return worldGroup;
+        }
+        return null;
+    }
+
+    /**
+     * Getter for a world group.
+     * @param world The {@link World} whose worldGroup {@link WorldGroup} should be found.
+     * @return The world group's {@link WorldGroup}, or {@code null} if the {@link World} is not in a world group.
+     */
+    @Nullable
+    public static WorldGroup getWorldGroup(@NotNull World world) {
+        for (WorldGroup worldGroup : plugin().worldGroups) {
+            if (worldGroup.hasWorld(world))
+                return worldGroup;
+        }
+        return null;
+    }
+
+    /**
+     * Gets all world groups.
+     * @return An unmodifiable {@link Set} of each world group's {@link WorldGroup}.
+     */
+    @NotNull
+    public Set<WorldGroup> getWorldGroups() {
+        return Collections.unmodifiableSet(worldGroups);
+    }
+
+    /**
+     * Adds a new world group.
+     * @param worldGroup The {@link WorldGroup} of the world group to add.
+     * @return {@code true} if successful; {@code false} if a world group already exists with this name.
+     */
+    public boolean addWorldGroup(@NotNull WorldGroup worldGroup) {
+        if (getWorldGroup(worldGroup.getName()) == null) {
+            worldGroups.add(worldGroup);
+            DatabaseLink.addWorldGroup(worldGroup);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Removes a world group.
+     * @param worldGroup The {@link WorldGroup} of the world group to remove.
+     * @return {@code true} if successful; {@code false} if this world group is unknown.
+     */
+    public boolean removeWorldGroup(@NotNull WorldGroup worldGroup) {
+        if (worldGroups.remove(worldGroup)) {
+            DatabaseLink.removeWorldGroup(worldGroup);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Gets a chat friendly colored {@link String} of player {@link Rank}s.
+     * @param player The {@link UUID} of the player to create the tag for.
+     * @return The text of the tag.
+     */
+    @NotNull
+    public String getRankTag(@NotNull UUID player) {
         StringBuilder rankTag = new StringBuilder();
-        if (SPSSpigot.perms().getPlayerRanks(p.getUniqueId()).size() > 0) {
-            for (Rank rank : SPSSpigot.perms().getPlayerRanks(p.getUniqueId())) {
+        if (perms().getPlayerRanks(player).size() > 0) {
+            for (Rank rank : perms().getPlayerRanks(player)) {
                 rankTag.append(rank.getColor()).append("[").append(rank.getName()).append("]").append(ChatColor.WHITE);
             }
         }
-
         return rankTag.toString();
     }
 
-    public static String GetRankTagNoFormat(Player p) {
-        // set rank tag without color formatting
+    /**
+     * Gets a chat-friendly {@link String} of player {@link Rank}s.
+     * @param player The {@link UUID} of the player to create the tag for.
+     * @return The unformatted text of the tag.
+     */
+    @NotNull
+    public String getRankTagNoFormat(@NotNull UUID player) {
         StringBuilder rankTag = new StringBuilder();
-        if (SPSSpigot.perms().getPlayerRanks(p.getUniqueId()).size() > 0) {
-            for (Rank rank : SPSSpigot.perms().getPlayerRanks(p.getUniqueId())) {
+        if (perms().getPlayerRanks(player).size() > 0) {
+            for (Rank rank : perms().getPlayerRanks(player)) {
                 rankTag.append("[").append(rank.getName()).append("]");
             }
         }
-
         return rankTag.toString();
     }
 
+    /**
+     * Gets the cardinal direction that the {@link Player} is currently facing.
+     * @param player The {@link Player} to check.
+     * @return A one or two-character {@link String}: N, NE, E, SE, S, SW, W, or NW.
+     */
     public static String getCardinalDirection(Player player) {
         double rotation = (player.getLocation().getYaw() - 180) % 360;
         if (rotation < 0) {
@@ -158,11 +281,42 @@ public class SPSSpigot extends JavaPlugin {
         }
     }
 
-    public static void showBoard(Player player) {
-        // create the board
-        FastBoard board = new FastBoard(player);
-        board.updateTitle(net.md_5.bungee.api.ChatColor.BOLD + "[N]");
-        SPSSpigot.plugin().boards.put(player.getUniqueId(), board);
+    /**
+     * Starts ticking the compass at the bottom of the player's screen
+     * @param player the {@link Player} the compass should be applied to
+     * @param worldGroup the {@link WorldGroup} that player in currently in
+     */
+    public void startCompass(Player player, WorldGroup worldGroup) {
+        BukkitScheduler scheduler = SPSSpigot.server().getScheduler();
+        scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), () -> {
+            // compass
+            String claimStatus = net.md_5.bungee.api.ChatColor.DARK_GREEN + "Wilderness";
+
+            if (worldGroup == null || !worldGroup.isClaimable(player.getWorld())) {
+                claimStatus = net.md_5.bungee.api.ChatColor.GRAY + "World not claimable!";
+            } else {
+                UUID chunkOwner = worldGroup.getChunkOwner(player.getLocation().getChunk());
+                Team playerTeam = worldGroup.getPlayerTeam(player.getUniqueId());
+                if (worldGroup.isInSpawn(player.getLocation()) && worldGroup.isClaimable(player.getWorld())) {
+                    claimStatus = net.md_5.bungee.api.ChatColor.DARK_PURPLE + "[Spawn] Claiming Disabled";
+                } else {
+                    if (chunkOwner != null) {
+                        if (playerTeam != null && playerTeam.getMembers().contains(chunkOwner)) {
+                            claimStatus = net.md_5.bungee.api.ChatColor.AQUA + "[" + playerTeam.getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
+                        } else if(worldGroup.getPlayerTeam(chunkOwner) != null) {
+                            claimStatus = net.md_5.bungee.api.ChatColor.RED + "[" + worldGroup.getPlayerTeam(chunkOwner).getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
+                        } else {
+                            if (player.getUniqueId().equals(chunkOwner)) {
+                                claimStatus = net.md_5.bungee.api.ChatColor.GREEN + DatabaseLink.getSPSName(chunkOwner);
+                            } else {
+                                claimStatus = net.md_5.bungee.api.ChatColor.RED + DatabaseLink.getSPSName(chunkOwner);
+                            }
+                        }
+                    }
+                }
+            }
+            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder().append("[" + SPSSpigot.getCardinalDirection(player) + "] " + claimStatus).create());
+        }, 0, 10);
     }
 
     /**
@@ -187,19 +341,6 @@ public class SPSSpigot extends JavaPlugin {
      */
     public static PermissionsHandler perms() {
         return plugin().perms;
-    }
-
-    /**
-     * Convenience function to get a {@link ClaimHandler} for a worldGroup.
-     * @param world The {@link World} whose worldGroup {@link ClaimHandler} should be found.
-     * @return The worldGroup {@link ClaimHandler}.
-     */
-    public static ClaimHandler claims(World world) {
-        for (ClaimHandler worldGroup : plugin().worldGroups) {
-            if (worldGroup.hasWorld(world))
-                return worldGroup;
-        }
-        return null;
     }
 
     /**

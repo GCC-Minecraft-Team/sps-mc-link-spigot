@@ -1,27 +1,31 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.DatabaseLink;
-import org.bson.codecs.pojo.annotations.BsonProperty;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class Team implements ConfigurationSerializable {
+public class Team {
 
-    @BsonProperty(value = "name")
     public String name;
-    @BsonProperty(value = "members")
     public Set<UUID> members;
-    @BsonProperty(value = "leader")
     public UUID leader;
 
-    private ClaimHandler worldGroup;
+    private UUID worldGroup;
 
-    public Team(@NotNull ClaimHandler worldGroup, @NotNull String name, @NotNull UUID leader) {
+    public Team(TeamSerializable team) {
+        this.name = team.name;
+        this.members = team.members;
+        this.leader = team.leader;
+        this.worldGroup = team.WGID;
+    }
+
+    public Team(@NotNull WorldGroup worldGroup, @NotNull String name, @NotNull UUID leader) {
         this.name = name;
         this.leader = leader;
+        this.worldGroup = worldGroup.getID();
         members = new HashSet<>();
         members.add(leader);
     }
@@ -35,9 +39,14 @@ public class Team implements ConfigurationSerializable {
         return name;
     }
 
+
+    /**
+     * Getter for the {@link WorldGroup} that contains this {@link Team}.
+     * @return The {@link WorldGroup} containing this {@link Team}.
+     */
     @NotNull
-    public ClaimHandler getWorldGroup() {
-        return worldGroup;
+    public WorldGroup getWorldGroup() {
+        return SPSSpigot.plugin().getWorldGroup(worldGroup);
     }
 
     /**
@@ -80,12 +89,12 @@ public class Team implements ConfigurationSerializable {
     }
 
     /**
-     * Adds a player to the team. Will not add if already a member of a team.
+     * Adds a player to the {@link Team}. Will not add if already a member of a {@link Team}.
      * @param player The {@link UUID} of the player to add.
      * @return {@code true} if successful.
      */
     public boolean addMember(@NotNull UUID player) {
-        if (worldGroup.getPlayerTeam(player) == null) {
+        if (getWorldGroup().getPlayerTeam(player) == null) {
             boolean out = members.add(player);
             DatabaseLink.updateTeam(this);
             return out;
@@ -96,7 +105,7 @@ public class Team implements ConfigurationSerializable {
     }
 
     /**
-     * Adds a player to the team. Will not add if already a member of a team.
+     * Adds a player to the {@link Team}. Will not add if already a member of a {@link Team}.
      * @param player The {@link OfflinePlayer} to add.
      * @return {@code true} if successful.
      */
@@ -105,7 +114,7 @@ public class Team implements ConfigurationSerializable {
     }
 
     /**
-     * Adds a player to the team. The leader may not leave unless they are the last member.
+     * Removes a player from the {@link Team}. The leader may not leave unless they are the last member.
      * @param player The {@link UUID} of the player to remove.
      * @return {@code true} if successful.
      */
@@ -113,7 +122,7 @@ public class Team implements ConfigurationSerializable {
         if (player.equals(leader)) {
             if (members.size() == 1) {
                 // Delete the team
-                worldGroup.deleteTeam(this);
+                getWorldGroup().deleteTeam(this);
                 DatabaseLink.updateTeam(this);
                 return true;
             } else {
@@ -126,7 +135,7 @@ public class Team implements ConfigurationSerializable {
     }
 
     /**
-     * Removes a player from the team. The leader may not leave unless they are the last member.
+     * Removes a player from the {@link Team}. The leader may not leave unless they are the last member.
      * @param player The {@link OfflinePlayer} to remove.
      * @return {@code true} if successful.
      */
@@ -145,7 +154,7 @@ public class Team implements ConfigurationSerializable {
 
     /**
      * Changes the {@link Team}'s leader to another member.
-     * @param newLeader The {@link UUID} of the new leader. The new leader must be a player.
+     * @param newLeader The {@link UUID} of the new leader. The new leader must be a member.
      * @return {@code true} if successfully changed the leader.
      */
     public boolean changeLeader(@NotNull UUID newLeader) {
@@ -157,39 +166,4 @@ public class Team implements ConfigurationSerializable {
             return false;
         }
     }
-
-    // Serialization
-    private static final String NAMEKEY = "name";
-    private static final String MEMBERSKEY = "members";
-    private static final String LEADERKEY = "leader";
-
-    public Team(@NotNull Map<String, Object> map) {
-        // Get name
-        this.name = (String) map.get(NAMEKEY);
-        // Get members
-        List<String> memberStrs = (List<String>) map.get(MEMBERSKEY);
-        this.members = new HashSet<>();
-        for (String uuidStr : memberStrs)
-            this.members.add(UUID.fromString(uuidStr));
-        // Get leader
-        this.leader = UUID.fromString((String) map.get(LEADERKEY));
-    }
-
-    @NotNull
-    @Override
-    public Map<String, Object> serialize() {
-        Map<String, Object> map = new HashMap<>();
-        // Add name
-        map.put(NAMEKEY, this.name);
-        // Add members
-        List<String> memberStrs = new ArrayList<>();
-        for (UUID uuid : this.members)
-            memberStrs.add(uuid.toString());
-        map.put(MEMBERSKEY, memberStrs);
-        // Add leader
-        map.put(LEADERKEY, this.leader.toString());
-        return map;
-    }
-
-
 }
