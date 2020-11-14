@@ -472,7 +472,7 @@ public class WorldGroup {
             Iterator itChunk = player.getValue().iterator();
             while(itChunk.hasNext()) {
                 Chunk c = (Chunk) itChunk.next();
-                if (c.getX() == chunk.getX() && c.getZ() == chunk.getZ()) {
+                if (c.getX() == chunk.getX() && c.getZ() == chunk.getZ() && chunk.getWorld().equals(c.getWorld())) {
                     return player.getKey();
                 }
             }
