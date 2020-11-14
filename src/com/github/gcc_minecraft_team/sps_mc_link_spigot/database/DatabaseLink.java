@@ -510,7 +510,7 @@ public class DatabaseLink {
 
         // give starting boat
         if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
-            player.getInventory().setItemInMainHand(new ItemStack(Material.OAK_BOAT));
+            SPSSpigot.plugin().giveStartingItems(player);
         }
 
         ClaimBoard.addBoard(player);

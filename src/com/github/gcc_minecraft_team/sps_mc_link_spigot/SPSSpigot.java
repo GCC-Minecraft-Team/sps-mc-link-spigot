@@ -17,19 +17,18 @@ import fr.mrmicky.fastboard.FastBoard;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -278,6 +277,26 @@ public class SPSSpigot extends JavaPlugin {
             return "N";
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Give the player starting items like a boat and some steak
+     * @param player
+     */
+    public void giveStartingItems(@NotNull Player player) {
+        // give starting boat and 5 cooked beef
+        ItemStack boat = new ItemStack(Material.OAK_BOAT);
+        boat.getItemMeta().setDisplayName("This is a boat!");
+        ArrayList boatLore = new ArrayList<String>();
+        boatLore.add("Use this to leave spawn!");
+        boat.getItemMeta().setLore(boatLore);
+
+        ItemStack beef = new ItemStack(Material.COOKED_BEEF);
+        beef.setAmount(5);
+        if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
+            player.getInventory().setItemInMainHand(boat);
+            player.getInventory().addItem(beef);
         }
     }
 

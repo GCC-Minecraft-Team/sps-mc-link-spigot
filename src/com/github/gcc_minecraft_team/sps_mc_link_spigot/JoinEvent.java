@@ -17,6 +17,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import xyz.haoshoku.nick.api.NickAPI;
 
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class JoinEvent implements Listener {
             player.sendMessage(PluginConfig.getPluginMOTD());
 
             if (!DatabaseLink.isRegistered(player.getUniqueId())) {
-                event.setJoinMessage("A player is joining the server!");
+                event.setJoinMessage("A new player is joining the server!");
 
                 // Create a token for the player
                 String jwt = WebInterfaceLink.CreateJWT(player.getUniqueId().toString(), "SPS MC", "Register Token", 1000000);
@@ -108,20 +109,11 @@ public class JoinEvent implements Listener {
         double zdist = pLoc.getZ() - event.getPlayer().getWorld().getSpawnLocation().getZ();
         double xdist = pLoc.getX() - event.getPlayer().getWorld().getSpawnLocation().getX();
         if (Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius()) {
-            // give starting boat and 5 cooked beef
-            ItemStack boat = new ItemStack(Material.OAK_BOAT);
-            boat.getItemMeta().setDisplayName("This is a boat!");
-            ArrayList boatLore = new ArrayList<String>();
-            boatLore.add("Use this to leave spawn!");
-            boat.getItemMeta().setLore(boatLore);
-
-            ItemStack beef = new ItemStack(Material.COOKED_BEEF);
-            beef.setAmount(5);
-
-            event.getPlayer().getInventory().setItemInMainHand(beef);
+            SPSSpigot.plugin().giveStartingItems(event.getPlayer());
         }
     }
 
+    /*
     @EventHandler
     public void onServerListPing(ServerListPingEvent event) {
         Iterator<Player> it = event.iterator();
@@ -129,6 +121,7 @@ public class JoinEvent implements Listener {
             it.next();
             it.remove();
         }
-    }
+
+    }*/
 
 }

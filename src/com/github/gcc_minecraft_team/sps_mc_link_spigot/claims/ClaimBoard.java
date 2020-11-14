@@ -6,6 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import xyz.haoshoku.nick.api.NickAPI;
 
 import java.util.*;
 
