@@ -3,6 +3,10 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.discord.DiscordWebhook;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.Rank;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -44,17 +48,21 @@ public class ChatEvents implements Listener {
                 String message = e.getMessage(); // get the message
 
                 e.setCancelled(true); // Cancel the event, so no message is sent (yet)
-
-                String newMessage =
+                String playerStr = "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId()) + "]";
+                String newMessageStr =
                         //"[" + ChatColor.ITALIC.toString() + ChatColor.GRAY + DatabaseLink.getSchoolTag(e.getPlayer().getUniqueId()) + ChatColor.RESET + "]"
-                        //+ "[" + ChatColor.ITALIC.toString() + ChatColor.GRAY + DatabaseLink.getGradeTag(e.getPlayer().getUniqueId()) + ChatColor.RESET + "]"
-                        ChatColor.DARK_AQUA + "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId())
-                        + "]" + SPSSpigot.plugin().getRankTag(e.getPlayer().getUniqueId()) + ": " + ChatColor.WHITE
+                        //+ "[" + ChatColor.ITALIC.toString() + ChatColor.GRAY + DatabaseLink.getGradeTag(e.getPlayer().getUniqueId()) + ChatColor.RESET + "]" +
+                        SPSSpigot.plugin().getRankTag(e.getPlayer().getUniqueId()) + ": " + ChatColor.WHITE
                         + message.replaceAll(e.getPlayer().getDisplayName(), ""); // format the message
+                SPSSpigot.logger().log(Level.INFO, newMessageStr);
 
-                SPSSpigot.logger().log(Level.INFO, newMessage);
-                for (Player on : SPSSpigot.server().getOnlinePlayers()) { // loop through all online players
-                    on.sendMessage(newMessage); // send the player the message
+                BaseComponent playerName = new TextComponent(playerStr);
+                playerName.setColor(net.md_5.bungee.api.ChatColor.DARK_AQUA);
+                playerName.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(DatabaseLink.getSchoolTag(e.getPlayer().getUniqueId()) + " - " + DatabaseLink.getGradeTag(e.getPlayer().getUniqueId()))));
+                playerName.addExtra(new TextComponent(newMessageStr));
+
+                for (Player on : SPSSpigot.server().getOnlinePlayers()) { // Loop through all online players
+                    on.spigot().sendMessage(playerName); // Send the player the message
                 }
 
                 // send messages to a discord channel
