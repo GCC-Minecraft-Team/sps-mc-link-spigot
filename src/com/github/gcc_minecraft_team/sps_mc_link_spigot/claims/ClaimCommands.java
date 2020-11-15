@@ -148,6 +148,7 @@ public class ClaimCommands implements CommandExecutor {
                 } else if (args[0].equalsIgnoreCase("show")) {
                     if (!ClaimBoard.hasBoard(player.getUniqueId())) {
                         ClaimBoard.addBoard(player);
+                        ClaimBoard.updateBoard(player.getUniqueId());
                         return true;
                     } else {
                         player.sendMessage(ChatColor.RED + "Claim map is already visible!");

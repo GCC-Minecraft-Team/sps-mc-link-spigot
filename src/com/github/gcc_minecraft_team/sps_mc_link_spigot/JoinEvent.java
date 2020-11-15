@@ -8,20 +8,13 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.server.ServerListPingEvent;
-import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 import xyz.haoshoku.nick.api.NickAPI;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 
 public class JoinEvent implements Listener {
 
@@ -65,11 +58,14 @@ public class JoinEvent implements Listener {
                 player.sendTitle("Welcome to" + ChatColor.BLUE +" SPS MC!", "Please use the link in chat to link your account!", 10, 200, 10);
             } else {
                 ClaimBoard.addBoard(player);
+                ClaimBoard.updateBoard(player.getUniqueId());
 
                 // claim map
                 WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
 
-                SPSSpigot.plugin().startCompass(player, worldGroup);
+                CompassThread compass = new CompassThread(player, worldGroup);
+                SPSSpigot.plugin().compassThreads.put(player.getUniqueId(), compass);
+                compass.start();
 
                 String userNoFormat =  DatabaseLink.getSPSName(player.getUniqueId());
                 String newUser = ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + userNoFormat;

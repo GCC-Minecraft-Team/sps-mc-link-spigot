@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.database;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.CompassThread;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.*;
 import com.mongodb.*;
@@ -514,8 +515,11 @@ public class DatabaseLink {
         }
 
         ClaimBoard.addBoard(player);
+        ClaimBoard.updateBoard(player.getUniqueId());
 
-        SPSSpigot.plugin().startCompass(player, SPSSpigot.getWorldGroup(player.getWorld()));
+        CompassThread compass = new CompassThread(player, SPSSpigot.getWorldGroup(player.getWorld()));
+        SPSSpigot.plugin().compassThreads.put(player.getUniqueId(), compass);
+        compass.start();
 
         player.sendMessage("You've spawned in the lobby, please use the included " + ChatColor.BLUE +"Starting Boat" + ChatColor.WHITE + " to leave the island!");
 

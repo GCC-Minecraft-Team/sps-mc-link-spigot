@@ -17,6 +17,9 @@ public class LeaveEvent implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         // shutdown and remove the map thread
         ClaimBoard.removeBoard(event.getPlayer().getUniqueId());
+        // remove the compass thread and shut it down
+        SPSSpigot.plugin().compassThreads.get(event.getPlayer().getUniqueId()).stop();
+        SPSSpigot.plugin().compassThreads.remove(event.getPlayer().getUniqueId());
 
         event.setQuitMessage(ChatColor.BLUE.toString() + ChatColor.ITALIC.toString() + DatabaseLink.getSPSName(event.getPlayer().getUniqueId()) + " disconnected, bye!.");
     }

@@ -13,9 +13,6 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.*;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapRegistry;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap.MapTabCompleter;
-import fr.mrmicky.fastboard.FastBoard;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Server;
@@ -24,7 +21,6 @@ import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,12 +33,16 @@ public class SPSSpigot extends JavaPlugin {
     public PermissionsHandler perms;
     private Set<WorldGroup> worldGroups;
     public Set<UUID> mutedPlayers;
+    public Map<UUID, CompassThread> compassThreads;
 
     @Override
     public void onEnable() {
 
         // initialize muted players
         mutedPlayers = new HashSet<>();
+
+        // initialize compass thread map
+        compassThreads = new HashMap<>();
 
         // Load plugin config
         PluginConfig.loadConfig();
@@ -113,21 +113,10 @@ public class SPSSpigot extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new LeaveEvent(), this);
         SPSSpigot.logger().log(Level.INFO, "SPS Spigot integration started.");
 
-        // update board every 10 ticks
-        getServer().getScheduler().runTaskTimer(this, () -> {
-            for (UUID player : ClaimBoard.getPlayers()) {
-                ClaimBoard.updateBoard(player);
-            }
-        }, 0, 10);
-    }
-
-    /**
-     * Updates the claim map scoreboard
-     * @param board
-     */
-    // TODO: Multithread this
-    public void updateBoard(@NotNull FastBoard board) {
-
+        // update board
+        for (UUID player : ClaimBoard.getPlayers()) {
+            ClaimBoard.updateBoard(player);
+        }
     }
 
     @Override
@@ -298,44 +287,6 @@ public class SPSSpigot extends JavaPlugin {
             player.getInventory().setItemInMainHand(boat);
             player.getInventory().addItem(beef);
         }
-    }
-
-    /**
-     * Starts ticking the compass at the bottom of the player's screen
-     * @param player the {@link Player} the compass should be applied to
-     * @param worldGroup the {@link WorldGroup} that player in currently in
-     */
-    public void startCompass(Player player, WorldGroup worldGroup) {
-        BukkitScheduler scheduler = SPSSpigot.server().getScheduler();
-        scheduler.scheduleSyncRepeatingTask(SPSSpigot.plugin(), () -> {
-            // compass
-            String claimStatus = net.md_5.bungee.api.ChatColor.DARK_GREEN + "Wilderness";
-
-            if (worldGroup == null || !worldGroup.isClaimable(player.getWorld())) {
-                claimStatus = net.md_5.bungee.api.ChatColor.GRAY + "World not claimable!";
-            } else {
-                UUID chunkOwner = worldGroup.getChunkOwner(player.getLocation().getChunk());
-                Team playerTeam = worldGroup.getPlayerTeam(player.getUniqueId());
-                if (worldGroup.isInSpawn(player.getLocation()) && worldGroup.isClaimable(player.getWorld())) {
-                    claimStatus = net.md_5.bungee.api.ChatColor.DARK_PURPLE + "[Spawn] Claiming Disabled";
-                } else {
-                    if (chunkOwner != null) {
-                        if (playerTeam != null && playerTeam.getMembers().contains(chunkOwner)) {
-                            claimStatus = net.md_5.bungee.api.ChatColor.AQUA + "[" + playerTeam.getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
-                        } else if(worldGroup.getPlayerTeam(chunkOwner) != null) {
-                            claimStatus = net.md_5.bungee.api.ChatColor.RED + "[" + worldGroup.getPlayerTeam(chunkOwner).getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
-                        } else {
-                            if (player.getUniqueId().equals(chunkOwner)) {
-                                claimStatus = net.md_5.bungee.api.ChatColor.GREEN + DatabaseLink.getSPSName(chunkOwner);
-                            } else {
-                                claimStatus = net.md_5.bungee.api.ChatColor.RED + DatabaseLink.getSPSName(chunkOwner);
-                            }
-                        }
-                    }
-                }
-            }
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder().append("[" + SPSSpigot.getCardinalDirection(player) + "] " + claimStatus).create());
-        }, 0, 10);
     }
 
     /**
