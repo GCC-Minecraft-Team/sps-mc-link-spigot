@@ -8,7 +8,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -96,6 +95,8 @@ public class JoinEvent implements Listener {
     public void onPlayerLeave(PlayerQuitEvent event) {
         event.setQuitMessage("");
         SPSSpigot.perms().removeAttachment(event.getPlayer());
+        for (WorldGroup worldGroup : SPSSpigot.plugin().getWorldGroups())
+            worldGroup.setOverride(event.getPlayer().getUniqueId(), false);
     }
 
     /**

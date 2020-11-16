@@ -76,6 +76,9 @@ public class SPSSpigot extends JavaPlugin {
         this.getCommand("unclaim").setExecutor(claimCommands);
         this.getCommand("unclaim").setTabCompleter(claimTabCompleter);
 
+        this.getCommand("adminc").setExecutor(new AdminClaimCommands());
+        this.getCommand("adminc").setTabCompleter(new AdminClaimTabCompleter());
+
         this.getCommand("team").setExecutor(new TeamCommands());
         this.getCommand("team").setTabCompleter(new TeamTabCompleter());
 

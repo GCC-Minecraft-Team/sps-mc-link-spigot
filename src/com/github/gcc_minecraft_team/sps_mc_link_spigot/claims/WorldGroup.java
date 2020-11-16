@@ -18,7 +18,9 @@ public class WorldGroup {
     private Set<World> claimable;
     private Set<Team> teams;
     private Map<UUID, Set<Chunk>> claims;
+
     private Map<UUID, Team> joinRequests;
+    private Set<UUID> overrides;
 
     /**
      * This is the simple constructor, generally for new instances not loaded from file.
@@ -31,7 +33,10 @@ public class WorldGroup {
         claimable = new HashSet<>();
         teams = new HashSet<>();
         claims = new HashMap<>();
+
         joinRequests = new HashMap<>();
+        overrides = new HashSet<>();
+
         saveCurrentClaims();
     }
 
@@ -68,6 +73,7 @@ public class WorldGroup {
         }
 
         this.joinRequests = new HashMap<>();
+        this.overrides = new HashSet<>();
     }
 
     /**
@@ -89,6 +95,7 @@ public class WorldGroup {
      * Getter for this {@link WorldGroup}'s name.
      * @return This {@link WorldGroup}'s name.
      */
+    @NotNull
     public String getName() {
         return name;
     }
@@ -97,6 +104,7 @@ public class WorldGroup {
      * Getter for this {@link WorldGroup}'s ID.
      * @return This {@link WorldGroup}'s ID.
      */
+    @NotNull
     public UUID getID() { return id; }
 
     /**
@@ -104,7 +112,7 @@ public class WorldGroup {
      * @param world The {@link World} to check for.
      * @return {@code true} if this {@link WorldGroup} contains the {@link World}.
      */
-    public boolean hasWorld(World world) {
+    public boolean hasWorld(@NotNull World world) {
         return worlds.contains(world);
     }
 
@@ -112,6 +120,7 @@ public class WorldGroup {
      * Gets all {@link World}s this {@link WorldGroup} contains.
      * @return An unmodifiable {@link Set} of {@link World}s.
      */
+    @NotNull
     public Set<World> getWorlds() {
         return Collections.unmodifiableSet(worlds);
     }
@@ -121,7 +130,7 @@ public class WorldGroup {
      * @param world The {@link World} to add.
      * @return {@code true} if successful, {@code false} if the {@link World} is already in a {@link WorldGroup}.
      */
-    public boolean addWorld(World world) {
+    public boolean addWorld(@NotNull World world) {
         if (SPSSpigot.getWorldGroup(world) == null) {
             worlds.add(world);
             DatabaseLink.addWorld(this, world);
@@ -136,7 +145,7 @@ public class WorldGroup {
      * @param world The {@link World} to remove.
      * @return {@code true} if successful, {@code false} if the {@link World} was not in this {@link WorldGroup}.
      */
-    public boolean removeWorld(World world) {
+    public boolean removeWorld(@NotNull World world) {
         if (worlds.remove(world)) {
             claimable.remove(world);
             DatabaseLink.removeWorld(this, world);
@@ -150,6 +159,7 @@ public class WorldGroup {
      * Getter for this {@link WorldGroup}'s claimable {@link World}s.
      * @return An unmodifiable {@link Set} of {@link WorldGroup}'s claimable {@link World}s.
      */
+    @NotNull
     public Set<World> getClaimable() {
         return Collections.unmodifiableSet(claimable);
     }
@@ -159,7 +169,7 @@ public class WorldGroup {
      * @param world The {@link World} to check.
      * @return {@code true} if this {@link WorldGroup}'s claimable list contains the {@link World}.
      */
-    public boolean isClaimable(World world) {
+    public boolean isClaimable(@NotNull World world) {
         return claimable.contains(world);
     }
 
@@ -183,7 +193,7 @@ public class WorldGroup {
      * @param world The {@link World} to remove.
      * @return {@code true} if successful, {@code false} if the {@link World} was not in this {@link WorldGroup}.
      */
-    public boolean removeWorldClaimable(World world) {
+    public boolean removeWorldClaimable(@NotNull World world) {
         if (claimable.remove(world)) {
             DatabaseLink.removeWorldClaimable(this, world);
             return true;
@@ -208,7 +218,7 @@ public class WorldGroup {
      * @param entity The {@link Entity} to check.
      * @return {@code true} if its {@link Location} {@link #isInSpawn(Location)}.
      */
-    public boolean isEntityInSpawn(Entity entity) {
+    public boolean isEntityInSpawn(@NotNull Entity entity) {
         return isInSpawn(entity.getLocation());
     }
 
@@ -417,6 +427,27 @@ public class WorldGroup {
     }
 
     /**
+     * Sets the claim override status of a given player.
+     * @param player The {@link UUID} of the player.
+     * @param value The boolean value of whether the player should be set to have claim override.
+     */
+    public void setOverride(@NotNull UUID player, boolean value) {
+        if (value)
+            overrides.add(player);
+        else
+            overrides.remove(player);
+    }
+
+    /**
+     * Gets whether a player has claim override enabled.
+     * @param player The {@link UUID} of the player to check.
+     * @return {@code true} if the player has claim override enabled.
+     */
+    public boolean hasOverride(@NotNull UUID player) {
+        return overrides.contains(player);
+    }
+
+    /**
      * Calculates the maximum number of {@link Chunk}s a player can claim, based on their play time.
      * Formula where h is the number of hours online: {@code 16 + 8log_{2}(h+2)}
      * @param player The {@link OfflinePlayer} to check.
@@ -466,12 +497,8 @@ public class WorldGroup {
     // NOTE!!! READ ME!!! Don't remove this function or change it to use .equals() (for some reason that breaks the server a lot)
     @Nullable
     public UUID getChunkOwner(@NotNull Chunk chunk) {
-        Iterator it = claims.entrySet().iterator();
-        while(it.hasNext()) {
-            Map.Entry<UUID, Set<Chunk>> player = (Map.Entry<UUID, Set<Chunk>>) it.next();
-            Iterator itChunk = player.getValue().iterator();
-            while(itChunk.hasNext()) {
-                Chunk c = (Chunk) itChunk.next();
+        for (Map.Entry<UUID, Set<Chunk>> player : claims.entrySet()) {
+            for (Chunk c : player.getValue()) {
                 if (c.getX() == chunk.getX() && c.getZ() == chunk.getZ() && chunk.getWorld().equals(c.getWorld())) {
                     return player.getKey();
                 }
@@ -591,15 +618,10 @@ public class WorldGroup {
      * @param chunk The {@link Chunk} to be unclaimed.
      * @return {@code true} if successful; {@code false} if already not claimed.
      */
-    public boolean unclaimChunk(@NotNull Chunk chunk, UUID owner) {
-        for (Map.Entry<UUID, Set<Chunk>> e : claims.entrySet())
-        {
+    public boolean unclaimChunk(@NotNull Chunk chunk, @NotNull UUID owner) {
+        for (Map.Entry<UUID, Set<Chunk>> e : claims.entrySet()) {
             if (e.getKey().equals(owner)) {
-                try {
-                    e.getValue().remove(chunk);
-                } catch(NullPointerException exception) {
-                    // do nothing
-                }
+                e.getValue().remove(chunk);
             }
         }
         saveCurrentClaims();
@@ -612,10 +634,10 @@ public class WorldGroup {
      * @return A {@link Set} of the {@link Chunk}s that were successfully unclaimed.
      */
     @NotNull
-    public Set<Chunk> unclaimChunkSet(@NotNull Set<Chunk> chunks, UUID owner) {
+    public Set<Chunk> unclaimChunkSet(@NotNull Set<Chunk> chunks, @NotNull UUID owner) {
         Set<Chunk> successes = new HashSet<>();
         for (Chunk chunk : chunks) {
-            if (owner != null && claims.get(owner).remove(chunk)) {
+            if (claims.get(owner).remove(chunk)) {
                 successes.add(chunk);
             }
         }
@@ -625,18 +647,19 @@ public class WorldGroup {
 
     /**
      * Checks whether a player is allowed to modify a chunk. If player is null, then only chunks that are unclaimed are allowed. This is to allow events that are related to unclaimed blocks.
-     * @param player The {@link UUID} of the player to check, or {@code null} if relating to unclaimed blocks.
+     * @param player The {@link UUID} of the player to check, or {@code null} if relating to behavior by unclaimed blocks.
      * @param chunk The {@link Chunk} to check claims on.
+     * @param isPlayer {@code true} if an actual player is doing the action, or {@code false} if blocks/entities owned by the player are doing the action.
      * @return Whether the player is allowed to modify the {@link Chunk}.
      */
-    public boolean canModifyChunk(@Nullable UUID player, @NotNull Chunk chunk) {
+    public boolean canModifyChunk(@Nullable UUID player, @NotNull Chunk chunk, boolean isPlayer) {
         UUID owner = getChunkOwner(chunk);
         if (player == null) {
             // This means the check is probably on a non-player, unclaimed block
             return owner == null;
         } else {
             // We're just checking a player's permission in a chunk.
-            return owner == null || owner.equals(player) || isOnSameTeam(player, owner);
+            return owner == null || owner.equals(player) || isOnSameTeam(player, owner) || (isPlayer && hasOverride(player));
         }
     }
 }

@@ -17,6 +17,11 @@ commands:
     description: Un-claims area around player.
     usage: "Usage /<command>"
     permission: spsmc.claim
+  adminc:
+    description: Base command for admin control over the claims system.
+    usage: "Usage /<command> <override|unclaim>"
+    permission: spsmc.adminc
+    aliases: ["adminclaim"]
   team:
     description: Base command for the teams system.
     usage: "Usage: /<command> <create|join|kick|leave|list|requests>"
@@ -66,6 +71,9 @@ permissions:
   spsmc.claim:
     description: Allows member claim commands.
     default: true
+  spsmc.adminc:
+    description: Allows administrative control over claims.
+    default: op
   spsmc.team:
     description: Allows member team commands.
     default: true
