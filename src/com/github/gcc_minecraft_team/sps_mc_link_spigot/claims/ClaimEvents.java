@@ -68,11 +68,13 @@ public class ClaimEvents implements Listener {
      */
     @EventHandler
     public void onVehicleDestroy(VehicleDestroyEvent event) {
-        Chunk chunk = event.getAttacker().getLocation().getChunk();
-        WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
-        if (worldGroup != null) {
-            if (!worldGroup.canModifyChunk(event.getAttacker().getUniqueId(), chunk)) {
-                event.setCancelled(true);
+        if (event.getAttacker() != null) {
+            Chunk chunk = event.getAttacker().getLocation().getChunk();
+            WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+            if (worldGroup != null) {
+                if (!worldGroup.canModifyChunk(event.getAttacker().getUniqueId(), chunk)) {
+                    event.setCancelled(true);
+                }
             }
         }
     }

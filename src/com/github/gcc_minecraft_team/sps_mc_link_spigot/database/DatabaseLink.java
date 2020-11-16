@@ -348,10 +348,10 @@ public class DatabaseLink {
      * @return The {@link Player} if they are linked and online, otherwise {@code null}.
      */
     @Nullable
-    public static Player getSPSPlayer(@NotNull String SPSName) {
+    public static OfflinePlayer getSPSPlayer(@NotNull String SPSName) {
         UUID uuid = getSPSUUID(SPSName);
         if (uuid != null)
-            return SPSSpigot.server().getPlayer(uuid);
+            return SPSSpigot.server().getOfflinePlayer(uuid);
         else
             return null;
     }

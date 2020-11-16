@@ -10,6 +10,7 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Statistic;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommandYamlParser;
 import org.bukkit.entity.Arrow;
@@ -112,6 +113,9 @@ public class ChatEvents implements Listener {
                 (int)deathLocation.getX() + ", " +
                 (int)deathLocation.getY() + ", " +
                 (int)deathLocation.getZ() + ").");
+
+        String deathCounter = ChatColor.RED + NickAPI.getName(event.getEntity()) + " has died " + ((Player)ent).getStatistic(Statistic.DEATHS) + " time(s) on the server.";
+        Bukkit.broadcastMessage(deathCounter);
     }
 
     /**

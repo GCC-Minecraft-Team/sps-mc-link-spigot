@@ -54,6 +54,10 @@ commands:
     description: Cancels teleportation
     usage: "Usage: /cancel"
     permission: spsmc.general
+  stats:
+    description: Shows player statistics
+    usage: "Usage: /stats"
+    permission: spsmc.general
 
 permissions:
   spsmc.general:

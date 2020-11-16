@@ -8,6 +8,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -69,7 +70,9 @@ public class JoinEvent implements Listener {
 
                 String userNoFormat =  DatabaseLink.getSPSName(player.getUniqueId());
                 String newUser = ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + userNoFormat;
-                event.setJoinMessage(newUser + " joined the server.");
+                String school = DatabaseLink.getSchoolTag(player.getUniqueId());
+                String grade = DatabaseLink.getGradeTag(player.getUniqueId());
+                event.setJoinMessage(newUser + " (" + school + ", " + grade + ")" + " joined the server.");
 
                 int maxLength = Math.min(userNoFormat.length(), 15);
                 Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), () -> {

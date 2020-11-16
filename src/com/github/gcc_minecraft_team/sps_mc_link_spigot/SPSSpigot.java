@@ -5,6 +5,7 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.discord.DiscordCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.discord.DiscordTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.general.GeneralCommands;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.general.GeneralTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationCommands;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.ModerationTabCompleter;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation.WorldGroupCommands;
@@ -92,8 +93,12 @@ public class SPSSpigot extends JavaPlugin {
 
         // General utility commands for players
         GeneralCommands generalCommands = new GeneralCommands();
+        GeneralTabCompleter generalTabCompleter = new GeneralTabCompleter();
         this.getCommand("spawn").setExecutor(generalCommands);
         this.getCommand("cancel").setExecutor(generalCommands);
+        this.getCommand("stats").setExecutor(generalCommands);
+
+        this.getCommand("stats").setTabCompleter(generalTabCompleter);
 
         // Moderation discord integration
         DiscordCommands discordCommands = new DiscordCommands();

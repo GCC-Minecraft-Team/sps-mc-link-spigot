@@ -4,6 +4,7 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -273,7 +274,7 @@ public class PermissionsCommands implements CommandExecutor {
                         playerName.append(" ").append(args[i]);
                     }
 
-                    Player player = DatabaseLink.getSPSPlayer(playerName.toString());
+                    OfflinePlayer player = DatabaseLink.getSPSPlayer(playerName.toString());
                     if (rank == null) {
                         // No rank with this name exists.
                         sender.sendMessage(ChatColor.RED + "The rank '" + args[2] + "' was not recognized.");
@@ -286,11 +287,11 @@ public class PermissionsCommands implements CommandExecutor {
                         // We have a known player and rank.
                         if (SPSSpigot.perms().givePlayerRank(player.getUniqueId(), rank)) {
                             // The player did not have the rank before and we gave them it.
-                            sender.sendMessage(ChatColor.GREEN + "Gave rank '" + rank.getName() + "' to player '" + NickAPI.getName(player) + "'!");
+                            sender.sendMessage(ChatColor.GREEN + "Gave rank '" + rank.getName() + "' to player '" + DatabaseLink.getSPSName(player.getUniqueId()) + "'!");
                             return true;
                         } else {
                             // The player already had the rank.
-                            sender.sendMessage(ChatColor.RED + "Player '" + NickAPI.getName(player) + "' already has rank '" + rank.getName() + "'.");
+                            sender.sendMessage(ChatColor.RED + "Player '" + DatabaseLink.getSPSName(player.getUniqueId()) + "' already has rank '" + rank.getName() + "'.");
                             return true;
                         }
                     }
@@ -310,7 +311,7 @@ public class PermissionsCommands implements CommandExecutor {
                     for (int i = 4; i < args.length; i++) {
                         playerName.append(" ").append(args[i]);
                     }
-                    Player player = DatabaseLink.getSPSPlayer(playerName.toString());
+                    OfflinePlayer player = DatabaseLink.getSPSPlayer(playerName.toString());
                     if (rank == null) {
                         // No rank with this name exists.
                         sender.sendMessage(ChatColor.RED + "The rank '" + args[2] + "' was not recognized.");
@@ -323,11 +324,11 @@ public class PermissionsCommands implements CommandExecutor {
                         // We have a known player and rank.
                         if (SPSSpigot.perms().removePlayerRank(player.getUniqueId(), rank)) {
                             // The player did have the rank before and we removed it.
-                            sender.sendMessage(ChatColor.GREEN + "Removed rank '" + rank.getName() + "' from player '" + NickAPI.getName(player) + "'!");
+                            sender.sendMessage(ChatColor.GREEN + "Removed rank '" + rank.getName() + "' from player '" + DatabaseLink.getSPSName(player.getUniqueId()) + "'!");
                             return true;
                         } else {
                             // The player did not already have the rank.
-                            sender.sendMessage(ChatColor.RED + "Player '" + NickAPI.getName(player) + "' already did not have '" + rank.getName() + "'.");
+                            sender.sendMessage(ChatColor.RED + "Player '" + DatabaseLink.getSPSName(player.getUniqueId()) + "' already did not have '" + rank.getName() + "'.");
                             return true;
                         }
                     }
@@ -343,7 +344,7 @@ public class PermissionsCommands implements CommandExecutor {
                     StringBuilder str = new StringBuilder(args[2]);
                     for (int i = 3; i < args.length; i++)
                         str.append(args[i]);
-                    Player player = DatabaseLink.getSPSPlayer(str.toString());
+                    OfflinePlayer player = DatabaseLink.getSPSPlayer(str.toString());
                     if (player == null) {
                         // Player not recognized
                         sender.sendMessage(ChatColor.RED + "Player '" + str + "' was not recognized.");
@@ -360,7 +361,7 @@ public class PermissionsCommands implements CommandExecutor {
                         for (Rank rank : SPSSpigot.perms().getPlayerRanks(player.getUniqueId()))
                             items.add(rank.getColor() + rank.getName());
                         // Generate text
-                        sender.sendMessage(CMD.buildListText(NickAPI.getName(player), items));
+                        sender.sendMessage(CMD.buildListText(DatabaseLink.getSPSName(player.getUniqueId()), items));
                         return true;
                     }
                 }
