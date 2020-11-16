@@ -262,6 +262,8 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onEntityExplodeEvent(EntityExplodeEvent event) {
         // Stop TNT explosions from breaking claimed blocks
+        // Nathan: Temporarily removing this as people should be able to use TNT in their own claims
+        /*
         if (!event.getEntityType().isAlive()) {
             WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getEntity().getWorld());
             if (worldGroup != null) {
@@ -272,6 +274,7 @@ public class ClaimEvents implements Listener {
                 }
             }
         }
+         */
     }
 
     @EventHandler

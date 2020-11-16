@@ -155,7 +155,7 @@ public class ChatEvents implements Listener {
                         List<Command> commandList = PluginCommandYamlParser.parse(plugin);
                         for (Command value : commandList) {
                             if (value.getPermission() == null || e.getPlayer().hasPermission(value.getPermission())) {
-                                helpList.append("\n" + ChatColor.GOLD).append(value.getName()).append(ChatColor.WHITE).append("  -  ").append(value.getDescription()).append("\n");
+                                helpList.append("\n" + ChatColor.GOLD).append("/" + value.getName()).append(ChatColor.WHITE).append("  -  ").append(value.getDescription()).append("\n");
                             }
                         }
                         e.getPlayer().sendMessage(helpList.toString());
