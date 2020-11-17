@@ -1,5 +1,6 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.PluginConfig;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.mongodb.DBObject;
@@ -202,9 +203,15 @@ public class WorldGroup {
      * @return {@code true} if the {@link Location} is within the spawn radius.
      */
     public boolean isInSpawn(@NotNull Location location) {
+        int spawnRadius = SPSSpigot.server().getSpawnRadius();
+        if (location.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
+            // apply nether spawn offset if applicable
+            spawnRadius += PluginConfig.getNetherSpawnOffset();
+        }
+
         double zdist = location.getZ() - location.getWorld().getSpawnLocation().getZ();
         double xdist = location.getX() - location.getWorld().getSpawnLocation().getX();
-        return Math.abs(zdist) <= SPSSpigot.server().getSpawnRadius() && Math.abs(xdist) <= SPSSpigot.server().getSpawnRadius();
+        return Math.abs(zdist) <= spawnRadius && Math.abs(xdist) <= spawnRadius;
     }
 
     /**
@@ -432,7 +439,7 @@ public class WorldGroup {
         }
         // 16 + 32log_2(x+2)
         // Nathan: Increased max chunk scale
-        return (int) (16 + 32 * Math.log((playTicks / (20.0 * 60.0 * 60.0)) + 2) / Math.log(2));
+        return (int) (16 + 32 * Math.log((playTicks / (20.0 * 60.0 * 60.0)) + 2) / Math.log(2)) + SPSSpigot.perms().getPlayerExtraClaims(player.getUniqueId());
     }
 
     /**

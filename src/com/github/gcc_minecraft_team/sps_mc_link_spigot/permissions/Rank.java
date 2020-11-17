@@ -17,6 +17,7 @@ import java.util.*;
 public class Rank implements ConfigurationSerializable {
 
     private final String name;
+    private int extraClaims;
     private final HashMap<Permission, Boolean> perms;
     private ChatColor color;
 
@@ -35,6 +36,23 @@ public class Rank implements ConfigurationSerializable {
     @NotNull
     public String getName() {
         return this.name;
+    }
+
+    // ========[RANK PERKS]========
+
+    /**
+     * Gets the amount of extra claims this rank has
+     * @return the number of extra claim chunks
+     */
+    @NotNull
+    public int getExtraClaims() { return this.extraClaims; }
+
+    /**
+     * Sets the amount of extra claims this rank should have.
+     * @param extraClaims the number of extra claim chunks
+     */
+    public void setExtraClaims(int extraClaims) {
+        this.extraClaims = extraClaims;
     }
 
     // ========[PERMISSIONS]========
@@ -156,6 +174,7 @@ public class Rank implements ConfigurationSerializable {
     // ========[SERIALIZATION]========
 
     private static final String NAMEKEY = "name";
+    private static final String EXTRACLAIMSKEY = "extraclaims";
     private static final String PERMSKEY = "perms";
     private static final String COLORKEY = "color";
 
@@ -167,6 +186,10 @@ public class Rank implements ConfigurationSerializable {
             if (perm != null)
                 this.perms.put(perm, permStr.getValue());
         }
+
+        // get extra claims
+        this.extraClaims = (int) map.get(EXTRACLAIMSKEY);
+
         // Try and get the color from the string; default to white if not recognized.
         try {
             this.color = ChatColor.valueOf(((String) map.get(COLORKEY)).strip().replace(" ", "_").toUpperCase());
@@ -185,6 +208,7 @@ public class Rank implements ConfigurationSerializable {
             permStrs.put(perm.getKey().getName(), perm.getValue());
         map.put(PERMSKEY, permStrs);
         map.put(COLORKEY, this.color.name());
+        map.put(EXTRACLAIMSKEY, this.extraClaims);
         return map;
     }
 }

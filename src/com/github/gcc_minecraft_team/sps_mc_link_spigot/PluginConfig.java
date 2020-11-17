@@ -20,6 +20,7 @@ public class PluginConfig {
     public static final String MESSAGEWEBHOOK = "messageWebhook";
     public static final String CHATWEBHOOK = "chatWebhook";
     public static final String ENABLECLAIMMAP = "enable-claim-map";
+    public static final String NETHERSPAWNOFFSET = "nether-spawn-offset";
 
     private static FileConfiguration pluginCfg;
 
@@ -37,6 +38,7 @@ public class PluginConfig {
         pluginCfg.addDefault(MESSAGEWEBHOOK, "");
         pluginCfg.addDefault(CHATWEBHOOK, "");
         pluginCfg.addDefault(ENABLECLAIMMAP, true);
+        pluginCfg.addDefault(NETHERSPAWNOFFSET, 250);
 
         // load config
         try {
@@ -150,5 +152,16 @@ public class PluginConfig {
             return pluginCfg.getBoolean(ENABLECLAIMMAP);
         else
             return true;
+    }
+
+    /**
+     * Gets config option "{@value NETHERSPAWNOFFSET}" to set the radius offset of spawn protection in the nether.
+     * @return {@value NETHERSPAWNOFFSET} as an integer.
+     */
+    public static int getNetherSpawnOffset() {
+        if (pluginCfg != null)
+            return pluginCfg.getInt(NETHERSPAWNOFFSET);
+        else
+            return 0;
     }
 }

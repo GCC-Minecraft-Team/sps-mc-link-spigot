@@ -325,6 +325,15 @@ public class PermissionsHandler {
     }
 
     /**
+     * gets the number of extra claims for a player (taking into account all current ranks)
+     * @param player the player to check.
+     * @return the number of extra claims for a rank.
+     */
+    public int getPlayerExtraClaims(@NotNull UUID player) {
+        return playerRanks.get(player).parallelStream().map(Rank::getExtraClaims).reduce(0, Integer::sum);
+    }
+
+    /**
      * Get all the players that hold a given {@link Rank}.
      * @param rank The {@link Rank} to check.
      * @return A {@link Set} of the {@link UUID}s of the players that hold the {@link Rank}.

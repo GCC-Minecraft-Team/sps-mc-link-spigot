@@ -247,6 +247,36 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     }
                 }
+            } else if (args[1].equals("claims")) {
+                // sets the number of extra claims a rank should have.
+                if (args.length == 2) {
+                    // No arguments given for /perms rank color
+                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " rank claims <rank> [extra claims]");
+                    return true;
+                } else {
+                    // There is a rank given; may or may not be a number specified.
+                    Rank rank = SPSSpigot.perms().getRank(args[2]);
+                    if (rank == null) {
+                        // Rank not recognized
+                        sender.sendMessage(ChatColor.RED + "Rank '" + args[2] + "' was not recognized.");
+                        return true;
+                    } else if (args.length == 3) {
+                        // No number of claims specified; report current extra claims
+                        sender.sendMessage("Current number of claims for " + rank.getColor() + rank.getName() + ChatColor.RESET + ": " + ChatColor.BOLD + rank.getExtraClaims());
+                        return true;
+                    } else {
+                        // Number specified; change current extra claims
+                        try {
+                            rank.setExtraClaims(Integer.parseInt(args[3]));
+                        } catch (NumberFormatException exception) {
+                            sender.sendMessage(ChatColor.RED + "Please specify a valid number of extra claim chunks.");
+                            return true;
+                        }
+
+                        sender.sendMessage("Set extra claim chunks for " + rank.getColor() + rank.getName() + ChatColor.RESET + ": " + ChatColor.BOLD + args[3]);
+                        return true;
+                    }
+                }
             } else {
                 // args[1] is invalid
                 sender.sendMessage(ChatColor.RED + "Usage: /" + label + " rank <create|delete|list|set|unset|color>");

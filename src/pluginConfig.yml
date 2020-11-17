@@ -4,3 +4,4 @@ pluginMOTD: ""
 reportWebhook: ""
 messageWebhook: ""
 enable-claim-map: True
+nether-spawn-offset: 250
