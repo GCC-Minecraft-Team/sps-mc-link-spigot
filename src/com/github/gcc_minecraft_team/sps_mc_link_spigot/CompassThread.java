@@ -6,6 +6,7 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -14,16 +15,19 @@ import java.util.UUID;
  */
 public class CompassThread implements Runnable {
     private Thread t;
-    private Player player;
+    private final Player player;
     private WorldGroup worldGroup;
     private boolean running;
 
-    public CompassThread(Player player, WorldGroup worldGroup) {
+    public CompassThread(@NotNull Player player, @NotNull WorldGroup worldGroup) {
         this.player = player;
         this.worldGroup = worldGroup;
         running = true;
     }
 
+    /**
+     * Creates and starts the {@link Thread}.
+     */
     public void start() {
         if (t == null) {
             t = new Thread(this, "CompassThread");
@@ -31,11 +35,15 @@ public class CompassThread implements Runnable {
         }
     }
 
+    /**
+     * Stops the updating.
+     */
     public void stop() {
         running = false;
         t.interrupt();
     }
 
+    @Override
     public void run() {
         while (running) {
             // compass
@@ -52,8 +60,8 @@ public class CompassThread implements Runnable {
                     if (chunkOwner != null) {
                         if (playerTeam != null && playerTeam.getMembers().contains(chunkOwner)) {
                             claimStatus = net.md_5.bungee.api.ChatColor.AQUA + "[" + playerTeam.getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
-                        } else if (worldGroup.getPlayerTeam(chunkOwner) != null) {
-                            claimStatus = net.md_5.bungee.api.ChatColor.RED + "[" + worldGroup.getPlayerTeam(chunkOwner).getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
+                        } else if (playerTeam != null) {
+                            claimStatus = net.md_5.bungee.api.ChatColor.RED + "[" + playerTeam.getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
                         } else {
                             if (player.getUniqueId().equals(chunkOwner)) {
                                 claimStatus = net.md_5.bungee.api.ChatColor.GREEN + DatabaseLink.getSPSName(chunkOwner);

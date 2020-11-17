@@ -26,85 +26,92 @@ public class TeamTabCompleter implements TabCompleter {
         Player player = (Player) sender;
         WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
         if (worldGroup == null) {
-            // This world is not in a worldGroup
+            // This world is not in a WorldGroup
             return new ArrayList<>();
-        } else if (args.length == 1) {
-            // /team <partial>
-            return CMD.keepStarts(Arrays.asList("create", "join", "leave", "kick", "list", "requests"), args[0]);
-        } else if (args[0].equals("create")) {
-            // /team create <...partial>
-            return new ArrayList<>();
-        } else if (args[0].equals("join")) {
-            if (args.length == 2) {
-                // /team join <partial>
-                return CMD.keepStarts(new ArrayList<>(worldGroup.getTeamNames()), args[1]);
-            } else {
-                // /team join <team> <partial>
-                return new ArrayList<>();
-            }
-        } else if (args[0].equals("kick")) {
-            // /team kick <...partial>
-            return CMD.keepStarts(new ArrayList<>(worldGroup.getPlayerTeam((player).getUniqueId()).getMemberNames()), args[1]);
-        } else if (args[0].equals("leave")) {
-            // /team leave <partial>
-            return new ArrayList<>();
-        } else if (args[0].equals("list")) {
-            if (args.length == 2) {
-                // /team list <partial>
-                return CMD.keepStarts(new ArrayList<>(worldGroup.getTeamNames()), args[1]);
-            } else {
-                // /team list <team> <partial>
-                return new ArrayList<>();
-            }
-        } else if (args[0].equals("requests")) {
-            Team team = worldGroup.getPlayerTeam(player.getUniqueId());
-            if (args.length == 2) {
-                // /team requests <partial>
-                return CMD.keepStarts(Arrays.asList("list", "accept", "deny"), args[1]);
-            } else if (args[1].equals("list")) {
-                // /team requests list <...partial>
-                return new ArrayList<>();
-            } else if (args[1].equals("accept")) {
-                if (args.length == 3) {
-                    // /team requests accept <partial>
-                    if (team != null && team.getLeader().equals(player.getUniqueId())) {
-                        // Player is the leader of team
-                        List<String> names = new ArrayList<>();
-                        for (UUID uuid : worldGroup.getTeamJoinRequests(team))
-                            names.add(DatabaseLink.getSPSName(uuid));
-                        return CMD.keepStarts(names, args[2]);
-                    } else {
-                        // Player is not on a team or is not the leader
-                        return new ArrayList<>();
-                    }
-                } else {
-                    // /team requests accept <name> <...partial>
-                    return new ArrayList<>();
-                }
-            } else if (args[1].equals("deny")) {
-                if (args.length == 3) {
-                    // /team requests deny <partial>
-                    if (team != null && team.getLeader().equals(player.getUniqueId())) {
-                        // Player is the leader of team
-                        List<String> names = new ArrayList<>();
-                        for (UUID uuid : worldGroup.getTeamJoinRequests(team))
-                            names.add(DatabaseLink.getSPSName(uuid));
-                        return CMD.keepStarts(names, args[2]);
-                    } else {
-                        // Player is not on a team or is not the leader
-                        return new ArrayList<>();
-                    }
-                } else {
-                    // /team requests deny <name> <...partial>
-                    return new ArrayList<>();
-                }
-            } else {
-                // /team requests <INVALID>
-                return new ArrayList<>();
-            }
         } else {
-            // /team <INVALID>
-            return new ArrayList<>();
+            Team team = worldGroup.getPlayerTeam(player.getUniqueId());
+            if (args.length == 1) {
+                // /team <partial>
+                return CMD.keepStarts(Arrays.asList("create", "join", "leave", "kick", "list", "requests"), args[0]);
+            } else if (args[0].equals("create")) {
+                // /team create <...partial>
+                return new ArrayList<>();
+            } else if (args[0].equals("join")) {
+                if (args.length == 2 && team == null) {
+                    // /team join <partial>
+                    // And not on a team
+                    return CMD.keepStarts(new ArrayList<>(worldGroup.getTeamNames()), args[1]);
+                } else {
+                    // /team join <team> <partial>
+                    // Or player is already on a team
+                    return new ArrayList<>();
+                }
+            } else if (args[0].equals("kick")) {
+                // /team kick <...partial>
+                if (team != null)
+                    return CMD.keepStarts(new ArrayList<>(team.getMemberNames()), args[1]);
+                else
+                    return new ArrayList<>();
+            } else if (args[0].equals("leave")) {
+                // /team leave <partial>
+                return new ArrayList<>();
+            } else if (args[0].equals("list")) {
+                if (args.length == 2) {
+                    // /team list <partial>
+                    return CMD.keepStarts(new ArrayList<>(worldGroup.getTeamNames()), args[1]);
+                } else {
+                    // /team list <team> <partial>
+                    return new ArrayList<>();
+                }
+            } else if (args[0].equals("requests")) {
+                if (args.length == 2) {
+                    // /team requests <partial>
+                    return CMD.keepStarts(Arrays.asList("list", "accept", "deny"), args[1]);
+                } else if (args[1].equals("list")) {
+                    // /team requests list <...partial>
+                    return new ArrayList<>();
+                } else if (args[1].equals("accept")) {
+                    if (args.length == 3) {
+                        // /team requests accept <partial>
+                        if (team != null && team.getLeader().equals(player.getUniqueId())) {
+                            // Player is the leader of team
+                            List<String> names = new ArrayList<>();
+                            for (UUID uuid : worldGroup.getTeamJoinRequests(team))
+                                names.add(DatabaseLink.getSPSName(uuid));
+                            return CMD.keepStarts(names, args[2]);
+                        } else {
+                            // Player is not on a team or is not the leader
+                            return new ArrayList<>();
+                        }
+                    } else {
+                        // /team requests accept <name> <...partial>
+                        return new ArrayList<>();
+                    }
+                } else if (args[1].equals("deny")) {
+                    if (args.length == 3) {
+                        // /team requests deny <partial>
+                        if (team != null && team.getLeader().equals(player.getUniqueId())) {
+                            // Player is the leader of team
+                            List<String> names = new ArrayList<>();
+                            for (UUID uuid : worldGroup.getTeamJoinRequests(team))
+                                names.add(DatabaseLink.getSPSName(uuid));
+                            return CMD.keepStarts(names, args[2]);
+                        } else {
+                            // Player is not on a team or is not the leader
+                            return new ArrayList<>();
+                        }
+                    } else {
+                        // /team requests deny <name> <...partial>
+                        return new ArrayList<>();
+                    }
+                } else {
+                    // /team requests <INVALID>
+                    return new ArrayList<>();
+                }
+            } else {
+                // /team <INVALID>
+                return new ArrayList<>();
+            }
         }
     }
 }

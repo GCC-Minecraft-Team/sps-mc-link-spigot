@@ -58,14 +58,14 @@ public class JoinEvent implements Listener {
                 player.sendTitle("Welcome to" + ChatColor.BLUE +" SPS MC!", "Please use the link in chat to link your account!", 10, 200, 10);
             } else {
                 ClaimBoard.addBoard(player);
-                ClaimBoard.updateBoard(player.getUniqueId());
 
                 // claim map
                 WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
-
-                CompassThread compass = new CompassThread(player, worldGroup);
-                SPSSpigot.plugin().compassThreads.put(player.getUniqueId(), compass);
-                compass.start();
+                if (worldGroup != null) {
+                    CompassThread compass = new CompassThread(player, worldGroup);
+                    SPSSpigot.plugin().compassThreads.put(player.getUniqueId(), compass);
+                    compass.start();
+                }
 
                 String userNoFormat =  DatabaseLink.getSPSName(player.getUniqueId());
                 String newUser = ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + userNoFormat;

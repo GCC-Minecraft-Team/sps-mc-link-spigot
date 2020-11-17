@@ -6,19 +6,19 @@ import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import xyz.haoshoku.nick.api.NickAPI;
 
 import java.util.*;
 
 public class ClaimBoard {
 
-    private static Map<UUID, BoardUpdater> threads = new HashMap<>();
+    private static final Map<UUID, BoardUpdater> threads = new HashMap<>();
     private static final Map<UUID, FastBoard> boards = new HashMap<>();
 
     /**
      * Gets all the players who have boards.
      * @return An unmodifiable {@link Set} of the {@link UUID}s of players with boards.
      */
+    @NotNull
     public static Set<UUID> getPlayers() {
         return Collections.unmodifiableSet(boards.keySet());
     }
@@ -41,6 +41,10 @@ public class ClaimBoard {
             FastBoard board = new FastBoard(player);
             board.updateTitle("[N]");
             boards.put(player.getUniqueId(), board);
+
+            BoardUpdater bu = new BoardUpdater(player.getUniqueId());
+            threads.put(player.getUniqueId(), bu);
+            bu.start();
         }
     }
 
@@ -59,35 +63,28 @@ public class ClaimBoard {
         }
     }
 
-    /**
-     * Updates the board for a player on a new {@link Thread}. Will not replace an active {@link Thread} updating the board.
-     * @param player The {@link UUID} of the player whose board should be updated.
-     */
-    public static void updateBoard(@NotNull UUID player) {
-        if (hasBoard(player) && (!threads.containsKey(player) || !threads.get(player).t.isAlive())) {
-            // This means there is no alive thread updating this player's board and the board exists.
-            BoardUpdater bu = new BoardUpdater(player);
-            threads.put(player, bu);
-            bu.start();
-        }
-    }
-
     private static class BoardUpdater implements Runnable {
 
         private Thread t;
-        private UUID player;
+        private final UUID player;
         private boolean running;
 
-        public BoardUpdater(UUID player) {
+        public BoardUpdater(@NotNull UUID player) {
             this.player = player;
             this.running = true;
         }
 
+        /**
+         * Stops this {@link BoardUpdater} updating.
+         */
         public void stopMap() {
             this.running = false;
             t.interrupt();
         }
 
+        /**
+         * Creates and starts the {@link Thread} for this {@link BoardUpdater}.
+         */
         public void start() {
             if (t == null) {
                 t = new Thread(this, "ClaimMapThread");
@@ -101,7 +98,7 @@ public class ClaimBoard {
             if (board == null)
                 return;
             Player player = board.getPlayer();
-            while(running) {
+            while (running) {
                 Chunk playerChunk = player.getLocation().getChunk();
                 WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
                 if (worldGroup != null && !board.isDeleted()) {

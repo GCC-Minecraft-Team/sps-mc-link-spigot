@@ -17,7 +17,7 @@ import java.util.*;
 public class Rank implements ConfigurationSerializable {
 
     private final String name;
-    private HashMap<Permission, Boolean> perms;
+    private final HashMap<Permission, Boolean> perms;
     private ChatColor color;
 
     public Rank(String name) {

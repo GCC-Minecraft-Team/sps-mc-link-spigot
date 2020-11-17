@@ -13,14 +13,6 @@ import java.util.List;
 
 public class GeneralTabCompleter implements TabCompleter {
 
-    /**
-     * Fires when the player presses tab to autocomplete the command
-     * @param sender
-     * @param command
-     * @param label
-     * @param args
-     * @return
-     */
     @Override
     @Nullable
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {

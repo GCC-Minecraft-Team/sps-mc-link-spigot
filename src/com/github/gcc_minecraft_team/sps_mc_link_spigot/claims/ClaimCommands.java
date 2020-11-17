@@ -2,7 +2,6 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import fr.mrmicky.fastboard.FastBoard;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.command.Command;
@@ -148,7 +147,6 @@ public class ClaimCommands implements CommandExecutor {
                 } else if (args[0].equalsIgnoreCase("show")) {
                     if (!ClaimBoard.hasBoard(player.getUniqueId())) {
                         ClaimBoard.addBoard(player);
-                        ClaimBoard.updateBoard(player.getUniqueId());
                         return true;
                     } else {
                         player.sendMessage(ChatColor.RED + "Claim map is already visible!");

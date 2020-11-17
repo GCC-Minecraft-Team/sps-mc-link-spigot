@@ -39,8 +39,8 @@ public class PlayerMapRenderer extends MapRenderer {
     };
 
     private boolean hasRendered;
-    private int offsetX;
-    private int offsetZ;
+    private final int offsetX;
+    private final int offsetZ;
 
     private BufferedImage background;
     private BufferedImage frame;
@@ -50,7 +50,7 @@ public class PlayerMapRenderer extends MapRenderer {
         this.offsetZ = zOffset;
     }
 
-    public PlayerMapRenderer(MapRegistry.PlayerMap playerMap) {
+    public PlayerMapRenderer(@NotNull MapRegistry.PlayerMap playerMap) {
         this(playerMap.xOffset, playerMap.zOffset);
     }
 

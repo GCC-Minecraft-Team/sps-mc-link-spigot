@@ -43,7 +43,7 @@ public class ClaimEvents implements Listener {
             // Ender chest
             Material.ENDER_CHEST);
 
-    private static Map<UUID, Integer> prevSector = new HashMap<>();
+    private static final Map<UUID, Integer> prevSector = new HashMap<>();
 
     @EventHandler
     public void onPlayerMoveEvent(PlayerMoveEvent event) {
@@ -97,7 +97,7 @@ public class ClaimEvents implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.hasBlock() && !interactExceptions.contains(event.getClickedBlock().getType())) {
+        if (event.getClickedBlock() != null && !interactExceptions.contains(event.getClickedBlock().getType())) {
             Chunk chunk = event.getClickedBlock().getChunk();
             WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
             if (worldGroup != null && !worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk, true))

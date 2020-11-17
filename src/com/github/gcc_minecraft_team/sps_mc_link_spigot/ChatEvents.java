@@ -13,14 +13,10 @@ import org.bukkit.Location;
 import org.bukkit.Statistic;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommandYamlParser;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -92,15 +88,15 @@ public class ChatEvents implements Listener {
      */
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
-        Entity ent = event.getEntity();
-        EntityDamageEvent ede = ent.getLastDamageCause();
+        Player player = event.getEntity();
+        EntityDamageEvent ede = player.getLastDamageCause();
         EntityDamageEvent.DamageCause dc = ede.getCause();
 
         String deathMessage;
         if (event.getDeathMessage() != null) {
             deathMessage = event.getDeathMessage();
-            for (Player player : SPSSpigot.server().getOnlinePlayers()) {
-                deathMessage = deathMessage.replaceAll(player.getName(), "[" + NickAPI.getName(player) + "]");
+            for (Player p : SPSSpigot.server().getOnlinePlayers()) {
+                deathMessage = deathMessage.replaceAll(p.getName(), "[" + NickAPI.getName(p) + "]");
             }
         } else {
             deathMessage = "[" + NickAPI.getName(event.getEntity()) + "] was killed by " + dc.toString();
@@ -114,7 +110,7 @@ public class ChatEvents implements Listener {
                 (int)deathLocation.getY() + ", " +
                 (int)deathLocation.getZ() + ").");
 
-        String deathCounter = ChatColor.RED + NickAPI.getName(event.getEntity()) + " has died " + ((Player)ent).getStatistic(Statistic.DEATHS) + " time(s) on the server.";
+        String deathCounter = ChatColor.RED + NickAPI.getName(event.getEntity()) + " has died " + player.getStatistic(Statistic.DEATHS) + " time(s) on the server.";
         Bukkit.broadcastMessage(deathCounter);
     }
 
@@ -155,7 +151,7 @@ public class ChatEvents implements Listener {
                         List<Command> commandList = PluginCommandYamlParser.parse(plugin);
                         for (Command value : commandList) {
                             if (value.getPermission() == null || e.getPlayer().hasPermission(value.getPermission())) {
-                                helpList.append("\n" + ChatColor.GOLD).append("/" + value.getName()).append(ChatColor.WHITE).append("  -  ").append(value.getDescription()).append("\n");
+                                helpList.append("\n").append(ChatColor.GOLD).append("/").append(value.getName()).append(ChatColor.WHITE).append("  -  ").append(value.getDescription()).append("\n");
                             }
                         }
                         e.getPlayer().sendMessage(helpList.toString());

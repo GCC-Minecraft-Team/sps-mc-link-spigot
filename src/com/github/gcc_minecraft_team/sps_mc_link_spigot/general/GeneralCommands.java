@@ -4,8 +4,6 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -15,17 +13,15 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
-import org.bukkit.util.ChatPaginator;
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.crypto.Data;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class GeneralCommands implements CommandExecutor {
 
     private static PermissionAttachment noMoveAttach;
-    private static Map<UUID, Integer> teleportTaskIDMap = new HashMap<>();
+    private static final Map<UUID, Integer> teleportTaskIDMap = new HashMap<>();
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -77,57 +73,52 @@ public class GeneralCommands implements CommandExecutor {
 
             if (args.length == 0) {
                 // Getting stats and player names from the DB takes some time so we'll put it on a separate thread.
-                (new Thread() {
-                    public void run() {
-                        int playerRank = 1;
-                        List<OfflinePlayer> sortedPlayers = Arrays.stream(SPSSpigot.server().getOfflinePlayers()).sorted(Comparator.comparingInt(sp -> -1 * sp.getStatistic(Statistic.PLAY_ONE_MINUTE))).limit(4).collect(Collectors.toList());
-                        for (OfflinePlayer p : sortedPlayers) {
-                            if (p != null) {
-                                String name = ChatColor.GOLD + "" + ChatColor.BOLD + DatabaseLink.getSPSName(p.getUniqueId()) + ChatColor.RESET;
-                                String school = DatabaseLink.getSchoolTag(p.getUniqueId());
-                                String grade = DatabaseLink.getGradeTag(p.getUniqueId());
+                new Thread(() -> {
+                    int playerRank = 1;
+                    List<OfflinePlayer> sortedPlayers = Arrays.stream(SPSSpigot.server().getOfflinePlayers()).sorted(Comparator.comparingInt(sp -> -1 * sp.getStatistic(Statistic.PLAY_ONE_MINUTE))).limit(4).collect(Collectors.toList());
+                    for (OfflinePlayer p : sortedPlayers) {
+                        if (p != null) {
+                            String name = ChatColor.GOLD + "" + ChatColor.BOLD + DatabaseLink.getSPSName(p.getUniqueId()) + ChatColor.RESET;
+                            String school = DatabaseLink.getSchoolTag(p.getUniqueId());
+                            String grade = DatabaseLink.getGradeTag(p.getUniqueId());
 
-                                // team display
-                                Team t = worldGroup.getPlayerTeam(p.getUniqueId());
-                                String team = "";
-                                if (t != null) {
-                                    team = " - " + ChatColor.AQUA + t.getName() + ChatColor.WHITE;
-                                }
-
-                                statsStr.append("\n" + ChatColor.WHITE + playerRank + ": " + name + " (" + school + ", " + grade + ")" + team);
-                                statsStr.append(ChatColor.GRAY + "\n---| Playtime: " + ((p.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20) / 60) / 60 + "h");
-                                statsStr.append(" | K/D: " + p.getStatistic(Statistic.PLAYER_KILLS) + "/" + p.getStatistic(Statistic.DEATHS));
-                                statsStr.append(" | Claims: " + worldGroup.getChunkCount(p.getUniqueId()) + "/" + worldGroup.getMaxChunks(p));
-                                statsStr.append("\n");
-                                playerRank++;
+                            // team display
+                            Team t = worldGroup.getPlayerTeam(p.getUniqueId());
+                            String team = "";
+                            if (t != null) {
+                                team = " - " + ChatColor.AQUA + t.getName() + ChatColor.WHITE;
                             }
+
+                            statsStr.append("\n" + ChatColor.WHITE).append(playerRank).append(": ").append(name).append(" (").append(school).append(", ").append(grade).append(")").append(team);
+                            statsStr.append(ChatColor.GRAY + "\n---| Playtime: ").append(((p.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20) / 60) / 60).append("h");
+                            statsStr.append(" | K/D: ").append(p.getStatistic(Statistic.PLAYER_KILLS)).append("/").append(p.getStatistic(Statistic.DEATHS));
+                            statsStr.append(" | Claims: ").append(worldGroup.getChunkCount(p.getUniqueId())).append("/").append(worldGroup.getMaxChunks(p));
+                            statsStr.append("\n");
+                            playerRank++;
                         }
-                        statsStr.append(ChatColor.WHITE + "" + ChatColor.BOLD + "╚══[PLAYER STATS]══╝" + ChatColor.RESET);
-
-                        sender.sendMessage(statsStr.toString());
-
-                        this.interrupt();
-                        return;
                     }
+                    statsStr.append(ChatColor.WHITE + "" + ChatColor.BOLD + "╚══[PLAYER STATS]══╝" + ChatColor.RESET);
+
+                    sender.sendMessage(statsStr.toString());
                 }).start();
             } else if (args.length == 1 && args[0] != null) {
-                OfflinePlayer p = (OfflinePlayer) DatabaseLink.getSPSPlayer(args[0]);
+                OfflinePlayer p = DatabaseLink.getSPSPlayer(args[0]);
                 if (p != null) {
                     String name = ChatColor.GOLD + "" + args[0] + ChatColor.RESET;
                     String school = DatabaseLink.getSchoolTag(p.getUniqueId());
                     String grade = DatabaseLink.getGradeTag(p.getUniqueId());
 
                     // basic stats
-                    statsStr.append("\n  " + ChatColor.WHITE + name + " (" + school + ", " + grade + ")" + ChatColor.GRAY);
-                    statsStr.append("\n   Ranks: " + SPSSpigot.plugin().getRankTag(p.getUniqueId()));
-                    statsStr.append("\n   Playtime: " + ChatColor.LIGHT_PURPLE + ((p.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20) / 60) / 60 + "h" + ChatColor.GRAY);
-                    statsStr.append("\n   Kills/Deaths: " + p.getStatistic(Statistic.PLAYER_KILLS) + "/" + p.getStatistic(Statistic.DEATHS));
-                    statsStr.append("\n   Claims: " + ChatColor.GREEN + worldGroup.getChunkCount(p.getUniqueId()) + "/" + worldGroup.getMaxChunks(p) + ChatColor.GRAY);
+                    statsStr.append("\n  " + ChatColor.WHITE).append(name).append(" (").append(school).append(", ").append(grade).append(")").append(ChatColor.GRAY);
+                    statsStr.append("\n   Ranks: ").append(SPSSpigot.plugin().getRankTag(p.getUniqueId()));
+                    statsStr.append("\n   Playtime: " + ChatColor.LIGHT_PURPLE).append(((p.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20) / 60) / 60).append("h").append(ChatColor.GRAY);
+                    statsStr.append("\n   Kills/Deaths: ").append(p.getStatistic(Statistic.PLAYER_KILLS)).append("/").append(p.getStatistic(Statistic.DEATHS));
+                    statsStr.append("\n   Claims: " + ChatColor.GREEN).append(worldGroup.getChunkCount(p.getUniqueId())).append("/").append(worldGroup.getMaxChunks(p)).append(ChatColor.GRAY);
 
                     // team display
                     Team t = worldGroup.getPlayerTeam(p.getUniqueId());
                     if (t != null) {
-                        statsStr.append("\n   Team: " + ChatColor.AQUA + t.getName() + ChatColor.GRAY + " (Owned by: " + DatabaseLink.getSPSName(t.getLeader()) + ")");
+                        statsStr.append("\n   Team: " + ChatColor.AQUA).append(t.getName()).append(ChatColor.GRAY).append(" (Owned by: ").append(DatabaseLink.getSPSName(t.getLeader())).append(")");
                     } else {
                         statsStr.append("\n   Team: n/a");
                     }

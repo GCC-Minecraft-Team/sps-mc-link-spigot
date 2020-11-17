@@ -86,7 +86,7 @@ public class DatabaseThreads {
 
         @Override
         public void run() {
-            if (DatabaseLink.wgCol.find(new Document("WGID", worldGroup.getID())).first().getWorlds().contains(world)) {
+            if (DatabaseLink.wgCol.find(new Document("WGID", worldGroup.getID())).first().getWorlds().contains(world.getUID().toString())) {
                 DatabaseLink.wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("$pull", new Document("worlds", world.getUID().toString())), new UpdateOptions().upsert(true));
                 DatabaseLink.wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("$push", new Document("worlds", world.getUID().toString())), new UpdateOptions().upsert(true));
             }
@@ -128,7 +128,7 @@ public class DatabaseThreads {
 
         @Override
         public void run() {
-            if (DatabaseLink.wgCol.find(new Document("WGID", worldGroup.getID())).first().getWorlds().contains(world)) {
+            if (DatabaseLink.wgCol.find(new Document("WGID", worldGroup.getID())).first().getWorlds().contains(world.getUID().toString())) {
                 DatabaseLink.wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("$pull", new Document("claimable", world.getUID().toString())), new UpdateOptions().upsert(true));
                 DatabaseLink.wgCol.updateOne(Filters.eq("WGID", worldGroup.getID()), new Document("$push", new Document("claimable", world.getUID().toString())), new UpdateOptions().upsert(true));
             }

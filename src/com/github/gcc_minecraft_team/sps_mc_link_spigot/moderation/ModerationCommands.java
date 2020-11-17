@@ -1,6 +1,5 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.moderation;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -9,8 +8,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import xyz.haoshoku.nick.api.NickAPI;
-
-import javax.xml.crypto.Data;
 
 public class ModerationCommands implements CommandExecutor {
 

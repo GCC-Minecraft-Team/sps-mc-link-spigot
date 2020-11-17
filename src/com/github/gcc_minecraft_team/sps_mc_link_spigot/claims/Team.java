@@ -4,16 +4,17 @@ import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 public class Team {
 
-    public String name;
-    public Set<UUID> members;
+    public final String name;
+    public final Set<UUID> members;
     public UUID leader;
 
-    private UUID worldGroup;
+    private final UUID worldGroup;
 
     public Team(TeamSerializable team) {
         this.name = team.name;
@@ -44,7 +45,7 @@ public class Team {
      * Getter for the {@link WorldGroup} that contains this {@link Team}.
      * @return The {@link WorldGroup} containing this {@link Team}.
      */
-    @NotNull
+    @Nullable
     public WorldGroup getWorldGroup() {
         return SPSSpigot.plugin().getWorldGroup(worldGroup);
     }

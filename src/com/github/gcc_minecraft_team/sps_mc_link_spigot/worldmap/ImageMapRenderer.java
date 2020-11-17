@@ -15,12 +15,12 @@ import java.io.IOException;
 public class ImageMapRenderer extends MapRenderer {
 
     private boolean hasRendered;
-    private int offsetX;
-    private int offsetZ;
+    private final int offsetX;
+    private final int offsetZ;
 
     private BufferedImage image;
 
-    public ImageMapRenderer(int xOffset, int zOffset, String file) {
+    public ImageMapRenderer(int xOffset, int zOffset, @NotNull String file) {
         this.offsetX = xOffset;
         this.offsetZ = zOffset;
         try {
@@ -30,14 +30,14 @@ public class ImageMapRenderer extends MapRenderer {
         }
     }
 
-    public ImageMapRenderer(MapRegistry.ImageMap imageMap) {
+    public ImageMapRenderer(@NotNull MapRegistry.ImageMap imageMap) {
         this(imageMap.xOffset, imageMap.yOffset, imageMap.file);
     }
 
     /**
      * Loads an image from the plugin data directory.
      * @param filename The name of the file to load.
-     * @throws IOException
+     * @throws IOException If an error occurs during reading or when not able to create required {@link javax.imageio.stream.ImageInputStream}.
      */
     public void loadImage(String filename) throws IOException {
         image = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(), filename));

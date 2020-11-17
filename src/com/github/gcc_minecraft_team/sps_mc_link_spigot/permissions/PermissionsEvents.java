@@ -42,7 +42,7 @@ public class PermissionsEvents implements Listener {
     @EventHandler
     public void onPlayerMoveEvent(PlayerMoveEvent event) {
         // Stop movement but not rotation
-        if (!event.getPlayer().hasPermission("spsmc.basic.move"))
+        if (!event.getPlayer().hasPermission("spsmc.basic.move") && event.getTo() != null)
             if (event.getFrom().getX() != event.getTo().getX() || event.getFrom().getY() != event.getTo().getY() || event.getFrom().getZ() != event.getTo().getZ())
                 event.setCancelled(true);
     }

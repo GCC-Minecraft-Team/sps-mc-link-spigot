@@ -11,7 +11,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.NotNull;
-import xyz.haoshoku.nick.api.NickAPI;
 
 import java.util.ArrayList;
 import java.util.HashMap;

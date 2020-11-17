@@ -24,15 +24,14 @@ public class PermissionsHandler {
     private static final String CFGRANKS = "ranks";
     private static final String CFGPLAYERS = "player_ranks";
 
-    private Map<Player, PermissionAttachment> players;
+    private final Map<Player, PermissionAttachment> players;
 
     private Map<Permission, Boolean> memberPerms;
 
-    @Nullable
     private Set<Rank> ranks;
     private Map<UUID, Set<Rank>> playerRanks;
 
-    private FileConfiguration permsConfig;
+    private final FileConfiguration permsConfig;
 
     public PermissionsHandler() {
         players = new HashMap<>();

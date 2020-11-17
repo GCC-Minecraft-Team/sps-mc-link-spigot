@@ -11,7 +11,6 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapView;
 import org.jetbrains.annotations.NotNull;
@@ -68,16 +67,17 @@ public class MapRegistry {
     }
 
     /**
-     * Returns the map ID from an ItemStack
-     * @param item The item stack
-     * @return The map ID, or 0 if invalid.
+     * Returns the map ID from an {@link ItemStack}.
+     * @param item The {@link ItemStack}.
+     * @return The map ID, or -1 if invalid.
      */
-    static public int getMapIdFromItemStack(final ItemStack item)
-    {
-        final ItemMeta meta = item.getItemMeta();
-        if (!(meta instanceof MapMeta)) return 0;
-
-        return ((MapMeta) meta).hasMapId() ? ((MapMeta) meta).getMapId() : 0;
+    static public int getMapIdFromItemStack(@NotNull final ItemStack item) {
+        if (item.hasItemMeta() && item.getItemMeta() instanceof MapMeta) {
+            MapMeta meta = (MapMeta) item.getItemMeta();
+            if (meta.getMapView() != null)
+                return meta.getMapView().getId();
+        }
+        return -1;
     }
 
     public static void saveConfig() {
@@ -92,7 +92,7 @@ public class MapRegistry {
         }
     }
 
-    public static void generatePlayerMap(Player player, int mapsX, int mapsZ) {
+    public static void generatePlayerMap(@NotNull Player player, int mapsX, int mapsZ) {
         for (int z = 0; z < mapsZ; z++) {
             for (int x = 0; x < mapsX; x++) {
                 ItemStack item = new ItemStack(Material.FILLED_MAP);
@@ -109,7 +109,7 @@ public class MapRegistry {
         saveConfig();
     }
 
-    public static void generateImageMap(Player player, String file) {
+    public static void generateImageMap(@NotNull Player player, @NotNull String file) {
         int mapsX;
         int mapsY;
         try {
@@ -138,18 +138,17 @@ public class MapRegistry {
     }
 
     public static boolean isClaimMap(@Nullable ItemStack stack) {
-        if (stack != null && stack.getType().equals(Material.FILLED_MAP) && PluginConfig.isClaimMapEnabled()) {
-            if (stack.hasItemMeta()) {
+        if (stack != null &&  PluginConfig.isClaimMapEnabled()) {
+            if (stack.hasItemMeta() && stack.getItemMeta() instanceof MapMeta) {
                 MapMeta meta = (MapMeta) stack.getItemMeta();
-                if (meta.hasMapView()) {
-                    return maps.containsKey(meta.getMapView().getId()) && maps.get(meta.getMapView().getId()) instanceof ClaimMap;
-                }
+                MapView view = meta.getMapView();
+                return view != null && maps.containsKey(view.getId()) && maps.get(view.getId()) instanceof ClaimMap;
             }
         }
         return false;
     }
 
-    public static void generateClaimMap(Player player) {
+    public static void generateClaimMap(@NotNull Player player) {
         ItemStack item = new ItemStack(Material.FILLED_MAP);
         MapMeta meta = (MapMeta) item.getItemMeta();
         MapView view = SPSSpigot.server().createMap(player.getWorld());
@@ -163,7 +162,7 @@ public class MapRegistry {
     }
 
     public enum CustomMapType {
-        PLAYER, IMAGE, CLAIMS;
+        PLAYER, IMAGE, CLAIMS
     }
 
     public static abstract class CustomMap implements ConfigurationSerializable {
@@ -182,7 +181,7 @@ public class MapRegistry {
             this.zOffset = zOffset;
         }
 
-        public PlayerMap(Map<String, Object> map) {
+        public PlayerMap(@NotNull Map<String, Object> map) {
             xOffset = (int) map.get(XOFFSET);
             zOffset = (int) map.get(ZOFFSET);
         }
@@ -213,7 +212,7 @@ public class MapRegistry {
             this.file = file;
         }
 
-        public ImageMap(Map<String, Object> map) {
+        public ImageMap(@NotNull Map<String, Object> map) {
             xOffset = (int) map.get(XOFFSET);
             yOffset = (int) map.get(YOFFSET);
             file = (String) map.get(FILENAME);
@@ -236,7 +235,7 @@ public class MapRegistry {
 
         }
 
-        public ClaimMap(Map<String, Object> map) {
+        public ClaimMap(@NotNull Map<String, Object> map) {
 
         }
 

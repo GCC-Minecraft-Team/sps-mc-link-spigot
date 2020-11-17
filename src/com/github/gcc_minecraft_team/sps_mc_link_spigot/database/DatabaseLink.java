@@ -11,7 +11,6 @@ import com.mongodb.client.model.UpdateOptions;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
-import fr.mrmicky.fastboard.FastBoard;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -20,7 +19,6 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.haoshoku.nick.api.NickAPI;
@@ -293,9 +291,9 @@ public class DatabaseLink {
     }
 
     /**
-     * Gets the shcool a player goes to
-     * @param uuid
-     * @return
+     * Gets the school a player goes to.
+     * @param uuid The {@link UUID} of the player to check.
+     * @return The three-character tag of the school, or an empty {@link String} if not found.
      */
     public static String getSchoolTag(@NotNull UUID uuid) {
         if (isRegistered(uuid)) {
@@ -311,9 +309,9 @@ public class DatabaseLink {
     }
 
     /**
-     * Gets the grade level of a player
-     * @param uuid
-     * @return
+     * Gets the grade level of a player.
+     * @param uuid The {@link UUID} of the player to check.
+     * @return The one or two-character grade level, or an empty {@link String} if not found.
      */
     public static String getGradeTag(@NotNull UUID uuid) {
         if (isRegistered(uuid)) {
@@ -420,10 +418,10 @@ public class DatabaseLink {
 
     /**
      * Mutes an SPS user in the database (stops them from talking)
-     * @param SPSUser
-     * @return
+     * @param SPSUser The SPS name of the player to mute.
+     * @return {@code true} if no errors occurred.
      */
-    public static boolean setMutePlayer(@NotNull String SPSUser, @NotNull boolean muted) {
+    public static boolean setMutePlayer(@NotNull String SPSUser, boolean muted) {
         String spsEmail = SPSUser + "@seattleschools.org";
 
         SPSSpigot.logger().log(Level.INFO, "Muting/Unmuting player with SPS email: " + spsEmail);
@@ -434,7 +432,7 @@ public class DatabaseLink {
         BasicDBObject setQuery = new BasicDBObject();
         setQuery.append("$set", updateFields);
 
-        // ban the player in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database
+        // mute the player in the database
         try {
             userCol.updateOne(new Document("oAuthEmail", spsEmail), setQuery);
 
@@ -515,7 +513,6 @@ public class DatabaseLink {
         }
 
         ClaimBoard.addBoard(player);
-        ClaimBoard.updateBoard(player.getUniqueId());
 
         CompassThread compass = new CompassThread(player, SPSSpigot.getWorldGroup(player.getWorld()));
         SPSSpigot.plugin().compassThreads.put(player.getUniqueId(), compass);

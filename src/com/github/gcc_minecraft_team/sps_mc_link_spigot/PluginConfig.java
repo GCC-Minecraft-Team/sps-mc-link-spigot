@@ -62,7 +62,7 @@ public class PluginConfig {
             pluginCfg = YamlConfiguration.loadConfiguration(new File(SPSSpigot.plugin().getDataFolder(), PLFILE));
         }
         // If the key doesn't exist, generate a random one.
-        if (key.equals("")) {
+        if (key == null || key.equals("")) {
             char[] chars = new char[16];
             Random r = new Random();
             for (int i = 0; i < 16; i++) {

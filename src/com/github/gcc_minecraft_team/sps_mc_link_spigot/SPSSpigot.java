@@ -120,11 +120,6 @@ public class SPSSpigot extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new JoinEvent(), this);
         getServer().getPluginManager().registerEvents(new LeaveEvent(), this);
         SPSSpigot.logger().log(Level.INFO, "SPS Spigot integration started.");
-
-        // update board
-        for (UUID player : ClaimBoard.getPlayers()) {
-            ClaimBoard.updateBoard(player);
-        }
     }
 
     @Override
@@ -279,13 +274,13 @@ public class SPSSpigot extends JavaPlugin {
 
     /**
      * Give the player starting items like a boat and some steak
-     * @param player
+     * @param player The {@link Player} to give the items.
      */
     public void giveStartingItems(@NotNull Player player) {
         // give starting boat and 5 cooked beef
         ItemStack boat = new ItemStack(Material.OAK_BOAT);
         boat.getItemMeta().setDisplayName("This is a boat!");
-        ArrayList boatLore = new ArrayList<String>();
+        List<String> boatLore = new ArrayList<>();
         boatLore.add("Use this to leave spawn!");
         boat.getItemMeta().setLore(boatLore);
 

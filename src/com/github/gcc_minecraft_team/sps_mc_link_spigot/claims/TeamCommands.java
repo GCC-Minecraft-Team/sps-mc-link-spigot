@@ -98,7 +98,8 @@ public class TeamCommands implements CommandExecutor {
             } else {
                 if (team.getLeader().equals(player.getUniqueId())) {
                     if (args.length == 2) {
-                        if (team.removeMember(DatabaseLink.getSPSUUID(args[1]))) {
+                        UUID kickPlayer = DatabaseLink.getSPSUUID(args[1]);
+                        if (kickPlayer != null && team.removeMember(kickPlayer)) {
                             sender.sendMessage(ChatColor.BLUE + args[1] + " has been kicked from the team!");
                             return true;
                         } else {

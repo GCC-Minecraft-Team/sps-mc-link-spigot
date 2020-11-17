@@ -14,17 +14,17 @@ public class WorldGroup {
 
     private final UUID id;
     private final String name;
-    private Set<World> worlds;
-    private Set<World> claimable;
-    private Set<Team> teams;
-    private Map<UUID, Set<Chunk>> claims;
+    private final Set<World> worlds;
+    private final Set<World> claimable;
+    private final Set<Team> teams;
+    private final Map<UUID, Set<Chunk>> claims;
 
-    private Map<UUID, Team> joinRequests;
-    private Set<UUID> overrides;
+    private final Map<UUID, Team> joinRequests;
+    private final Set<UUID> overrides;
 
     /**
      * This is the simple constructor, generally for new instances not loaded from file.
-     * @param name The name of this worldGroup.
+     * @param name The name of this {@link WorldGroup}.
      */
     public WorldGroup(String name) {
         id = UUID.randomUUID();
@@ -41,8 +41,8 @@ public class WorldGroup {
     }
 
     /**
-     * This constructor is used to initialize the class with a serialized worldgroup
-     * @param wg
+     * This constructor is used to initialize the class using a {@link WorldGroupSerializable}.
+     * @param wg The {@link WorldGroupSerializable}.
      */
     public WorldGroup(WorldGroupSerializable wg) {
         this.id = wg.getID();
@@ -67,7 +67,9 @@ public class WorldGroup {
         for (Map.Entry<String, Set<DBObject>> c : wg.getClaims().entrySet()) {
             Set<Chunk> claimChunks = new HashSet<>();
             for (DBObject ch : c.getValue()) {
-                claimChunks.add(SPSSpigot.server().getWorld((UUID)ch.get("world")).getChunkAt((int)ch.get("x"), (int)ch.get("z")));
+                World world = SPSSpigot.server().getWorld((UUID) ch.get("world"));
+                if (world != null)
+                    claimChunks.add(world.getChunkAt((int) ch.get("x"), (int) ch.get("z")));
             }
             this.claims.put(UUID.fromString(c.getKey()), claimChunks);
         }
@@ -81,14 +83,6 @@ public class WorldGroup {
      */
     public void saveCurrentClaims() {
         DatabaseLink.saveClaims(claims, this);
-    }
-
-    /**
-     * Loads data for this {@link WorldGroup} from the database.
-     */
-    public void loadFromDatabase() {
-        teams = DatabaseLink.getTeams(this);
-        claims = DatabaseLink.getClaims(this);
     }
 
     /**
@@ -178,7 +172,7 @@ public class WorldGroup {
      * @param world The {@link World} to add.
      * @return {@code true} if successful, {@code false} if the {@link World} is already in a {@link WorldGroup}.
      */
-    public boolean addWorldClaimable(World world) {
+    public boolean addWorldClaimable(@NotNull World world) {
         if (SPSSpigot.getWorldGroup(world) != null) {
             claimable.add(world);
             DatabaseLink.addWorldClaimable(this, world);
@@ -294,16 +288,12 @@ public class WorldGroup {
         teams.remove(team);
         // Delete all join requests for this team
         Set<UUID> remove = new HashSet<>();
-        try {
-            for (Map.Entry<UUID, Team> request : joinRequests.entrySet()) {
-                if (request.getValue() == team)
-                    remove.add(request.getKey());
-            }
-            for (UUID request : remove)
-                joinRequests.remove(request);
-        } catch (NullPointerException exception) {
-            // do nothing
+        for (Map.Entry<UUID, Team> request : joinRequests.entrySet()) {
+            if (request.getValue().equals(team))
+                remove.add(request.getKey());
         }
+        for (UUID request : remove)
+            joinRequests.remove(request);
         DatabaseLink.removeTeam(team);
     }
 
@@ -347,16 +337,8 @@ public class WorldGroup {
         if (getPlayerTeam(player) != null)
             throw new IllegalStateException("Cannot create join request for player (UUID: " + player.toString() + ") because they are already on a team.");
         // Get the previous team - will be null if none found.
-        System.out.println(player);
-        System.out.println(team.getLeader());
         joinRequests.put(player, team);
-
-        try {
-            Team old = joinRequests.get(player);
-            return old;
-        } catch (NullPointerException exception) {
-            return null;
-        }
+        return joinRequests.get(player);
     }
 
     /**
@@ -366,14 +348,9 @@ public class WorldGroup {
      */
     @Nullable
     public Team cancelJoinRequest(@NotNull UUID player) {
-        try {
-            Team team = joinRequests.get(player);
-            if (team != null)
-                joinRequests.remove(player);
-            return team;
-        } catch (NullPointerException exception) {
-            return null;
-        }
+        Team team = joinRequests.get(player);
+        joinRequests.remove(player);
+        return team;
     }
 
     /**
@@ -386,15 +363,11 @@ public class WorldGroup {
     public Team fulfillJoinRequest(@NotNull UUID player) {
         if (getPlayerTeam(player) != null)
             throw new IllegalStateException("Cannot fulfill a join request for player (UUID: " + player.toString() + ") because they are already on a team.");
-        try {
-            Team team = joinRequests.get(player);
-            if (team != null)
-                team.addMember(player);
-            joinRequests.remove(player);
-            return team;
-        } catch (NullPointerException exception) {
-            return null;
-        }
+        Team team = joinRequests.get(player);
+        if (team != null)
+            team.addMember(player);
+        joinRequests.remove(player);
+        return team;
     }
 
     /**
@@ -404,11 +377,7 @@ public class WorldGroup {
      */
     @Nullable
     public Team getJoinRequest(@NotNull UUID player) {
-        try {
-            return joinRequests.get(player);
-        } catch (NullPointerException exception) {
-            return null;
-        }
+        return joinRequests.get(player);
     }
 
     /**
@@ -551,12 +520,15 @@ public class WorldGroup {
     }
 
     /**
-     * Gets all claims in this {@link WorldGroup}
-     * @return
+     * Gets all claims in this {@link WorldGroup}.
+     * @return An unmodifiable {@link Map} of claims, where the {@link Chunk} {@link Set}s are also unmodifiable.
      */
     @NotNull
     public Map<UUID, Set<Chunk>> getClaims() {
-        return claims;
+        Map<UUID, Set<Chunk>> unmodifiables = new HashMap<>();
+        for (Map.Entry<UUID, Set<Chunk>> entry : claims.entrySet())
+            unmodifiables.put(entry.getKey(), Collections.unmodifiableSet(entry.getValue()));
+        return Collections.unmodifiableMap(unmodifiables);
     }
 
     /**
