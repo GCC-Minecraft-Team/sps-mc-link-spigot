@@ -77,11 +77,6 @@ public class JoinEvent implements Listener {
                 Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), () -> {
                     NickAPI.nick(player, userNoFormat.substring(0, maxLength));
                     NickAPI.refreshPlayer(player);
-                    if (player.getFoodLevel() > 0) {
-                        player.setFoodLevel(player.getFoodLevel() - 1);
-                    } else if (player.getFoodLevel() < 20) {
-                        player.setFoodLevel(player.getFoodLevel() + 1);
-                    }
                 }, 20);
             }
         }
