@@ -327,6 +327,58 @@ public class DatabaseLink {
     }
 
     /**
+     * Sets the max claim amounts for each player
+     * @param maxClaims
+     */
+    public static void setMaxClaims(@NotNull Map<UUID, Integer> maxClaims) {
+        for (Map.Entry<UUID, Integer> player : maxClaims.entrySet()) {
+            UpdateOptions updateOptions = new UpdateOptions().upsert(true);
+            userCol.updateOne(new Document("mcUUID", player.getKey().toString()), new Document("maxClaims", player.getValue()), updateOptions);
+        }
+    }
+
+    /**
+     * Sets the current claim amounts for each player
+     * @param currentClaims
+     */
+    public static void setCurrentClaims(@NotNull Map<UUID, Integer> currentClaims) {
+        for (Map.Entry<UUID, Integer> player : currentClaims.entrySet()) {
+            UpdateOptions updateOptions = new UpdateOptions().upsert(true);
+            userCol.updateOne(new Document("mcUUID", player.getKey().toString()), new Document("currentClaims", player.getValue()), updateOptions);
+        }
+    }
+
+    /**
+     * Gets the max claims for each player
+     * @return {@link Map<UUID, Integer>} containing
+     * player {@link UUID}s and the number of max claims
+     */
+    public static Map<UUID, Integer> getMaxClaims() {
+        Map<UUID, Integer> output = new HashMap<>();
+        for (Document doc : userCol.find()) {
+            if (doc != null) {
+                output.put(UUID.fromString(doc.getString("mcUUID")), doc.getInteger("maxClaims"));
+            }
+        }
+        return output;
+    }
+
+    /**
+     * Gets the current number of claims for each player
+     * @return @return {@link Map<UUID, Integer>} containing
+     * player {@link UUID}s and the number of current claims
+     */
+    public static Map<UUID, Integer> getCurrentClaims() {
+        Map<UUID, Integer> output = new HashMap<>();
+        for (Document doc : userCol.find()) {
+            if (doc != null) {
+                output.put(UUID.fromString(doc.getString("mcUUID")), doc.getInteger("currentClaims"));
+            }
+        }
+        return output;
+    }
+
+    /**
      * Gets the {@link UUID} of the Minecraft player from their SPS username.
      * @param SPSName The SPS username to check.
      * @return The {@link UUID} of the Minecraft player if they are linked, otherwise {@code null}.

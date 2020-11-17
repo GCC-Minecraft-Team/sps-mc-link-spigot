@@ -608,7 +608,9 @@ public class WorldGroup {
         Set<Chunk> successes = new HashSet<>();
         for (Chunk chunk : chunks) {
             if (claims.get(owner) != null) {
-                claims.get(owner).removeIf(c -> chunk.getX() == c.getX() && chunk.getZ() == c.getZ() && chunk.getWorld() == c.getWorld());
+                if (claims.get(owner).removeIf(c -> chunk.getX() == c.getX() && chunk.getZ() == c.getZ() && chunk.getWorld() == c.getWorld())) {
+                    successes.add(chunk);
+                }
             }
         }
         saveCurrentClaims();
