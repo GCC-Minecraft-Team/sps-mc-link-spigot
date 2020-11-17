@@ -158,6 +158,12 @@ public class ChatEvents implements Listener {
                     }
                 }
             }
+        } else if (SPSSpigot.plugin().getCommand(command) == null && !command.equalsIgnoreCase("me")) {
+            String message = e.getMessage();
+            for (Player player : SPSSpigot.server().getOnlinePlayers()) {
+                message = message.replaceAll(DatabaseLink.getSPSName(player.getUniqueId()), player.getName());
+            }
+            e.setMessage(message);
         }
     }
 }
