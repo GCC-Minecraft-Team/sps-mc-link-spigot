@@ -619,10 +619,8 @@ public class WorldGroup {
      * @return {@code true} if successful; {@code false} if already not claimed.
      */
     public boolean unclaimChunk(@NotNull Chunk chunk, @NotNull UUID owner) {
-        for (Map.Entry<UUID, Set<Chunk>> e : claims.entrySet()) {
-            if (e.getKey().equals(owner)) {
-                e.getValue().remove(chunk);
-            }
+        if (claims.get(owner) != null) {
+            claims.get(owner).removeIf(c -> chunk.getX() == c.getX() && chunk.getZ() == c.getZ() && chunk.getWorld() == c.getWorld());
         }
         saveCurrentClaims();
         return true;
@@ -637,8 +635,8 @@ public class WorldGroup {
     public Set<Chunk> unclaimChunkSet(@NotNull Set<Chunk> chunks, @NotNull UUID owner) {
         Set<Chunk> successes = new HashSet<>();
         for (Chunk chunk : chunks) {
-            if (claims.get(owner).remove(chunk)) {
-                successes.add(chunk);
+            if (claims.get(owner) != null) {
+                claims.get(owner).removeIf(c -> chunk.getX() == c.getX() && chunk.getZ() == c.getZ() && chunk.getWorld() == c.getWorld());
             }
         }
         saveCurrentClaims();
