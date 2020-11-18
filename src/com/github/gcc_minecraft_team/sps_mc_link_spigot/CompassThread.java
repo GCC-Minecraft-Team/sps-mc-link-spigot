@@ -53,11 +53,11 @@ public class CompassThread implements Runnable {
                 claimStatus = net.md_5.bungee.api.ChatColor.GRAY + "World not claimable!";
             } else {
                 UUID chunkOwner = worldGroup.getChunkOwner(player.getLocation().getChunk());
-                Team playerTeam = worldGroup.getPlayerTeam(player.getUniqueId());
                 if (worldGroup.isInSpawn(player.getLocation()) && worldGroup.isClaimable(player.getWorld())) {
                     claimStatus = net.md_5.bungee.api.ChatColor.DARK_PURPLE + "[Spawn] Claiming Disabled";
                 } else {
                     if (chunkOwner != null) {
+                        Team playerTeam = worldGroup.getPlayerTeam(chunkOwner);
                         if (playerTeam != null && playerTeam.getMembers().contains(chunkOwner)) {
                             claimStatus = net.md_5.bungee.api.ChatColor.AQUA + "[" + playerTeam.getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
                         } else if (playerTeam != null) {
