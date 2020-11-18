@@ -330,8 +330,8 @@ public class PermissionsHandler {
      * @return the number of extra claims for a rank.
      */
     public int getPlayerExtraClaims(@NotNull UUID player) {
-        if (!playerRanks.isEmpty()) {
-            return playerRanks.get(player).parallelStream().map(Rank::getExtraClaims).reduce(0, Integer::sum);
+        if (!playerRanks.isEmpty() && playerRanks.get(player) != null) {
+            return playerRanks.get(player).stream().map(Rank::getExtraClaims).reduce(0, Integer::sum);
         } else {
             return 0;
         }
