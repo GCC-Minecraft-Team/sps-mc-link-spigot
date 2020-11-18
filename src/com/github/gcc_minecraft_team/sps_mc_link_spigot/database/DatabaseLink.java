@@ -220,6 +220,16 @@ public class DatabaseLink {
     }
 
     /**
+     * Updates a whole {@link WorldGroup} in the mongo database
+     * @param wg
+     */
+    public static void updateWorldGroup(@NotNull WorldGroup wg) {
+        Thread thread = new Thread(new DatabaseThreads.UpdateWorldGroup(new WorldGroupSerializable(wg)));
+        thread.setPriority(DatabaseThreads.PRIORITY);
+        thread.start();
+    }
+
+    /**
      * Gets whether a player is registered on the database.
      * @param uuid The {@link UUID} of the player to check.
      * @return {@code true} if the player is registered.

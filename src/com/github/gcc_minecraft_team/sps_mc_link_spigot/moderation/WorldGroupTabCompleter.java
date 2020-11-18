@@ -21,7 +21,7 @@ public class WorldGroupTabCompleter implements TabCompleter {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length == 1) {
             // /wgroup <partial>
-            return CMD.keepStarts(Arrays.asList("create", "delete", "addworld", "remworld", "claimable", "list"), args[0]);
+            return CMD.keepStarts(Arrays.asList("create", "delete", "addworld", "remworld", "claimable", "list", "setworldspawn"), args[0]);
         } else if (args[0].equals("create")) {
             // /wgroup create <...partial>
             return new ArrayList<>();

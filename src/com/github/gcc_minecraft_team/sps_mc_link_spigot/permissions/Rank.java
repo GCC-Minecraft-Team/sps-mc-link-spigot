@@ -53,6 +53,7 @@ public class Rank implements ConfigurationSerializable {
      */
     public void setExtraClaims(int extraClaims) {
         this.extraClaims = extraClaims;
+        SPSSpigot.perms().saveFile();
     }
 
     // ========[PERMISSIONS]========
@@ -188,7 +189,11 @@ public class Rank implements ConfigurationSerializable {
         }
 
         // get extra claims
-        this.extraClaims = (int) map.get(EXTRACLAIMSKEY);
+        if (map.get(EXTRACLAIMSKEY) != null) {
+            this.extraClaims = (int) map.get(EXTRACLAIMSKEY);
+        } else {
+            this.extraClaims = 0;
+        }
 
         // Try and get the color from the string; default to white if not recognized.
         try {

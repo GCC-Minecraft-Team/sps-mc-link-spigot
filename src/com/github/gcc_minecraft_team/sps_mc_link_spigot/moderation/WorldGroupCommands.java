@@ -10,6 +10,7 @@ import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -109,6 +110,26 @@ public class WorldGroupCommands implements CommandExecutor {
                         sender.sendMessage(adminPrefix + ChatColor.RED + "World " + world.getName() + " is already in a world group and could not be added.");
                         return true;
                     }
+                }
+            }
+        } else if (args[0].equals("setworldspawn")) {
+            if (args.length != 3) {
+                // Incorrect number of arguments for /wgroup setworldspawn <world group> <world>
+                sender.sendMessage(adminPrefix + ChatColor.RED + "Usage: /" + label + " setworldspawn <world group> <world>");
+                return true;
+            } else {
+                WorldGroup worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
+                World world = SPSSpigot.server().getWorld(args[2]);
+                if (worldGroup == null) {
+                    sender.sendMessage(adminPrefix + ChatColor.RED + "World group '" + args[1] + "' was not recognized.");
+                    return true;
+                } else if (world == null) {
+                    sender.sendMessage(adminPrefix + ChatColor.RED + "World '" + args[2] + "' was not recognized.");
+                    return true;
+                } else {
+                    worldGroup.setWorldSpawnLocation(world.getUID(), ((Player) sender).getLocation());
+                    sender.sendMessage(adminPrefix + ChatColor.GREEN + "Successfully set world " + world.getName() + " spawn to " + worldGroup.getSpawnLocations().get(world.getUID()).toString() + "!");
+                    return true;
                 }
             }
         } else if (args[0].equals("remworld")) {

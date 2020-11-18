@@ -22,6 +22,7 @@ public class WorldGroup {
 
     private final Map<UUID, Team> joinRequests;
     private final Set<UUID> overrides;
+    private final Map<UUID, Location> spawnLocations;
 
     /**
      * This is the simple constructor, generally for new instances not loaded from file.
@@ -37,6 +38,7 @@ public class WorldGroup {
 
         joinRequests = new HashMap<>();
         overrides = new HashSet<>();
+        spawnLocations = new HashMap<>();
 
         saveCurrentClaims();
     }
@@ -73,6 +75,15 @@ public class WorldGroup {
                     claimChunks.add(world.getChunkAt((int) ch.get("x"), (int) ch.get("z")));
             }
             this.claims.put(UUID.fromString(c.getKey()), claimChunks);
+        }
+
+        this.spawnLocations = new HashMap<>();
+        if (wg.getSpawnLocations() != null) {
+            for (Map.Entry<String, DBObject> l : wg.getSpawnLocations().entrySet()) {
+                World world = SPSSpigot.server().getWorld(UUID.fromString(l.getKey()));
+                if (world != null)
+                    this.spawnLocations.put(UUID.fromString(l.getKey()), new Location(world, (double) l.getValue().get("x"), (double) l.getValue().get("y"), (double) l.getValue().get("z")));
+            }
         }
 
         this.joinRequests = new HashMap<>();
@@ -206,11 +217,16 @@ public class WorldGroup {
         int spawnRadius = SPSSpigot.server().getSpawnRadius();
         if (location.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
             // apply nether spawn offset if applicable
-            spawnRadius += PluginConfig.getNetherSpawnOffset();
+            spawnRadius = PluginConfig.getNetherSpawnRadius();
         }
 
-        double zdist = location.getZ() - location.getWorld().getSpawnLocation().getZ();
-        double xdist = location.getX() - location.getWorld().getSpawnLocation().getX();
+        Location spawnLocation = location.getWorld().getSpawnLocation();
+        if (this.spawnLocations.containsKey(location.getWorld().getUID())) {
+            spawnLocation = this.spawnLocations.get(location.getWorld().getUID());
+        }
+
+        double zdist = location.getZ() - spawnLocation.getZ();
+        double xdist = location.getX() - spawnLocation.getX();
         return Math.abs(zdist) <= spawnRadius && Math.abs(xdist) <= spawnRadius;
     }
 
@@ -378,6 +394,20 @@ public class WorldGroup {
     }
 
     /**
+     * sets the spawn location for a {@link World} in this {@link WorldGroup}
+     * @param world the UID of the {@link World} to be changed
+     * @param loc the location to set the spawn to
+     */
+    public void setWorldSpawnLocation(UUID world, Location loc) {
+        if (this.spawnLocations.get(world) == null) {
+            this.spawnLocations.put(world, loc);
+        } else {
+            this.spawnLocations.replace(world, loc);
+        }
+        DatabaseLink.updateWorldGroup(this);
+    }
+
+    /**
      * Gets the specified player's join request target.
      * @param player The {@link UUID} of the player to search for.
      * @return The {@link Team} requested, or {@code null} if no request was found.
@@ -536,6 +566,15 @@ public class WorldGroup {
         for (Map.Entry<UUID, Set<Chunk>> entry : claims.entrySet())
             unmodifiables.put(entry.getKey(), Collections.unmodifiableSet(entry.getValue()));
         return Collections.unmodifiableMap(unmodifiables);
+    }
+
+    /**
+     * Gets the spawn locations for each world in this {@link WorldGroup}
+     * @return A map containing the spawn locations.
+     */
+    @NotNull
+    public Map<UUID, Location> getSpawnLocations() {
+        return this.spawnLocations;
     }
 
     /**

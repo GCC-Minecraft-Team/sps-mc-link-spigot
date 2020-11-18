@@ -63,7 +63,7 @@ public class PermissionsTabCompleter implements TabCompleter {
         } else if (args[0].equals("rank")) {
             if (args.length == 2) {
                 // /perms rank <partial>
-                return CMD.keepStarts(Arrays.asList("create", "delete", "list", "set", "unset", "color"), args[1]);
+                return CMD.keepStarts(Arrays.asList("create", "delete", "list", "set", "unset", "color", "claims"), args[1]);
             } else if (args[1].equals("create")) {
                 // /perms rank create <...partial>
                 // Rank name is not from a list.

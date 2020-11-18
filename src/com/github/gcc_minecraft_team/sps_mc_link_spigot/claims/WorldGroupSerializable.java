@@ -5,6 +5,7 @@ import com.mongodb.DBObject;
 import org.bson.codecs.pojo.annotations.BsonCreator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.World;
 
 import java.util.*;
@@ -16,6 +17,7 @@ public class WorldGroupSerializable {
     private final Set<String> claimable;
     private final Set<TeamSerializable> teams;
     private final Map<String, Set<DBObject>> claims;
+    private final Map<String, DBObject> spawnLocations;
     // Don't bother serializing join requests as they shouldn't leave memory
     //@BsonProperty(value = "joinRequests")
     //private Map<String, Team> joinRequests;
@@ -28,7 +30,8 @@ public class WorldGroupSerializable {
             @BsonProperty("worlds") final Set<String> worlds,
             @BsonProperty("claimable") final Set<String> claimable,
             @BsonProperty("teams") final Set<TeamSerializable> teams,
-            @BsonProperty("claims") final Map<String, Set<DBObject>> claims
+            @BsonProperty("claims") final Map<String, Set<DBObject>> claims,
+            @BsonProperty("spawnLocations") final Map<String, DBObject> spawnLocations
     ) {
         this.worldgroupId = WGID;
         this.name = name;
@@ -36,6 +39,7 @@ public class WorldGroupSerializable {
         this.claimable = claimable;
         this.teams = teams;
         this.claims = claims;
+        this.spawnLocations = spawnLocations;
     }
 
     // Worldgroup constructor
@@ -57,6 +61,7 @@ public class WorldGroupSerializable {
         for (Team t : wg.getTeams()) {
             this.teams.add(new TeamSerializable(t));
         }
+
         this.claims = new HashMap<>();
         for (Map.Entry<UUID, Set<Chunk>> c : wg.getClaims().entrySet()) {
             Set<DBObject> claimChunks = new HashSet<>();
@@ -68,6 +73,16 @@ public class WorldGroupSerializable {
                 claimChunks.add(dbChunk);
             }
             this.claims.put(c.getKey().toString(), claimChunks);
+        }
+
+        this.spawnLocations = new HashMap<>();
+        for (Map.Entry<UUID, Location> l : wg.getSpawnLocations().entrySet()) {
+            DBObject loc = new BasicDBObject();
+            loc.put("x", l.getValue().getX());
+            loc.put("y", l.getValue().getY());
+            loc.put("z", l.getValue().getZ());
+
+            this.spawnLocations.put(l.getKey().toString(), loc);
         }
     }
 
@@ -100,5 +115,8 @@ public class WorldGroupSerializable {
     public Map<String, Set<DBObject>> getClaims() {
         return claims;
     }
+
+    @BsonProperty("spawnLocations")
+    public Map<String, DBObject> getSpawnLocations() { return spawnLocations; }
 
 }

@@ -20,7 +20,7 @@ public class PluginConfig {
     public static final String MESSAGEWEBHOOK = "messageWebhook";
     public static final String CHATWEBHOOK = "chatWebhook";
     public static final String ENABLECLAIMMAP = "enable-claim-map";
-    public static final String NETHERSPAWNOFFSET = "nether-spawn-offset";
+    public static final String NETHERSPAWNRADIUS = "nether-spawn-radius";
 
     private static FileConfiguration pluginCfg;
 
@@ -38,7 +38,7 @@ public class PluginConfig {
         pluginCfg.addDefault(MESSAGEWEBHOOK, "");
         pluginCfg.addDefault(CHATWEBHOOK, "");
         pluginCfg.addDefault(ENABLECLAIMMAP, true);
-        pluginCfg.addDefault(NETHERSPAWNOFFSET, 250);
+        pluginCfg.addDefault(NETHERSPAWNRADIUS, 50);
 
         // load config
         try {
@@ -155,12 +155,12 @@ public class PluginConfig {
     }
 
     /**
-     * Gets config option "{@value NETHERSPAWNOFFSET}" to set the radius offset of spawn protection in the nether.
-     * @return {@value NETHERSPAWNOFFSET} as an integer.
+     * Gets config option "{@value NETHERSPAWNRADIUS}" to set the radius offset of spawn protection in the nether.
+     * @return {@value NETHERSPAWNRADIUS} as an integer.
      */
-    public static int getNetherSpawnOffset() {
+    public static int getNetherSpawnRadius() {
         if (pluginCfg != null)
-            return pluginCfg.getInt(NETHERSPAWNOFFSET);
+            return pluginCfg.getInt(NETHERSPAWNRADIUS);
         else
             return 0;
     }
