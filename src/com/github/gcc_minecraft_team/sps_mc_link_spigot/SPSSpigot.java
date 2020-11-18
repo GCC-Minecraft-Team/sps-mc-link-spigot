@@ -130,7 +130,7 @@ public class SPSSpigot extends JavaPlugin {
     /**
      * Getter for a world group.
      * @param name The name of the world group.
-     * @return The world group's {@link WorldGroup}.
+     * @return The {@link WorldGroup}.
      */
     @Nullable
     public WorldGroup getWorldGroup(@NotNull String name) {
@@ -142,9 +142,9 @@ public class SPSSpigot extends JavaPlugin {
     }
 
     /**
-     * Getter for a world group.
-     * @param id The UUID of the world group.
-     * @return The world group's {@link WorldGroup}.
+     * Getter for a {@link WorldGroup}.
+     * @param id The UUID of the {@link WorldGroup}.
+     * @return The {@link WorldGroup}.
      */
     @Nullable
     public WorldGroup getWorldGroup(@NotNull UUID id) {
@@ -156,9 +156,9 @@ public class SPSSpigot extends JavaPlugin {
     }
 
     /**
-     * Getter for a world group.
-     * @param world The {@link World} whose worldGroup {@link WorldGroup} should be found.
-     * @return The world group's {@link WorldGroup}, or {@code null} if the {@link World} is not in a world group.
+     * Getter for a {@link WorldGroup}.
+     * @param world The {@link World} whose {@link WorldGroup} should be found.
+     * @return The {@link WorldGroup}, or {@code null} if the {@link World} is not in a {@link WorldGroup}.
      */
     @Nullable
     public static WorldGroup getWorldGroup(@NotNull World world) {
@@ -170,8 +170,8 @@ public class SPSSpigot extends JavaPlugin {
     }
 
     /**
-     * Gets all world groups.
-     * @return An unmodifiable {@link Set} of each world group's {@link WorldGroup}.
+     * Gets all {@link WorldGroup}.
+     * @return An unmodifiable {@link Set} of each {@link WorldGroup}.
      */
     @NotNull
     public Set<WorldGroup> getWorldGroups() {
@@ -179,9 +179,9 @@ public class SPSSpigot extends JavaPlugin {
     }
 
     /**
-     * Adds a new world group.
-     * @param worldGroup The {@link WorldGroup} of the world group to add.
-     * @return {@code true} if successful; {@code false} if a world group already exists with this name.
+     * Adds a new {@link WorldGroup}.
+     * @param worldGroup The {@link WorldGroup} to add.
+     * @return {@code true} if successful; {@code false} if a {@link WorldGroup} already exists with this name.
      */
     public boolean addWorldGroup(@NotNull WorldGroup worldGroup) {
         if (getWorldGroup(worldGroup.getName()) == null) {
@@ -194,9 +194,9 @@ public class SPSSpigot extends JavaPlugin {
     }
 
     /**
-     * Removes a world group.
-     * @param worldGroup The {@link WorldGroup} of the world group to remove.
-     * @return {@code true} if successful; {@code false} if this world group is unknown.
+     * Removes a {@link WorldGroup}.
+     * @param worldGroup The {@link WorldGroup} to remove.
+     * @return {@code true} if successful; {@code false} if the {@link WorldGroup} is unknown.
      */
     public boolean removeWorldGroup(@NotNull WorldGroup worldGroup) {
         if (worldGroups.remove(worldGroup)) {
@@ -208,7 +208,7 @@ public class SPSSpigot extends JavaPlugin {
     }
 
     /**
-     * Gets a chat friendly colored {@link String} of player {@link Rank}s.
+     * Gets a chat-friendly colored {@link String} of a player's {@link Rank}s.
      * @param player The {@link UUID} of the player to create the tag for.
      * @return The text of the tag.
      */
@@ -224,7 +224,7 @@ public class SPSSpigot extends JavaPlugin {
     }
 
     /**
-     * Gets a chat-friendly {@link String} of player {@link Rank}s.
+     * Gets a chat-friendly {@link String} of a player's {@link Rank}s.
      * @param player The {@link UUID} of the player to create the tag for.
      * @return The unformatted text of the tag.
      */
@@ -244,7 +244,7 @@ public class SPSSpigot extends JavaPlugin {
      * @param player The {@link Player} to check.
      * @return A one or two-character {@link String}: N, NE, E, SE, S, SW, W, or NW.
      */
-    public static String getCardinalDirection(Player player) {
+    public static String getCardinalDirection(@NotNull Player player) {
         double rotation = (player.getLocation().getYaw() - 180) % 360;
         if (rotation < 0) {
             rotation += 360.0;
@@ -273,7 +273,7 @@ public class SPSSpigot extends JavaPlugin {
     }
 
     /**
-     * Give the player starting items like a boat and some steak
+     * Give the player starting items like a boat and some steak.
      * @param player The {@link Player} to give the items.
      */
     public void giveStartingItems(@NotNull Player player) {
@@ -296,6 +296,7 @@ public class SPSSpigot extends JavaPlugin {
      * Convenience function to get this {@link JavaPlugin}.
      * @return This {@link JavaPlugin}.
      */
+    @NotNull
     public static SPSSpigot plugin() {
         return JavaPlugin.getPlugin(SPSSpigot.class);
     }
@@ -304,6 +305,7 @@ public class SPSSpigot extends JavaPlugin {
      * Convenience function to get the {@link Server}.
      * @return This {@link Server}.
      */
+    @NotNull
     public static Server server() {
         return plugin().getServer();
     }
@@ -312,6 +314,7 @@ public class SPSSpigot extends JavaPlugin {
      * Convenience function to get the {@link PermissionsHandler}.
      * @return This plugin's {@link PermissionsHandler}.
      */
+    @NotNull
     public static PermissionsHandler perms() {
         return plugin().perms;
     }
@@ -320,6 +323,7 @@ public class SPSSpigot extends JavaPlugin {
      * Convenience function to get the {@link Server}'s {@link Logger}.
      * @return The {@link Server}'s {@link Logger}.
      */
+    @NotNull
     public static Logger logger() {
         return plugin().getLogger();
     }

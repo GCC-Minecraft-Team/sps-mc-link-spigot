@@ -27,7 +27,7 @@ public class ClaimEvents implements Listener {
     /**
      * A {@link List} of all the {@link Material}s that players are allowed to interact with in others' claims.
      */
-    List<Material> interactExceptions = Arrays.asList(
+    private static final List<Material> interactExceptions = Arrays.asList(
             // Doors (not iron)
             Material.OAK_DOOR, Material.BIRCH_DOOR, Material.SPRUCE_DOOR, Material.JUNGLE_DOOR,
             Material.DARK_OAK_DOOR, Material.ACACIA_DOOR, Material.CRIMSON_DOOR, Material.WARPED_DOOR,
@@ -45,11 +45,12 @@ public class ClaimEvents implements Listener {
 
     private static final Map<UUID, Integer> prevSector = new HashMap<>();
 
+    /*
     @EventHandler
     public void onPlayerMoveEvent(PlayerMoveEvent event) {
         // Handle board updates here when the player rotates enough or changes chunks.
         // Nathan: This doesn't work well on the server, it only updates like 30% of the time
-        /*
+
         Location from = event.getFrom();
         Location to = event.getTo();
         UUID player = event.getPlayer().getUniqueId();
@@ -62,8 +63,8 @@ public class ClaimEvents implements Listener {
             }
             prevSector.put(player, toSector);
         }
-         */
     }
+    */
 
     // ========[PLAYER BLOCK INTERACTION]========
 

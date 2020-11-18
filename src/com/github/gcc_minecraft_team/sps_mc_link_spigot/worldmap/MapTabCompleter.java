@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MapTabCompleter implements TabCompleter {
+
     @Nullable
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {

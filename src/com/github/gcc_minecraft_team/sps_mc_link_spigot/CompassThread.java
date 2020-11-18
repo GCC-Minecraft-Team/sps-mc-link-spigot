@@ -14,6 +14,7 @@ import java.util.UUID;
  * Starts ticking the compass at the bottom of the player's screen
  */
 public class CompassThread implements Runnable {
+
     private Thread t;
     private final Player player;
     private WorldGroup worldGroup;

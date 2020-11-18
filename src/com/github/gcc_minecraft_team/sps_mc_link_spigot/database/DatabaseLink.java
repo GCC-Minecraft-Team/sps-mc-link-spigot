@@ -220,8 +220,8 @@ public class DatabaseLink {
     }
 
     /**
-     * Updates a whole {@link WorldGroup} in the mongo database
-     * @param wg
+     * Updates a whole {@link WorldGroup} in the database.
+     * @param wg The {@link WorldGroup} to update.
      */
     public static void updateWorldGroup(@NotNull WorldGroup wg) {
         Thread thread = new Thread(new DatabaseThreads.UpdateWorldGroup(new WorldGroupSerializable(wg)));
@@ -244,9 +244,8 @@ public class DatabaseLink {
         }
     }
 
-
     /**
-     * Gets the MC names of all SPS users registered.
+     * Gets the Minecraft names of all SPS users registered.
      * @return A {@link List} of all the names.
      */
     @NotNull
@@ -337,58 +336,6 @@ public class DatabaseLink {
     }
 
     /**
-     * Sets the max claim amounts for each player
-     * @param maxClaims
-     */
-    public static void setMaxClaims(@NotNull Map<UUID, Integer> maxClaims) {
-        for (Map.Entry<UUID, Integer> player : maxClaims.entrySet()) {
-            UpdateOptions updateOptions = new UpdateOptions().upsert(true);
-            userCol.updateOne(new Document("mcUUID", player.getKey().toString()), new Document("maxClaims", player.getValue()), updateOptions);
-        }
-    }
-
-    /**
-     * Sets the current claim amounts for each player
-     * @param currentClaims
-     */
-    public static void setCurrentClaims(@NotNull Map<UUID, Integer> currentClaims) {
-        for (Map.Entry<UUID, Integer> player : currentClaims.entrySet()) {
-            UpdateOptions updateOptions = new UpdateOptions().upsert(true);
-            userCol.updateOne(new Document("mcUUID", player.getKey().toString()), new Document("currentClaims", player.getValue()), updateOptions);
-        }
-    }
-
-    /**
-     * Gets the max claims for each player
-     * @return {@link Map<UUID, Integer>} containing
-     * player {@link UUID}s and the number of max claims
-     */
-    public static Map<UUID, Integer> getMaxClaims() {
-        Map<UUID, Integer> output = new HashMap<>();
-        for (Document doc : userCol.find()) {
-            if (doc != null) {
-                output.put(UUID.fromString(doc.getString("mcUUID")), doc.getInteger("maxClaims"));
-            }
-        }
-        return output;
-    }
-
-    /**
-     * Gets the current number of claims for each player
-     * @return @return {@link Map<UUID, Integer>} containing
-     * player {@link UUID}s and the number of current claims
-     */
-    public static Map<UUID, Integer> getCurrentClaims() {
-        Map<UUID, Integer> output = new HashMap<>();
-        for (Document doc : userCol.find()) {
-            if (doc != null) {
-                output.put(UUID.fromString(doc.getString("mcUUID")), doc.getInteger("currentClaims"));
-            }
-        }
-        return output;
-    }
-
-    /**
      * Gets the {@link UUID} of the Minecraft player from their SPS username.
      * @param SPSName The SPS username to check.
      * @return The {@link UUID} of the Minecraft player if they are linked, otherwise {@code null}.
@@ -418,10 +365,10 @@ public class DatabaseLink {
 
     /**
      * Checks if a player is banned.
-     * @param uuid The Minecraft {@link UUID} of the player to ban.
+     * @param uuid The Minecraft {@link UUID} of the player to check.
      * @return {@code true} if the player is banned.
      */
-    public static boolean getIsBanned(@NotNull UUID uuid) {
+    public static boolean isBanned(@NotNull UUID uuid) {
         try {
             return userCol.find(new Document("mcUUID", uuid.toString())).first().getBoolean("banned");
         } catch (Exception exception) {
@@ -430,8 +377,8 @@ public class DatabaseLink {
     }
 
     /**
-     * Bans a player using their SPS ID
-     * @param SPSUser The SPS username to ban without domain (e.g. 1absmith)
+     * Bans a player using their SPS ID.
+     * @param SPSUser The SPS username to ban without domain (e.g. 1absmith).
      * @return {@code true} if the SPS ID was successfully banned.
      */
     public static boolean banPlayer(@NotNull String SPSUser) {
@@ -445,7 +392,7 @@ public class DatabaseLink {
         BasicDBObject setQuery = new BasicDBObject();
         setQuery.append("$set", updateFields);
 
-        // ban the player in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database
+        // Ban the player in the database
         try {
             userCol.updateOne(new Document("oAuthEmail", spsEmail), setQuery);
 
@@ -540,7 +487,7 @@ public class DatabaseLink {
 
         UpdateOptions options = new UpdateOptions().upsert(true);
 
-        // update in the com.github.gcc_minecraft_team.sps_mc_link_spigot.database
+        // update in the database
         userCol.updateOne(new Document("oAuthId", SPSid), setQuery, options);
         String email = userCol.find(new Document("oAuthId", SPSid)).first().getString("oAuthEmail");
 
@@ -565,7 +512,7 @@ public class DatabaseLink {
                 ChatColor.GREEN.toString() + " to the server! Your new username is: " +
                 ChatColor.GOLD.toString() + name);
 
-        if (getIsBanned(uuid)) {
+        if (isBanned(uuid)) {
             player.kickPlayer("The SPS account you linked has been banned!");
         }
 

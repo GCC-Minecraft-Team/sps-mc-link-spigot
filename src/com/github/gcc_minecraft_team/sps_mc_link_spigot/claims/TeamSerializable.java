@@ -9,14 +9,14 @@ import java.util.UUID;
 public class TeamSerializable {
 
     @BsonProperty(value = "name")
-    public String name;
+    public final String name;
     @BsonProperty(value = "members")
-    public Set<UUID> members;
+    public final Set<UUID> members;
     @BsonProperty(value = "leader")
-    public UUID leader;
+    public final UUID leader;
 
     @BsonProperty(value = "WGID")
-    public UUID WGID;
+    public final UUID WGID;
 
     // MongoDB POJO constructor
     @BsonCreator

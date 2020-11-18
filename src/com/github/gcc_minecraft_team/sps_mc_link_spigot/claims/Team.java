@@ -2,7 +2,6 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
-import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,7 +15,7 @@ public class Team {
 
     private final UUID worldGroup;
 
-    public Team(TeamSerializable team) {
+    public Team(@NotNull TeamSerializable team) {
         this.name = team.name;
         this.members = team.members;
         this.leader = team.leader;
@@ -68,6 +67,7 @@ public class Team {
         List<String> names = new ArrayList<>();
         for (UUID uuid : members)
             names.add(DatabaseLink.getSPSName(uuid));
+        names.sort(String.CASE_INSENSITIVE_ORDER);
         return names;
     }
 
@@ -78,15 +78,6 @@ public class Team {
      */
     public boolean isMember(@NotNull UUID player) {
         return members.contains(player);
-    }
-
-    /**
-     * Finds whether a player is a member.
-     * @param player The {@link OfflinePlayer} to check.
-     * @return {@code true} if the player is a member.
-     */
-    public boolean isMember(@NotNull OfflinePlayer player) {
-        return isMember(player.getUniqueId());
     }
 
     /**
@@ -103,15 +94,6 @@ public class Team {
             // Player is already on a team.
             return false;
         }
-    }
-
-    /**
-     * Adds a player to the {@link Team}. Will not add if already a member of a {@link Team}.
-     * @param player The {@link OfflinePlayer} to add.
-     * @return {@code true} if successful.
-     */
-    public boolean addMember(@NotNull OfflinePlayer player) {
-        return addMember(player.getUniqueId());
     }
 
     /**
@@ -133,15 +115,6 @@ public class Team {
         boolean out = members.remove(player);
         DatabaseLink.updateTeam(this);
         return out;
-    }
-
-    /**
-     * Removes a player from the {@link Team}. The leader may not leave unless they are the last member.
-     * @param player The {@link OfflinePlayer} to remove.
-     * @return {@code true} if successful.
-     */
-    public boolean removeMember(@NotNull OfflinePlayer player) {
-        return removeMember(player.getUniqueId());
     }
 
     /**

@@ -109,10 +109,9 @@ public class WebInterfaceLink {
 
     public static Claims DecodeJWT(@NotNull String jwt) {
         //This line will throw an exception if it is not a signed JWS (as expected)
-        Claims claims = Jwts.parser()
+        return Jwts.parser()
                 .setSigningKey(DatatypeConverter.parseBase64Binary(PluginConfig.getJWTSecret()))
                 .parseClaimsJws(jwt).getBody();
-        return claims;
     }
 
 }

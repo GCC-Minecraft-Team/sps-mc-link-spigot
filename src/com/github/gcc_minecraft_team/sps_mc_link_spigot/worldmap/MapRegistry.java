@@ -66,6 +66,18 @@ public class MapRegistry {
         SPSSpigot.server().getPluginManager().registerEvents(new MapEvents(), SPSSpigot.plugin());
     }
 
+    public static void saveConfig() {
+        HashMap<String, CustomMap> mapsMap = new HashMap<>();
+        for (Map.Entry<Integer, CustomMap> entry : maps.entrySet())
+            mapsMap.put(entry.getKey().toString(), entry.getValue());
+        mapCfg.set(CFGMAPS, mapsMap);
+        try {
+            mapCfg.save(new File(SPSSpigot.plugin().getDataFolder(), MAPFILE));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Returns the map ID from an {@link ItemStack}.
      * @param item The {@link ItemStack}.
@@ -78,18 +90,6 @@ public class MapRegistry {
                 return meta.getMapView().getId();
         }
         return -1;
-    }
-
-    public static void saveConfig() {
-        HashMap<String, CustomMap> mapsMap = new HashMap<>();
-        for (Map.Entry<Integer, CustomMap> entry : maps.entrySet())
-            mapsMap.put(entry.getKey().toString(), entry.getValue());
-        mapCfg.set(CFGMAPS, mapsMap);
-        try {
-            mapCfg.save(new File(SPSSpigot.plugin().getDataFolder(), MAPFILE));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public static void generatePlayerMap(@NotNull Player player, int mapsX, int mapsZ) {
@@ -173,8 +173,8 @@ public class MapRegistry {
         private static final String XOFFSET = "xOffset";
         private static final String ZOFFSET = "zOffset";
 
-        public int xOffset;
-        public int zOffset;
+        public final int xOffset;
+        public final int zOffset;
 
         public PlayerMap(int xOffset, int zOffset) {
             this.xOffset = xOffset;
@@ -202,9 +202,9 @@ public class MapRegistry {
         private static final String YOFFSET = "yOffset";
         private static final String FILENAME = "file";
 
-        public int xOffset;
-        public int yOffset;
-        public String file;
+        public final int xOffset;
+        public final int yOffset;
+        public final String file;
 
         public ImageMap(int xOffset, int yOffset, String file) {
             this.xOffset = xOffset;

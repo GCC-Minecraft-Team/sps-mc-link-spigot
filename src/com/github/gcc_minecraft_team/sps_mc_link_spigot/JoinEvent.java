@@ -25,7 +25,7 @@ public class JoinEvent implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (DatabaseLink.getIsBanned(player.getUniqueId())) {
+        if (DatabaseLink.isBanned(player.getUniqueId())) {
             player.kickPlayer("The SPS account you linked has been banned! >:(");
         } else {
             if (!SPSSpigot.plugin().mutedPlayers.contains(player.getUniqueId())) {

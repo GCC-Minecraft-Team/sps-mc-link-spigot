@@ -11,6 +11,7 @@ import org.bukkit.World;
 import java.util.*;
 
 public class WorldGroupSerializable {
+
     private final UUID worldgroupId;
     private final String name;
     private final Set<String> worlds;
@@ -18,9 +19,6 @@ public class WorldGroupSerializable {
     private final Set<TeamSerializable> teams;
     private final Map<String, Set<DBObject>> claims;
     private final Map<String, DBObject> spawnLocations;
-    // Don't bother serializing join requests as they shouldn't leave memory
-    //@BsonProperty(value = "joinRequests")
-    //private Map<String, Team> joinRequests;
 
     // MongoDB POJO constructor
     @BsonCreator

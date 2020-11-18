@@ -89,42 +89,41 @@ public class GeneralCommands implements CommandExecutor {
                                 team = " - " + ChatColor.AQUA + t.getName() + ChatColor.WHITE;
                             }
 
-                            statsStr.append("\n" + ChatColor.WHITE).append(playerRank).append(": ").append(name).append(" (").append(school).append(", ").append(grade).append(")").append(team);
-                            statsStr.append(ChatColor.GRAY + "\n---| Playtime: ").append(((p.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20) / 60) / 60).append("h");
+                            statsStr.append("\n").append(ChatColor.WHITE).append(playerRank).append(": ").append(name).append(" (").append(school).append(", ").append(grade).append(")").append(team);
+                            statsStr.append(ChatColor.GRAY).append("\n---| Playtime: ").append(((p.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20) / 60) / 60).append("h");
                             statsStr.append(" | K/D: ").append(p.getStatistic(Statistic.PLAYER_KILLS)).append("/").append(p.getStatistic(Statistic.DEATHS));
                             statsStr.append(" | Claims: ").append(worldGroup.getChunkCount(p.getUniqueId())).append("/").append(worldGroup.getMaxChunks(p));
                             statsStr.append("\n");
                             playerRank++;
                         }
                     }
-                    statsStr.append(ChatColor.WHITE + "" + ChatColor.BOLD + "╚══[PLAYER STATS]══╝" + ChatColor.RESET);
+                    statsStr.append(ChatColor.WHITE).append(ChatColor.BOLD).append("╚══[PLAYER STATS]══╝").append(ChatColor.RESET);
 
                     sender.sendMessage(statsStr.toString());
                 }).start();
             } else if (args.length == 1 && args[0] != null) {
                 OfflinePlayer p = DatabaseLink.getSPSPlayer(args[0]);
                 if (p != null) {
-                    String name = ChatColor.GOLD + "" + args[0] + ChatColor.RESET;
+                    String name = ChatColor.GOLD + args[0] + ChatColor.RESET;
                     String school = DatabaseLink.getSchoolTag(p.getUniqueId());
                     String grade = DatabaseLink.getGradeTag(p.getUniqueId());
 
                     // basic stats
-                    statsStr.append("\n  " + ChatColor.WHITE).append(name).append(" (").append(school).append(", ").append(grade).append(")").append(ChatColor.GRAY);
+                    statsStr.append("\n  ").append(ChatColor.WHITE).append(name).append(" (").append(school).append(", ").append(grade).append(")").append(ChatColor.GRAY);
                     statsStr.append("\n   Ranks: ").append(SPSSpigot.plugin().getRankTag(p.getUniqueId()));
-                    statsStr.append("\n   Playtime: " + ChatColor.LIGHT_PURPLE).append(((p.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20) / 60) / 60).append("h").append(ChatColor.GRAY);
+                    statsStr.append("\n   Playtime: ").append(ChatColor.LIGHT_PURPLE).append(((p.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20) / 60) / 60).append("h").append(ChatColor.GRAY);
                     statsStr.append("\n   Kills/Deaths: ").append(p.getStatistic(Statistic.PLAYER_KILLS)).append("/").append(p.getStatistic(Statistic.DEATHS));
-                    statsStr.append("\n   Claims: " + ChatColor.GREEN).append(worldGroup.getChunkCount(p.getUniqueId())).append("/").append(worldGroup.getMaxChunks(p)).append(ChatColor.GRAY);
+                    statsStr.append("\n   Claims: ").append(ChatColor.GREEN).append(worldGroup.getChunkCount(p.getUniqueId())).append("/").append(worldGroup.getMaxChunks(p)).append(ChatColor.GRAY);
 
                     // team display
                     Team t = worldGroup.getPlayerTeam(p.getUniqueId());
                     if (t != null) {
-                        statsStr.append("\n   Team: " + ChatColor.AQUA).append(t.getName()).append(ChatColor.GRAY).append(" (Owned by: ").append(DatabaseLink.getSPSName(t.getLeader())).append(")");
+                        statsStr.append("\n   Team: ").append(ChatColor.AQUA).append(t.getName()).append(ChatColor.GRAY).append(" (Owned by: ").append(DatabaseLink.getSPSName(t.getLeader())).append(")\n");
                     } else {
-                        statsStr.append("\n   Team: n/a");
+                        statsStr.append("\n   Team: n/a\n");
                     }
 
-                    statsStr.append("\n");
-                    statsStr.append(ChatColor.WHITE + "" + ChatColor.BOLD + "╚══[PLAYER STATS]══╝" + ChatColor.RESET);
+                    statsStr.append(ChatColor.WHITE).append(ChatColor.BOLD).append("╚══[PLAYER STATS]══╝").append(ChatColor.RESET);
                     sender.sendMessage(statsStr.toString());
                 } else {
                     sender.sendMessage(ChatColor.RED + "That player doesn't exist in the database!");

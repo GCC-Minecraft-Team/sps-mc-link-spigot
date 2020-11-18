@@ -2,6 +2,7 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions;
 
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
@@ -41,15 +42,14 @@ public class Rank implements ConfigurationSerializable {
     // ========[RANK PERKS]========
 
     /**
-     * Gets the amount of extra claims this rank has
-     * @return the number of extra claim chunks
+     * Gets the amount of extra claims this {@link Rank} has.
+     * @return The number of extra claim {@link Chunk}s.
      */
-    @NotNull
     public int getExtraClaims() { return this.extraClaims; }
 
     /**
-     * Sets the amount of extra claims this rank should have.
-     * @param extraClaims the number of extra claim chunks
+     * Sets the amount of extra claims this {@link Rank} should have.
+     * @param extraClaims The number of extra claim {@link Chunk}s.
      */
     public void setExtraClaims(int extraClaims) {
         this.extraClaims = extraClaims;

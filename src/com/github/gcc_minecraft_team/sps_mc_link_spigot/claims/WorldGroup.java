@@ -3,6 +3,7 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.PluginConfig;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.permissions.Rank;
 import com.mongodb.DBObject;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
@@ -180,12 +181,12 @@ public class WorldGroup {
     }
 
     /**
-     * Adds a {@link World} to this {@link WorldGroup} claimable if it is not in another one.
-     * @param world The {@link World} to add.
-     * @return {@code true} if successful, {@code false} if the {@link World} is already in a {@link WorldGroup}.
+     * Adds a {@link World} to this {@link WorldGroup}'s claimable list.
+     * @param world The {@link World} to make claimable.
+     * @return {@code true} if successful, {@code false} if the {@link World} is in this {@link WorldGroup}.
      */
     public boolean addWorldClaimable(@NotNull World world) {
-        if (SPSSpigot.getWorldGroup(world) != null) {
+        if (this.hasWorld(world)) {
             claimable.add(world);
             DatabaseLink.addWorldClaimable(this, world);
             return true;
@@ -195,9 +196,9 @@ public class WorldGroup {
     }
 
     /**
-     * Removes a {@link World} claimable from this {@link WorldGroup}.
-     * @param world The {@link World} to remove.
-     * @return {@code true} if successful, {@code false} if the {@link World} was not in this {@link WorldGroup}.
+     * Removes a claimable {@link World} from this {@link WorldGroup}.
+     * @param world The {@link World} to remove from the claimable list.
+     * @return {@code true} if successful, {@code false} if the {@link World} was not claimable in this {@link WorldGroup}.
      */
     public boolean removeWorldClaimable(@NotNull World world) {
         if (claimable.remove(world)) {
@@ -207,38 +208,6 @@ public class WorldGroup {
             return false;
         }
     }
-
-    /**
-     * Checks to see if a {@link Location} is within spawn protection
-     * @param location The {@link Location} to check.
-     * @return {@code true} if the {@link Location} is within the spawn radius.
-     */
-    public boolean isInSpawn(@NotNull Location location) {
-        int spawnRadius = SPSSpigot.server().getSpawnRadius();
-        if (location.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
-            // apply nether spawn offset if applicable
-            spawnRadius = PluginConfig.getNetherSpawnRadius();
-        }
-
-        Location spawnLocation = location.getWorld().getSpawnLocation();
-        if (this.spawnLocations.containsKey(location.getWorld().getUID())) {
-            spawnLocation = this.spawnLocations.get(location.getWorld().getUID());
-        }
-
-        double zdist = location.getZ() - spawnLocation.getZ();
-        double xdist = location.getX() - spawnLocation.getX();
-        return Math.abs(zdist) <= spawnRadius && Math.abs(xdist) <= spawnRadius;
-    }
-
-    /**
-     * Checks to see if entity is in spawn.
-     * @param entity The {@link Entity} to check.
-     * @return {@code true} if its {@link Location} {@link #isInSpawn(Location)}.
-     */
-    public boolean isEntityInSpawn(@NotNull Entity entity) {
-        return isInSpawn(entity.getLocation());
-    }
-
 
     /**
      * Gets all known {@link Team}s.
@@ -277,7 +246,7 @@ public class WorldGroup {
     /**
      * Gets the {@link Team} a given player is on.
      * @param player The {@link UUID} of the player to check.
-     * @return The {@link Team} the player is on, or {@code null} if not on a team.
+     * @return The {@link Team} the player is on, or {@code null} if not on a {@link Team}.
      */
     @Nullable
     public Team getPlayerTeam(@NotNull UUID player) {
@@ -321,23 +290,6 @@ public class WorldGroup {
     }
 
     /**
-     * Deletes a given {@link Team}.
-     * @param team The name of the {@link Team} to delete.
-     * @return {@code true} if successful; {@code false} if no {@link Team} by the given name was found.
-     */
-    public boolean deleteTeam(@NotNull String team) {
-        Team teamObj = getTeam(team);
-        if (teamObj == null) {
-            // No team by this name exists.
-            return false;
-        } else {
-            deleteTeam(teamObj);
-            DatabaseLink.removeTeam(teamObj);
-            return true;
-        }
-    }
-
-    /**
      * Finds whether or not two players are on the same {@link Team}.
      * @param player1 The {@link UUID} of the first player to check.
      * @param player2 The {@link UUID} of the second player to check.
@@ -349,11 +301,36 @@ public class WorldGroup {
     }
 
     /**
+     * Gets the specified player's join request target.
+     * @param player The {@link UUID} of the player to search for.
+     * @return The {@link Team} requested, or {@code null} if no request was found.
+     */
+    @Nullable
+    public Team getJoinRequest(@NotNull UUID player) {
+        return joinRequests.get(player);
+    }
+
+    /**
+     * Gets all the join request addressed to a specified {@link Team}.
+     * @param team The {@link Team} to search for.
+     * @return A {@link Set} of the {@link UUID}s of the players with join requests addressed to the {@link Team}.
+     */
+    @NotNull
+    public Set<UUID> getTeamJoinRequests(@NotNull Team team) {
+        Set<UUID> requests = new HashSet<>();
+        for (Map.Entry<UUID, Team> req : joinRequests.entrySet()) {
+            if (req.getValue() == team)
+                requests.add(req.getKey());
+        }
+        return requests;
+    }
+
+    /**
      * Adds a new join request, replacing a previous one if it existed.
      * @param player The {@link UUID} of the player requesting to join.
      * @param team The {@link Team} to which the request is addressed.
      * @return The previously requested {@link Team} that was replaced, or {@code null} if none was previously requested.
-     * @throws IllegalStateException If the player is already on a team.
+     * @throws IllegalStateException If the player is already on a {@link Team}.
      */
     @Nullable
     public Team newJoinRequest(@NotNull UUID player, @NotNull Team team) {
@@ -394,42 +371,57 @@ public class WorldGroup {
     }
 
     /**
-     * sets the spawn location for a {@link World} in this {@link WorldGroup}
-     * @param world the UID of the {@link World} to be changed
-     * @param loc the location to set the spawn to
+     * Gets the spawn {@link Location}s for each {@link World} in this {@link WorldGroup}
+     * @return An unmodifiable {@link Map} containing the {@link UUID}s of each world and its spawn {@link Location}.
      */
-    public void setWorldSpawnLocation(UUID world, Location loc) {
+    @NotNull
+    public Map<UUID, Location> getSpawnLocations() {
+        return Collections.unmodifiableMap(this.spawnLocations);
+    }
+
+    /**
+     * Checks to see if a {@link Location} is within spawn protection.
+     * @param location The {@link Location} to check.
+     * @return {@code true} if the {@link Location} is within the spawn radius.
+     */
+    public boolean isInSpawn(@NotNull Location location) {
+        int spawnRadius = SPSSpigot.server().getSpawnRadius();
+        if (location.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
+            // apply nether spawn offset if applicable
+            spawnRadius = PluginConfig.getNetherSpawnRadius();
+        }
+
+        Location spawnLocation = location.getWorld().getSpawnLocation();
+        if (this.spawnLocations.containsKey(location.getWorld().getUID())) {
+            spawnLocation = this.spawnLocations.get(location.getWorld().getUID());
+        }
+
+        double zdist = location.getZ() - spawnLocation.getZ();
+        double xdist = location.getX() - spawnLocation.getX();
+        return Math.abs(zdist) <= spawnRadius && Math.abs(xdist) <= spawnRadius;
+    }
+
+    /**
+     * Checks to see if an {@link Entity} is in spawn.
+     * @param entity The {@link Entity} to check.
+     * @return {@code true} if its {@link Location} {@link #isInSpawn(Location)}.
+     */
+    public boolean isEntityInSpawn(@NotNull Entity entity) {
+        return isInSpawn(entity.getLocation());
+    }
+
+    /**
+     * Sets the spawn {@link Location} for a {@link World} in this {@link WorldGroup}.
+     * @param world The {@link UUID} of the {@link World} to be changed.
+     * @param loc The {@link Location} to set the spawn to.
+     */
+    public void setWorldSpawnLocation(@NotNull UUID world, @NotNull Location loc) {
         if (this.spawnLocations.get(world) == null) {
             this.spawnLocations.put(world, loc);
         } else {
             this.spawnLocations.replace(world, loc);
         }
         DatabaseLink.updateWorldGroup(this);
-    }
-
-    /**
-     * Gets the specified player's join request target.
-     * @param player The {@link UUID} of the player to search for.
-     * @return The {@link Team} requested, or {@code null} if no request was found.
-     */
-    @Nullable
-    public Team getJoinRequest(@NotNull UUID player) {
-        return joinRequests.get(player);
-    }
-
-    /**
-     * Gets all the join request addressed to a specified {@link Team}.
-     * @param team The {@link Team} to search for.
-     * @return A {@link Set} of the {@link UUID}s of the players with join requests addressed to the {@link Team}.
-     */
-    @NotNull
-    public Set<UUID> getTeamJoinRequests(@NotNull Team team) {
-        Set<UUID> requests = new HashSet<>();
-        for (Map.Entry<UUID, Team> req : joinRequests.entrySet()) {
-            if (req.getValue() == team)
-                requests.add(req.getKey());
-        }
-        return requests;
     }
 
     /**
@@ -455,7 +447,7 @@ public class WorldGroup {
 
     /**
      * Calculates the maximum number of {@link Chunk}s a player can claim, based on their play time.
-     * Formula where h is the number of hours online: {@code 16 + 8log_{2}(h+2)}
+     * Formula where h is the number of hours online and r is extra claims from {@link Rank}s: {@code 16 + 8log_{2}(h+2) + r}
      * @param player The {@link OfflinePlayer} to check.
      * @return Maximum number of {@link Chunk}s the player can claim.
      */
@@ -467,14 +459,13 @@ public class WorldGroup {
         } catch (IllegalArgumentException e) {
             playTicks = 0;
         }
-        // 16 + 32log_2(x+2)
-        // Nathan: Increased max chunk scale
+        // 16 + 32log_2(h+2) + r
         return (int) (16 + 32 * Math.log((playTicks / (20.0 * 60.0 * 60.0)) + 2) / Math.log(2)) + SPSSpigot.perms().getPlayerExtraClaims(player.getUniqueId());
     }
 
     /**
      * Calculates the maximum number of {@link Chunk}s a player can claim, based on their play time.
-     * Formula where h is the number of hours online: {@code 16 + 8log_{2}(h+2)}
+     * Formula where h is the number of hours online and r is extra claims from {@link Rank}s: {@code 16 + 8log_{2}(h+2) + r}
      * @param player The {@link UUID} of the player.
      * @return Maximum number of {@link Chunk}s the player can claim.
      */
@@ -499,7 +490,6 @@ public class WorldGroup {
      * @param chunk The {@link Chunk} to check.
      * @return The {@link UUID} of the owner, or {@code null} if unowned.
      */
-
     // NOTE!!! READ ME!!! Don't remove this function or change it to use .equals() (for some reason that breaks the server a lot)
     @Nullable
     public UUID getChunkOwner(@NotNull Chunk chunk) {
@@ -512,6 +502,7 @@ public class WorldGroup {
         }
         return null;
     }
+
     /**
      * Gets the owner of a chunk.
      * @param world The {@link World}.
@@ -569,15 +560,6 @@ public class WorldGroup {
     }
 
     /**
-     * Gets the spawn locations for each world in this {@link WorldGroup}
-     * @return A map containing the spawn locations.
-     */
-    @NotNull
-    public Map<UUID, Location> getSpawnLocations() {
-        return this.spawnLocations;
-    }
-
-    /**
      * Claims a {@link Chunk} for a given player.
      * @param player The {@link UUID} of the player.
      * @param chunk The {@link Chunk} to be claimed.
@@ -604,7 +586,7 @@ public class WorldGroup {
     }
 
     /**
-     * Claims a list of {@link Chunk}s for a given player
+     * Claims a list of {@link Chunk}s for a given player.
      * @param player The {@link UUID} of the player.
      * @param chunks The {@link Set} of {@link Chunk}s to be claimed.
      * @return A {@link Set} of successfully claimed {@link Chunk}s. This means the {@link Chunk}s are not already claimed, the player is not exceeding their claim limit, and the {@link World}s are claimable.
@@ -664,7 +646,7 @@ public class WorldGroup {
     }
 
     /**
-     * Checks whether a player is allowed to modify a chunk. If player is null, then only chunks that are unclaimed are allowed. This is to allow events that are related to unclaimed blocks.
+     * Checks whether a player is allowed to modify a {@link Chunk}. If player is {@code null}, then only {@link Chunk}s that are unclaimed are allowed. This is to allow events that are related to unclaimed blocks.
      * @param player The {@link UUID} of the player to check, or {@code null} if relating to behavior by unclaimed blocks.
      * @param chunk The {@link Chunk} to check claims on.
      * @param isPlayer {@code true} if an actual player is doing the action, or {@code false} if blocks/entities owned by the player are doing the action.

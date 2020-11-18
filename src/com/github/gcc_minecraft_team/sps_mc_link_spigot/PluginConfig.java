@@ -12,6 +12,7 @@ import java.util.Random;
 import java.util.logging.Level;
 
 public class PluginConfig {
+
     public static final String PLFILE = "pluginConfig.yml";
     public static final String JWTSECRET = "jwtSecret";
     public static final String WEBAPPURL = "webAppURL";
@@ -145,7 +146,7 @@ public class PluginConfig {
 
     /**
      * Gets config option "{@value ENABLECLAIMMAP}" to decide if {@link ClaimMapRenderer} is enabled.
-     * @return {@code true} if {@value ENABLECLAIMMAP} is set to true.
+     * @return The value of {@value ENABLECLAIMMAP}.
      */
     public static boolean isClaimMapEnabled() {
         if (pluginCfg != null)

@@ -325,9 +325,9 @@ public class PermissionsHandler {
     }
 
     /**
-     * gets the number of extra claims for a player (taking into account all current ranks)
-     * @param player the player to check.
-     * @return the number of extra claims for a rank.
+     * Gets the number of extra claims for a player (taking into account all current {@link Rank}s).
+     * @param player The {@link UUID} of the player to check.
+     * @return The number of all extra claims for the player.
      */
     public int getPlayerExtraClaims(@NotNull UUID player) {
         if (!playerRanks.isEmpty() && playerRanks.get(player) != null) {

@@ -121,7 +121,7 @@ public class TeamCommands implements CommandExecutor {
                 // Player is already not on a team
                 sender.sendMessage(ChatColor.RED + "You cannot leave a team if you are not on one.");
                 return true;
-            } else if (team.removeMember(player)) {
+            } else if (team.removeMember(player.getUniqueId())) {
                 // Left the team
                 sender.sendMessage(ChatColor.GREEN + "Successfully left team '" + team.getName() + "'!");
                 // Inform all online team members
