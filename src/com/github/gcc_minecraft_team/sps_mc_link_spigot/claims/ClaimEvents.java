@@ -40,6 +40,11 @@ public class ClaimEvents implements Listener {
             // Crafting tables without inventories
             Material.CRAFTING_TABLE, Material.ENCHANTING_TABLE, Material.STONECUTTER,
             Material.CARTOGRAPHY_TABLE, Material.LOOM, Material.SMITHING_TABLE,
+            //Signs
+            Material.ACACIA_SIGN, Material.OAK_SIGN, Material.SPRUCE_SIGN, Material.SPRUCE_WALL_SIGN, Material.ACACIA_WALL_SIGN,
+            Material.BIRCH_SIGN, Material.BIRCH_WALL_SIGN, Material.CRIMSON_SIGN, Material.CRIMSON_WALL_SIGN, Material.DARK_OAK_SIGN,
+            Material.DARK_OAK_WALL_SIGN, Material.JUNGLE_SIGN, Material.JUNGLE_WALL_SIGN, Material.OAK_WALL_SIGN, Material.WARPED_SIGN,
+            Material.WARPED_WALL_SIGN,
             // Ender chest
             Material.ENDER_CHEST);
 
@@ -76,7 +81,7 @@ public class ClaimEvents implements Listener {
         if (event.getAttacker() != null) {
             Chunk chunk = event.getAttacker().getLocation().getChunk();
             WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
-            if (worldGroup != null) {
+            if (worldGroup != null && !worldGroup.hasOverride(event.getAttacker().getUniqueId())) {
                 if (!worldGroup.canModifyChunk(event.getAttacker().getUniqueId(), chunk, true)) {
                     event.setCancelled(true);
                 }
@@ -88,7 +93,7 @@ public class ClaimEvents implements Listener {
     public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
         Chunk chunk = event.getBlock().getChunk();
         WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
-        if (worldGroup != null) {
+        if (worldGroup != null && !worldGroup.hasOverride(event.getPlayer().getUniqueId())) {
             if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && worldGroup.isClaimable(event.getPlayer().getWorld())) {
                 event.setCancelled(true);
             } else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk, true))
@@ -101,8 +106,12 @@ public class ClaimEvents implements Listener {
         if (event.getClickedBlock() != null && !interactExceptions.contains(event.getClickedBlock().getType())) {
             Chunk chunk = event.getClickedBlock().getChunk();
             WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
-            if (worldGroup != null && !worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk, true))
-                event.setCancelled(true);
+            if (worldGroup != null && !worldGroup.hasOverride(event.getPlayer().getUniqueId())) {
+                if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && worldGroup.isClaimable(event.getPlayer().getWorld())) {
+                    event.setCancelled(true);
+                } else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk, true))
+                    event.setCancelled(true);
+            }
         }
     }
 
@@ -110,15 +119,19 @@ public class ClaimEvents implements Listener {
     public void onBlockPlace(BlockPlaceEvent event) {
         Chunk chunk = event.getBlock().getChunk();
         WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
-        if (worldGroup != null && !worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk, true))
-            event.setCancelled(true);
+        if (worldGroup != null && !worldGroup.hasOverride(event.getPlayer().getUniqueId())) {
+            if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && worldGroup.isClaimable(event.getPlayer().getWorld())) {
+                event.setCancelled(true);
+            } else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk, true))
+                event.setCancelled(true);
+        }
     }
 
     @EventHandler
     public void onBlockDamage(BlockDamageEvent event) {
         Chunk chunk = event.getBlock().getChunk();
         WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
-        if (worldGroup != null) {
+        if (worldGroup != null && !worldGroup.hasOverride(event.getPlayer().getUniqueId())) {
             if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && worldGroup.isClaimable(event.getPlayer().getWorld())) {
                 event.setCancelled(true);
             } else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk, true))
@@ -129,7 +142,7 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getPlayer().getWorld());
-        if (worldGroup != null) {
+        if (worldGroup != null && !worldGroup.hasOverride(event.getPlayer().getUniqueId())) {
             if (worldGroup.isInSpawn(event.getPlayer().getLocation())) {
                 // We don't need to prevent put items into the empty item frame (that's out of scope of this plugin)
                 if (event.getRightClicked() instanceof ItemFrame && !((ItemFrame) event.getRightClicked()).getItem().getType().equals(Material.AIR)) {
@@ -164,7 +177,7 @@ public class ClaimEvents implements Listener {
             if (!event.getPlayer().isOp()) {
                 Chunk toChunk = event.getBlock().getChunk();
                 WorldGroup worldGroup = SPSSpigot.getWorldGroup(toChunk.getWorld());
-                if (worldGroup != null) {
+                if (worldGroup != null && !worldGroup.hasOverride(event.getPlayer().getUniqueId())) {
                     if (worldGroup.isInSpawn(event.getBlock().getLocation()) && worldGroup.isClaimable(event.getPlayer().getWorld())) {
                         event.setCancelled(true);
                     } else if (event.getPlayer() != null) {
@@ -286,7 +299,7 @@ public class ClaimEvents implements Listener {
     public void onEntityDamageEvent(EntityDamageByEntityEvent event) {
         Entity target = event.getEntity();
         WorldGroup worldGroup = SPSSpigot.getWorldGroup(target.getWorld());
-        if (worldGroup != null) {
+        if (worldGroup != null && !worldGroup.hasOverride(event.getDamager().getUniqueId())) {
             if (worldGroup.isEntityInSpawn(event.getDamager()) && worldGroup.isClaimable(event.getEntity().getWorld())) {
                 event.setCancelled(true);
             } else if (event.getDamager() instanceof Player && !worldGroup.canModifyChunk(event.getDamager().getUniqueId(), target.getLocation().getChunk(), true)) {
@@ -314,7 +327,7 @@ public class ClaimEvents implements Listener {
             Player player = (Player) p.getShooter();
             Chunk chunk = event.getLocation().getChunk();
             WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
-            if (worldGroup != null) {
+            if (worldGroup != null && !worldGroup.hasOverride(player.getUniqueId())) {
                 if (worldGroup.isInSpawn(player.getLocation()) && worldGroup.isClaimable(player.getWorld())) {
                     event.setCancelled(true);
                 } else if (!worldGroup.canModifyChunk(player.getUniqueId(), chunk, true))

@@ -11,6 +11,7 @@
     <build>
         <defaultGoal>install</defaultGoal>
         <sourceDirectory>src</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
         <resources>
             <resource>
                 <directory>src</directory>
@@ -165,6 +166,25 @@
             <version>5.0.1-SNAPSHOT</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/NickAPI/NickAPI-v6.0.4.jar</systemPath>
+        </dependency>
+        <!-- UNIT TESTING -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.seeseemelk</groupId>
+            <artifactId>MockBukkit-v1.16</artifactId>
+            <version>0.5.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

@@ -59,7 +59,7 @@ public class CompassThread implements Runnable {
                 } else {
                     if (chunkOwner != null) {
                         Team playerTeam = worldGroup.getPlayerTeam(chunkOwner);
-                        if (playerTeam != null && playerTeam.getMembers().contains(chunkOwner)) {
+                        if (playerTeam != null && playerTeam.getMembers().contains(player.getUniqueId())) {
                             claimStatus = net.md_5.bungee.api.ChatColor.AQUA + "[" + playerTeam.getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
                         } else if (playerTeam != null) {
                             claimStatus = net.md_5.bungee.api.ChatColor.RED + "[" + playerTeam.getName() + "] " + DatabaseLink.getSPSName(chunkOwner);
