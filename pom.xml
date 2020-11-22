@@ -91,6 +91,10 @@
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
         <repository>
+            <id>sk89q-repo</id>
+            <url>https://maven.enginehub.org/repo/</url>
+        </repository>
+        <repository>
             <id>inventive-repo</id>
             <url>https://repo.inventivetalent.org/content/groups/public/</url>
         </repository>
@@ -185,6 +189,12 @@
             <artifactId>MockBukkit-v1.16</artifactId>
             <version>0.5.0</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q.worldguard</groupId>
+            <artifactId>worldguard-bukkit</artifactId>
+            <version>7.0.4</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

@@ -54,7 +54,7 @@ public class JoinEvent implements Listener {
                 String newUser = ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + userNoFormat;
                 String school = DatabaseLink.getSchoolTag(player.getUniqueId());
                 String grade = DatabaseLink.getGradeTag(player.getUniqueId());
-                event.setJoinMessage(newUser + " (" + school + ", " + grade + ")" + " joined the server.");
+                event.setJoinMessage(newUser + " (" + school + ", " + grade + ")" + " entered the world!");
 
                 int maxLength = Math.min(userNoFormat.length(), 15);
                 Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), () -> {
