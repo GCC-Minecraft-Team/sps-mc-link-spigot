@@ -38,24 +38,7 @@ public class JoinEvent implements Listener {
             player.sendMessage(PluginConfig.getPluginMOTD());
 
             if (!DatabaseLink.isRegistered(player.getUniqueId())) {
-                event.setJoinMessage("A new player is joining the server!");
-
-                // Create a token for the player
-                String jwt = WebInterfaceLink.CreateJWT(player.getUniqueId().toString(), "SPS MC", "Register Token", 1000000);
-
-                TextComponent message = new TextComponent(">> CLICK HERE <<");
-                message.setColor(net.md_5.bungee.api.ChatColor.AQUA);
-                message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, PluginConfig.getWebAppURL() + "/register?token=" + jwt));
-
-                player.sendMessage(ChatColor.BOLD.toString() + ChatColor.GOLD.toString() + "Connect to your SPS profile to play!");
-                player.spigot().sendMessage(message);
-
-                Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), () -> {
-                    NickAPI.nick(player, "Player");
-                    NickAPI.refreshPlayer(player);
-                }, 20);
-
-                player.sendTitle("Welcome to" + ChatColor.BLUE +" SPS MC!", "Please use the link in chat to link your account!", 10, 200, 10);
+                player.kickPlayer("Something went wrong verifying your SPS account, please contact an admin!");
             } else {
                 ClaimBoard.addBoard(player);
 
