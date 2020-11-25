@@ -10,6 +10,7 @@ import org.bukkit.entity.*;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
@@ -46,7 +47,9 @@ public class ClaimEvents implements Listener {
             Material.DARK_OAK_WALL_SIGN, Material.JUNGLE_SIGN, Material.JUNGLE_WALL_SIGN, Material.OAK_WALL_SIGN, Material.WARPED_SIGN,
             Material.WARPED_WALL_SIGN,
             // Ender chest
-            Material.ENDER_CHEST);
+            Material.ENDER_CHEST,
+            // Lectern (taking is blocked)
+            Material.LECTERN);
 
     private static final Map<UUID, Integer> prevSector = new HashMap<>();
 
@@ -107,11 +110,23 @@ public class ClaimEvents implements Listener {
             Chunk chunk = event.getClickedBlock().getChunk();
             WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
             if (worldGroup != null && !worldGroup.hasOverride(event.getPlayer().getUniqueId())) {
-                if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && worldGroup.isClaimable(event.getPlayer().getWorld())) {
+                if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && worldGroup.isClaimable(event.getPlayer().getWorld()))
                     event.setCancelled(true);
-                } else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk, true))
+                else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk, true))
                     event.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler
+    public void onTakeLecternBook(PlayerTakeLecternBookEvent event) {
+        Chunk chunk = event.getLectern().getChunk();
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+        if (worldGroup != null && !worldGroup.hasOverride(event.getPlayer().getUniqueId())) {
+            if (worldGroup.isInSpawn(event.getPlayer().getLocation()) && worldGroup.isClaimable(event.getPlayer().getWorld()))
+                event.setCancelled(true);
+            else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), chunk, true))
+                event.setCancelled(true);
         }
     }
 
@@ -298,13 +313,27 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onEntityDamageEvent(EntityDamageByEntityEvent event) {
         Entity target = event.getEntity();
+        Player attacker;
+        if (event.getDamager() instanceof Player) {
+            attacker = (Player) event.getDamager();
+        } else if (event.getDamager() instanceof Projectile) {
+            Projectile projectile = (Projectile) event.getDamager();
+            if (projectile.getShooter() instanceof Player) {
+                attacker = (Player) projectile.getShooter();
+            } else {
+                return;
+            }
+        } else {
+            return;
+        }
+        // At this point, target and attacker are set.
         WorldGroup worldGroup = SPSSpigot.getWorldGroup(target.getWorld());
-        if (worldGroup != null && !worldGroup.hasOverride(event.getDamager().getUniqueId())) {
-            if (worldGroup.isEntityInSpawn(event.getDamager()) && worldGroup.isClaimable(event.getEntity().getWorld())) {
+        if (worldGroup != null && !worldGroup.hasOverride(attacker.getUniqueId())) {
+            if (worldGroup.isEntityInSpawn(target) && worldGroup.isClaimable(target.getWorld())) {
                 event.setCancelled(true);
-            } else if (event.getDamager() instanceof Player && !worldGroup.canModifyChunk(event.getDamager().getUniqueId(), target.getLocation().getChunk(), true)) {
-                if (event.getEntity() instanceof Mob) {
-                    Mob mob = (Mob) event.getEntity();
+            } else if (!worldGroup.canModifyChunk(attacker.getUniqueId(), target.getLocation().getChunk(), true)) {
+                if (target instanceof Mob) {
+                    Mob mob = (Mob) target;
                     if (mob instanceof Animals || mob instanceof WaterMob || mob instanceof NPC) {
                         // Allow defense against actively hostile animals like aggro wolves or polar bears
                         // Otherwise, cancel:
@@ -313,25 +342,9 @@ public class ClaimEvents implements Listener {
                         }
                     }
                 } else {
-                    // It's not a mob at all. It's a tile entity or something like that.
+                    // It's not a mob at all. It's a tile entity, a mine cart, or something like that.
                     event.setCancelled(true);
                 }
-            }
-        }
-    }
-
-    @EventHandler
-    private void onProjectileLaunchEvent(ProjectileLaunchEvent event) {
-        Projectile p = event.getEntity();
-        if (p.getShooter() instanceof Player) {
-            Player player = (Player) p.getShooter();
-            Chunk chunk = event.getLocation().getChunk();
-            WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
-            if (worldGroup != null && !worldGroup.hasOverride(player.getUniqueId())) {
-                if (worldGroup.isInSpawn(player.getLocation()) && worldGroup.isClaimable(player.getWorld())) {
-                    event.setCancelled(true);
-                } else if (!worldGroup.canModifyChunk(player.getUniqueId(), chunk, true))
-                    event.setCancelled(true);
             }
         }
     }
