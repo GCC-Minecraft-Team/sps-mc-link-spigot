@@ -82,8 +82,8 @@ public class SPSSpigot extends JavaPlugin {
         this.getCommand("maps").setExecutor(new MapCommands());
         this.getCommand("maps").setTabCompleter(new MapTabCompleter());
 
-        this.getCommand("perms").setExecutor(new PermissionsCommands());
-        this.getCommand("perms").setTabCompleter(new PermissionsTabCompleter());
+        this.getCommand("permissions").setExecutor(new PermissionsCommands());
+        this.getCommand("permissions").setTabCompleter(new PermissionsTabCompleter());
 
         this.getCommand("mod").setExecutor(new ModerationCommands());
         this.getCommand("mod").setTabCompleter(new ModerationTabCompleter());

@@ -41,7 +41,7 @@ public class ClaimEvents implements Listener {
             // Crafting tables without inventories
             Material.CRAFTING_TABLE, Material.ENCHANTING_TABLE, Material.STONECUTTER,
             Material.CARTOGRAPHY_TABLE, Material.LOOM, Material.SMITHING_TABLE,
-            //Signs
+            // Signs
             Material.ACACIA_SIGN, Material.OAK_SIGN, Material.SPRUCE_SIGN, Material.SPRUCE_WALL_SIGN, Material.ACACIA_WALL_SIGN,
             Material.BIRCH_SIGN, Material.BIRCH_WALL_SIGN, Material.CRIMSON_SIGN, Material.CRIMSON_WALL_SIGN, Material.DARK_OAK_SIGN,
             Material.DARK_OAK_WALL_SIGN, Material.JUNGLE_SIGN, Material.JUNGLE_WALL_SIGN, Material.OAK_WALL_SIGN, Material.WARPED_SIGN,

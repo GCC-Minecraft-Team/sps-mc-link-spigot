@@ -29,10 +29,10 @@ commands:
   maps:
     description: Base command for generating special maps.
     usage: "Usage: /<command> <image|players|claims>"
-  perms:
+  permissions:
     description: Controls SPSMC's permissions systems.
     usage: "Usage: /<command> <members|rank|player|reload>"
-    permission: spsmc.perms
+    permission: spsmc.permissions
     alias: permissions
   mod:
     description: Base command for SPSMC moderators
