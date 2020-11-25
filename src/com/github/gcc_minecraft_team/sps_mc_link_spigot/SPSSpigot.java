@@ -52,9 +52,6 @@ public class SPSSpigot extends JavaPlugin {
         DatabaseLink.SetupDatabase();
         worldGroups = DatabaseLink.getWorldGroups();
 
-        // Start listen server
-        WebInterfaceLink.Listen();
-
         // Setup Permissions
         ConfigurationSerialization.registerClass(Rank.class);
 

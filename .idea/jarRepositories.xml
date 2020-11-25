@@ -47,6 +47,11 @@
       <option name="url" value="http://ci.nametagedit.com/plugin/repository/everything/" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="sk89q-repo" />
+      <option name="name" value="sk89q-repo" />
+      <option name="url" value="https://maven.enginehub.org/repo/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="alvinb-repo" />
       <option name="name" value="alvinb-repo" />
       <option name="url" value="http://repo.bringholm.com/" />

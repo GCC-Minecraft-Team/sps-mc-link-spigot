@@ -3,14 +3,15 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot.database;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.CompassThread;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.*;
+import com.google.gson.Gson;
 import com.mongodb.*;
 import com.mongodb.client.*;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.UpdateOptions;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
+import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -19,6 +20,8 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.haoshoku.nick.api.NickAPI;
@@ -461,73 +464,5 @@ public class DatabaseLink {
             SPSSpigot.logger().log(Level.SEVERE, "Something went wrong looking up a user to player!");
             return false;
         }
-    }
-
-    /**
-     * Registers a new player in the database.
-     * @param uuid The Minecraft {@link UUID} of the player.
-     * @param SPSid The SPS ID of the player.
-     * @param name The new name of the player.
-     */
-    public static void registerPlayer(@NotNull UUID uuid, @NotNull String SPSid, @NotNull String name, @NotNull String SPSemail, @NotNull String SPSname) {
-        // set UUID and Name
-        BasicDBObject updateFields = new BasicDBObject();
-        updateFields.append("oAuthId", SPSid);
-        updateFields.append("oAuthEmail", SPSemail);
-        updateFields.append("oAuthName", SPSname);
-
-        updateFields.append("mcUUID", uuid.toString());
-        updateFields.append("mcName", name);
-        updateFields.append( "banned", false);
-        updateFields.append("muted", false);
-
-        // set query
-        BasicDBObject setQuery = new BasicDBObject();
-        setQuery.append("$set", updateFields);
-
-        UpdateOptions options = new UpdateOptions().upsert(true);
-
-        // update in the database
-        userCol.updateOne(new Document("oAuthId", SPSid), setQuery, options);
-        String email = userCol.find(new Document("oAuthId", SPSid)).first().getString("oAuthEmail");
-
-        // get player
-        Player player = SPSSpigot.server().getPlayer(uuid);
-
-        // load permissions
-        SPSSpigot.perms().loadPermissions(player);
-
-        // set nametag
-        int maxLength = Math.min(name.length(), 15);
-
-        //NickAPI.setSkin( player, player.getName() );
-        //NickAPI.setUniqueId( player, player.getName() );
-        NickAPI.nick( player, name.substring(0, maxLength));
-        NickAPI.refreshPlayer( player );
-
-        // send a confirmation message
-        player.sendMessage(ChatColor.BOLD.toString() +
-                ChatColor.GREEN.toString() + "Successfully linked account " +
-                ChatColor.GOLD.toString() + email +
-                ChatColor.GREEN.toString() + " to the server! Your new username is: " +
-                ChatColor.GOLD.toString() + name);
-
-        if (isBanned(uuid)) {
-            player.kickPlayer("The SPS account you linked has been banned!");
-        }
-
-        // give starting boat
-        if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
-            SPSSpigot.plugin().giveStartingItems(player);
-        }
-
-        ClaimBoard.addBoard(player);
-
-        CompassThread compass = new CompassThread(player, SPSSpigot.getWorldGroup(player.getWorld()));
-        SPSSpigot.plugin().compassThreads.put(player.getUniqueId(), compass);
-        compass.start();
-
-        player.sendMessage("You've spawned in the lobby, please use the included " + ChatColor.BLUE +"Starting Boat" + ChatColor.WHITE + " to leave the island!");
-
     }
 }

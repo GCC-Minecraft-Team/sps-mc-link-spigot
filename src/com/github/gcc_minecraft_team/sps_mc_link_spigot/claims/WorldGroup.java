@@ -54,12 +54,12 @@ public class WorldGroup {
 
         this.worlds = new HashSet<>();
         for (String w : wg.getWorlds()) {
-            this.worlds.add(Bukkit.getWorld(UUID.fromString(w)));
+            this.worlds.add(SPSSpigot.server().getWorld(UUID.fromString(w)));
         }
 
         this.claimable = new HashSet<>();
         for (String w : wg.getClaimable()) {
-            this.claimable.add(Bukkit.getWorld(UUID.fromString(w)));
+            this.claimable.add(SPSSpigot.server().getWorld(UUID.fromString(w)));
         }
 
         this.teams = new HashSet<>();

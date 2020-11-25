@@ -82,6 +82,10 @@
       <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
     </repository>
     <repository>
+      <id>sk89q-repo</id>
+      <url>https://maven.enginehub.org/repo/</url>
+    </repository>
+    <repository>
       <id>inventive-repo</id>
       <url>https://repo.inventivetalent.org/content/groups/public/</url>
     </repository>
@@ -160,6 +164,38 @@
         <exclusion>
           <artifactId>commons-io</artifactId>
           <groupId>commons-io</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.sk89q.worldguard</groupId>
+      <artifactId>worldguard-bukkit</artifactId>
+      <version>7.0.4</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>worldedit-bukkit</artifactId>
+          <groupId>com.sk89q.worldedit</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>worldguard-core</artifactId>
+          <groupId>com.sk89q.worldguard</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>paperlib</artifactId>
+          <groupId>io.papermc</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>commandbook</artifactId>
+          <groupId>com.sk89q</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>bstats-bukkit</artifactId>
+          <groupId>org.bstats</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>guava</artifactId>
+          <groupId>com.google.guava</groupId>
         </exclusion>
       </exclusions>
     </dependency>
