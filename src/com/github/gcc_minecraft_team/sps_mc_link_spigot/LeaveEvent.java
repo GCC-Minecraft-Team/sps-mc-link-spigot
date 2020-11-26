@@ -21,6 +21,6 @@ public class LeaveEvent implements Listener {
         SPSSpigot.plugin().compassThreads.get(event.getPlayer().getUniqueId()).stop();
         SPSSpigot.plugin().compassThreads.remove(event.getPlayer().getUniqueId());
 
-        event.setQuitMessage(ChatColor.BLUE.toString() + ChatColor.ITALIC.toString() + DatabaseLink.getSPSName(event.getPlayer().getUniqueId()) + " disconnected, bye!.");
+        event.setQuitMessage("");
     }
 }

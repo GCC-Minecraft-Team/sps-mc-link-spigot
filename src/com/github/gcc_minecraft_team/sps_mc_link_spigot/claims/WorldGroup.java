@@ -54,12 +54,16 @@ public class WorldGroup {
 
         this.worlds = new HashSet<>();
         for (String w : wg.getWorlds()) {
-            this.worlds.add(SPSSpigot.server().getWorld(UUID.fromString(w)));
+            if (SPSSpigot.server().getWorld(UUID.fromString(w)) != null) {
+                this.worlds.add(SPSSpigot.server().getWorld(UUID.fromString(w)));
+            }
         }
 
         this.claimable = new HashSet<>();
         for (String w : wg.getClaimable()) {
-            this.claimable.add(SPSSpigot.server().getWorld(UUID.fromString(w)));
+            if (SPSSpigot.server().getWorld(UUID.fromString(w)) != null) {
+                this.claimable.add(SPSSpigot.server().getWorld(UUID.fromString(w)));
+            }
         }
 
         this.teams = new HashSet<>();
@@ -71,9 +75,11 @@ public class WorldGroup {
         for (Map.Entry<String, Set<DBObject>> c : wg.getClaims().entrySet()) {
             Set<Chunk> claimChunks = new HashSet<>();
             for (DBObject ch : c.getValue()) {
-                World world = SPSSpigot.server().getWorld((UUID) ch.get("world"));
-                if (world != null)
-                    claimChunks.add(world.getChunkAt((int) ch.get("x"), (int) ch.get("z")));
+                if (SPSSpigot.server().getWorld((UUID) ch.get("world")) != null) {
+                    World world = SPSSpigot.server().getWorld((UUID) ch.get("world"));
+                    if (world != null)
+                        claimChunks.add(world.getChunkAt((int) ch.get("x"), (int) ch.get("z")));
+                }
             }
             this.claims.put(UUID.fromString(c.getKey()), claimChunks);
         }
@@ -81,9 +87,11 @@ public class WorldGroup {
         this.spawnLocations = new HashMap<>();
         if (wg.getSpawnLocations() != null) {
             for (Map.Entry<String, DBObject> l : wg.getSpawnLocations().entrySet()) {
-                World world = SPSSpigot.server().getWorld(UUID.fromString(l.getKey()));
-                if (world != null)
-                    this.spawnLocations.put(UUID.fromString(l.getKey()), new Location(world, (double) l.getValue().get("x"), (double) l.getValue().get("y"), (double) l.getValue().get("z")));
+                if (SPSSpigot.server().getWorld(UUID.fromString(l.getKey())) != null) {
+                    World world = SPSSpigot.server().getWorld(UUID.fromString(l.getKey()));
+                    if (world != null)
+                        this.spawnLocations.put(UUID.fromString(l.getKey()), new Location(world, (double) l.getValue().get("x"), (double) l.getValue().get("y"), (double) l.getValue().get("z")));
+                }
             }
         }
 
