@@ -22,6 +22,11 @@
       <option name="url" value="https://packagecloud.io/Haoshoku/NickAPI/maven2" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="codemc-repo" />
+      <option name="name" value="codemc-repo" />
+      <option name="url" value="https://repo.codemc.io/repository/maven-public/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="inventive-repo" />
       <option name="name" value="inventive-repo" />
       <option name="url" value="https://repo.inventivetalent.org/content/groups/public/" />

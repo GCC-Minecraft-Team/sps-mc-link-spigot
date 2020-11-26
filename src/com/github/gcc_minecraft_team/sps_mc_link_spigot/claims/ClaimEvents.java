@@ -1,25 +1,29 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.claims;
 
+import com.destroystokyo.paper.event.block.TNTPrimeEvent;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.CMD;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.*;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerTakeLecternBookEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
+import org.bukkit.projectiles.BlockProjectileSource;
 
 import java.util.*;
 
@@ -286,22 +290,117 @@ public class ClaimEvents implements Listener {
         }
     }
 
-    // ========[ENTITIES]========
+    // ========[EXPLOSIONS]========
 
     @EventHandler
-    public void onEntityExplodeEvent(EntityExplodeEvent event) {
-        // Stop TNT explosions from breaking claimed blocks
-        if (!event.getEntityType().isAlive()) {
-            WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getEntity().getWorld());
-            if (worldGroup != null) {
+    public void onBlockExplode(BlockExplodeEvent event) {
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
+        if (worldGroup != null) {
+            UUID owner = worldGroup.getChunkOwner(event.getBlock().getChunk());
+            if (owner == null || !worldGroup.hasOverride(owner)) {
                 for (int i = event.blockList().size() - 1; i >= 0; i--) {
-                    if (worldGroup.getChunkOwner(event.blockList().get(i).getChunk()) != null) {
+                    Block block = event.blockList().get(i);
+                    if (worldGroup.isInSpawn(block.getLocation()) && worldGroup.isClaimable(block.getWorld())) {
+                        event.blockList().remove(i);
+                    } else if (!worldGroup.canModifyChunk(owner, block.getChunk(), false)) {
                         event.blockList().remove(i);
                     }
                 }
             }
         }
     }
+
+    @EventHandler
+    public void onEntityExplodeEvent(EntityExplodeEvent event) {
+        // Stop TNT explosions from breaking claimed blocks
+        if (!event.getEntityType().isAlive()) {
+            TNTPrimed tnt = (TNTPrimed) event.getEntity();
+            WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getEntity().getWorld());
+            if (worldGroup != null) {
+                Location origin = event.getEntity().getOrigin();
+                UUID owner;
+                if (tnt.hasMetadata("owner")) {
+                    MetadataValue metaValue = CMD.getPluginMetadata(tnt, "owner");
+                    if (metaValue == null || metaValue.asString().equals("null"))
+                        owner = null;
+                    else
+                        owner = UUID.fromString(metaValue.asString());
+                } else {
+                    if (origin == null)
+                        owner = null;
+                    else
+                        owner = worldGroup.getChunkOwner(origin.getChunk());
+                }
+                if (owner == null || !worldGroup.hasOverride(owner)) {
+                    for (int i = event.blockList().size() - 1; i >= 0; i--) {
+                        Block block = event.blockList().get(i);
+                        if (worldGroup.isInSpawn(block.getLocation()) && worldGroup.isClaimable(block.getWorld())) {
+                            event.blockList().remove(i);
+                        } else if (!worldGroup.canModifyChunk(owner, block.getChunk(), false)) {
+                            event.blockList().remove(i);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onTNTPrime(TNTPrimeEvent event) {
+        WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
+        if (worldGroup != null && event.getPrimerEntity() != null) {
+            Chunk chunk = event.getBlock().getChunk();
+            UUID player;
+            boolean isPlayer = false;
+            if (event.getPrimerEntity() instanceof Player) {
+                player = event.getPrimerEntity().getUniqueId();
+                isPlayer = true;
+            } else if (event.getPrimerEntity() instanceof Projectile) {
+                Projectile projectile = (Projectile) event.getPrimerEntity();
+                if (projectile.getShooter() instanceof Player) {
+                    player = ((Player) projectile.getShooter()).getUniqueId();
+                    isPlayer = true;
+                } else if (projectile.getShooter() instanceof BlockProjectileSource) {
+                    player = worldGroup.getChunkOwner(((BlockProjectileSource) projectile.getShooter()).getBlock().getChunk());
+                } else if (projectile.getShooter() instanceof Entity) {
+                    // This is really a matter of choice. Do we exclude other entities like a skeleton with a flame bow?
+                    player = worldGroup.getChunkOwner(((Entity) projectile.getShooter()).getChunk());
+                } else {
+                    player = null;
+                }
+            } else {
+                // TODO: Is is possible to also block tnt explosion spread? This is currently a loophole to trigger existing TNT.
+                player = null;
+            }
+            if (worldGroup.isInSpawn(event.getBlock().getLocation()) && worldGroup.isClaimable(event.getBlock().getWorld())) {
+                event.setCancelled(true);
+            } else if (!worldGroup.canModifyChunk(player, event.getBlock().getChunk(), isPlayer)) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onBlockDispense(BlockDispenseEvent event) {
+        // Override TNT spawns to have the origin be the dispenser block.
+        if (event.getItem().getType().equals(Material.TNT)) {
+            event.setCancelled(true);
+            WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
+            if (worldGroup != null) {
+                UUID owner = worldGroup.getChunkOwner(event.getBlock().getChunk());
+                String ownerStr;
+                if (owner == null)
+                    ownerStr = "null";
+                else
+                    ownerStr = owner.toString();
+                Location facing = event.getBlock().getRelative(((Directional) event.getBlock().getBlockData()).getFacing()).getLocation();
+                TNTPrimed tnt = (TNTPrimed) event.getBlock().getWorld().spawnEntity(facing.toCenterLocation(), EntityType.PRIMED_TNT);
+                tnt.setMetadata("owner", new FixedMetadataValue(SPSSpigot.plugin(), ownerStr));
+            }
+        }
+    }
+
+    // ========[ENTITIES]========
 
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {

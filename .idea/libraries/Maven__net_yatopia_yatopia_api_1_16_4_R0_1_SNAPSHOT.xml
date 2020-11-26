@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: net.yatopia:yatopia-api:1.16.4-R0.1-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/net/yatopia/yatopia-api/1.16.4-R0.1-SNAPSHOT/yatopia-api-1.16.4-R0.1-20201122.133001-12.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/net/yatopia/yatopia-api/1.16.4-R0.1-SNAPSHOT/yatopia-api-1.16.4-R0.1-20201122.133001-12-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/net/yatopia/yatopia-api/1.16.4-R0.1-SNAPSHOT/yatopia-api-1.16.4-R0.1-20201122.133001-12-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

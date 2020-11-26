@@ -4,7 +4,10 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
+import org.bukkit.metadata.MetadataValue;
+import org.bukkit.metadata.Metadatable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,5 +128,22 @@ public class CMD {
     public static int sector(int sectors, float start, float value) {
         float relativeValue = (value - start) % 360;
         return (int) (relativeValue / (360.0 / sectors));
+    }
+
+    /**
+     * Gets the value in a {@link Metadatable} object of the given key for this plugin.
+     * @param metadatable The object to look in the metadata of.
+     * @param key The metadata key to check.
+     * @return The {@link MetadataValue} for this plugin, or {@code null} if none was found for the given key for this plugin.
+     */
+    @Nullable
+    public static MetadataValue getPluginMetadata(@NotNull Metadatable metadatable, @NotNull String key) {
+        if (metadatable.hasMetadata(key)) {
+            for (MetadataValue value : metadatable.getMetadata(key)) {
+                if (value.getOwningPlugin() == SPSSpigot.plugin())
+                    return value;
+            }
+        }
+        return null;
     }
 }
