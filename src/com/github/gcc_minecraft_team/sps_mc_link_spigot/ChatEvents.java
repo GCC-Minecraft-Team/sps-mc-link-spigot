@@ -40,7 +40,7 @@ public class ChatEvents implements Listener {
         if (DatabaseLink.isRegistered(e.getPlayer().getUniqueId())) {
             if (SPSSpigot.plugin().mutedPlayers.contains(e.getPlayer().getUniqueId())) {
                 e.setCancelled(true);
-                e.getPlayer().sendMessage(ChatColor.DARK_PURPLE + "Wooks  wike uwu've bewn chat banned! next time be a good wittwe minecwaft pwayew uwu!");
+                e.getPlayer().sendMessage(ChatColor.DARK_PURPLE + "Wooks wike uwu've bewn chat banned! Next time be a good wittwe minecwaft pwayew uwu!");
             } else {
                 String message = e.getMessage(); // get the message
 
