@@ -24,6 +24,7 @@ public class Rank implements ConfigurationSerializable {
 
     public Rank(String name) {
         this.name = name;
+        this.extraClaims = 0;
         this.perms = new HashMap<>();
         this.color = ChatColor.WHITE;
     }
