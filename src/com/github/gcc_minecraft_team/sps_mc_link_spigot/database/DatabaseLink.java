@@ -1,35 +1,36 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.database;
 
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.CompassThread;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
-import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.*;
-import com.google.gson.Gson;
-import com.mongodb.*;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.TeamSerializable;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroupSerializable;
+import com.mongodb.BasicDBObject;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoException;
 import com.mongodb.client.*;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Filters;
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
-import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
-
-import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
-import org.bukkit.*;
+import org.bukkit.Chunk;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.haoshoku.nick.api.NickAPI;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
+
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 public class DatabaseLink {
 
@@ -80,7 +81,7 @@ public class DatabaseLink {
             mongoDatabase = mongoClient.getDatabase(dbName);
             userCol = mongoDatabase.getCollection("users");
             wgCol = mongoDatabase.getCollection("worldgroups", WorldGroupSerializable.class);
-        } catch(MongoException exception) {
+        } catch (MongoException exception) {
             SPSSpigot.logger().log(Level.SEVERE, "Something went wrong connecting to the MongoDB database, is " + DBFILE + " set up correctly?");
         }
     }
@@ -93,7 +94,7 @@ public class DatabaseLink {
     public static Set<WorldGroup> getWorldGroups() {
         MongoCursor<WorldGroupSerializable> cur = wgCol.find().iterator();
         Set<WorldGroup> output = new HashSet<>();
-        while(cur.hasNext()) {
+        while (cur.hasNext()) {
             WorldGroupSerializable wgs = cur.next();
             WorldGroup wg = new WorldGroup(wgs);
             output.add(wg);
@@ -241,7 +242,7 @@ public class DatabaseLink {
         try {
             // check if player is registered
             return userCol.countDocuments(new Document("mcUUID", uuid.toString())) == 1;
-        } catch(MongoException exception) {
+        } catch (MongoException exception) {
             SPSSpigot.logger().log(Level.SEVERE, "Couldn't check user from database! Error: " + exception.toString());
             return false;
         }
@@ -254,7 +255,7 @@ public class DatabaseLink {
     @NotNull
     public static List<String> getAllSPSNames() {
         List<String> spsNames = new ArrayList<>();
-        for(Document doc : userCol.find()) {
+        for (Document doc : userCol.find()) {
             spsNames.add(doc.getString("mcName"));
         }
         return spsNames;

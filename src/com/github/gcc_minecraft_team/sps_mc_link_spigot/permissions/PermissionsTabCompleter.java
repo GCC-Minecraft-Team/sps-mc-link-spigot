@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class PermissionsTabCompleter implements TabCompleter {
@@ -24,11 +25,11 @@ public class PermissionsTabCompleter implements TabCompleter {
         if (args.length == 1) {
             // /perms <partial>
             return CMD.keepStarts(Arrays.asList("members", "rank", "player", "reload"), args[0]);
-        } else if (args[0].equals("members")) {
+        } else if (args[0].equalsIgnoreCase("members")) {
             if (args.length == 2) {
                 // /perms members <partial>
                 return CMD.keepStarts(Arrays.asList("set", "unset", "list"), args[1]);
-            } else if (args[1].equals("set")) {
+            } else if (args[1].equalsIgnoreCase("set")) {
                 if (args.length == 3) {
                     // /perms members set <partial>
                     List<String> perms = new ArrayList<>();
@@ -40,9 +41,9 @@ public class PermissionsTabCompleter implements TabCompleter {
                     return CMD.keepStarts(Arrays.asList("true", "false"), args[3]);
                 } else {
                     // /perms members set <permission> <true|false> <partial>
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
-            } else if (args[1].equals("unset")) {
+            } else if (args[1].equalsIgnoreCase("unset")) {
                 if (args.length == 3) {
                     // /perms members unset <partial>
                     List<String> perms = new ArrayList<>();
@@ -51,40 +52,40 @@ public class PermissionsTabCompleter implements TabCompleter {
                     return CMD.keepStarts(perms, args[2]);
                 } else {
                     // perms members unset <permission> <partial>
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
-            } else if (args[1].equals("list")) {
+            } else if (args[1].equalsIgnoreCase("list")) {
                 // /perms members list <partial>
-                return new ArrayList<>();
+                return Collections.emptyList();
             } else {
                 // /perms members <INVALID> <...>
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
-        } else if (args[0].equals("rank")) {
+        } else if (args[0].equalsIgnoreCase("rank")) {
             if (args.length == 2) {
                 // /perms rank <partial>
                 return CMD.keepStarts(Arrays.asList("create", "delete", "list", "set", "unset", "color", "claims"), args[1]);
-            } else if (args[1].equals("create")) {
+            } else if (args[1].equalsIgnoreCase("create")) {
                 // /perms rank create <...partial>
                 // Rank name is not from a list.
-                return new ArrayList<>();
-            } else if (args[1].equals("delete")) {
+                return Collections.emptyList();
+            } else if (args[1].equalsIgnoreCase("delete")) {
                 if (args.length == 3) {
                     // /perms rank delete <partial>
                     return CMD.keepStarts(new ArrayList<>(SPSSpigot.perms().getRankNames()), args[2]);
                 } else {
                     // /perms rank delete <...> <partial>
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
-            } else if (args[1].equals("list")) {
+            } else if (args[1].equalsIgnoreCase("list")) {
                 if (args.length == 3) {
                     // /perms rank list <partial>
                     return CMD.keepStarts(new ArrayList<>(SPSSpigot.perms().getRankNames()), args[2]);
                 } else {
                     // /perms rank list <...> <partial>
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
-            } else if (args[1].equals("set")) {
+            } else if (args[1].equalsIgnoreCase("set")) {
                 if (args.length == 3) {
                     // /perms rank set <partial>
                     return CMD.keepStarts(new ArrayList<>(SPSSpigot.perms().getRankNames()), args[2]);
@@ -99,9 +100,9 @@ public class PermissionsTabCompleter implements TabCompleter {
                     return CMD.keepStarts(Arrays.asList("true", "false"), args[4]);
                 } else {
                     // perms rank set <rank> <permission> <true|false> <partial>
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
-            } else if (args[1].equals("unset")) {
+            } else if (args[1].equalsIgnoreCase("unset")) {
                 if (args.length == 3) {
                     // /perms rank unset <partial>
                     return CMD.keepStarts(new ArrayList<>(SPSSpigot.perms().getRankNames()), args[2]);
@@ -109,7 +110,7 @@ public class PermissionsTabCompleter implements TabCompleter {
                     // /perms rank unset <rank> <partial>
                     Rank rank = SPSSpigot.perms().getRank(args[2]);
                     if (rank == null) {
-                        return new ArrayList<>();
+                        return Collections.emptyList();
                     } else {
                         // Get all the permissions that are set for this rank.
                         List<String> permStrs = new ArrayList<>();
@@ -119,9 +120,9 @@ public class PermissionsTabCompleter implements TabCompleter {
                     }
                 } else {
                     // perms rank unset <rank> <permission> <partial>
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
-            } else if (args[1].equals("color")) {
+            } else if (args[1].equalsIgnoreCase("color")) {
                 if (args.length == 3) {
                     // /perms rank color <partial>
                     return CMD.keepStarts(new ArrayList<>(SPSSpigot.perms().getRankNames()), args[2]);
@@ -133,17 +134,17 @@ public class PermissionsTabCompleter implements TabCompleter {
                     return CMD.keepStarts(colorNames, args[3]);
                 } else {
                     // /perms rank color <rank> <color> <partial>
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
             } else {
                 // /perms rank <INVALID> <...>
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
-        } else if (args[0].equals("player")) {
+        } else if (args[0].equalsIgnoreCase("player")) {
             if (args.length == 2) {
                 // /perms player <partial>
                 return CMD.keepStarts(Arrays.asList("give", "remove", "info"), args[1]);
-            } else if (args[1].equals("give")) {
+            } else if (args[1].equalsIgnoreCase("give")) {
                 if (args.length == 3) {
                     // /perms player give <partial>
                     return CMD.keepStarts(new ArrayList<>(SPSSpigot.perms().getRankNames()), args[2]);
@@ -152,9 +153,9 @@ public class PermissionsTabCompleter implements TabCompleter {
                     return CMD.keepStarts(new ArrayList<>(DatabaseLink.getAllSPSNames()), args[3]); // sps player name
                 } else {
                     // /perms player give <rank> <...> <partial>
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
-            } else if (args[1].equals("remove")) {
+            } else if (args[1].equalsIgnoreCase("remove")) {
                 if (args.length == 3) {
                     // /perms player remove <partial>
                     return CMD.keepStarts(new ArrayList<>(SPSSpigot.perms().getRankNames()), args[2]);
@@ -163,25 +164,25 @@ public class PermissionsTabCompleter implements TabCompleter {
                     return CMD.keepStarts(new ArrayList<>(DatabaseLink.getAllSPSNames()), args[3]); // sps player name
                 } else {
                     // /perms player remove <rank> <...> <partial>
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
-            } else if (args[1].equals("info")) {
+            } else if (args[1].equalsIgnoreCase("info")) {
                 if (args.length == 3) {
                     // /perms player info <partial>
                     return CMD.keepStarts(new ArrayList<>(DatabaseLink.getAllSPSNames()), args[2]); // sps player name
                 } else {
                     // /perms player info <...> <partial>
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
             } else {
                 // /perms player <INVALID> <...>
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
-        } else if (args[0].equals("reload")) {
-            return new ArrayList<>();
+        } else if (args[0].equalsIgnoreCase("reload")) {
+            return Collections.emptyList();
         } else {
             // /perms <INVALID> <...>
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
     }
 }

@@ -138,7 +138,7 @@ public class TeamCommands implements CommandExecutor {
                 sender.sendMessage(ChatColor.RED + "You cannot leave if you are the leader and are not the last member of the team.");
                 return true;
             }
-        } else if (args[0].equals("list")) {
+        } else if (args[0].equalsIgnoreCase("list")) {
             if (args.length == 1) {
                 // List all teams
                 List<String> names = new ArrayList<>(worldGroup.getTeamNames());
@@ -161,7 +161,7 @@ public class TeamCommands implements CommandExecutor {
                 sender.sendMessage(ChatColor.RED + "Usage: /" + label + " list [team]");
                 return true;
             }
-        } else if (args[0].equals("requests")) {
+        } else if (args[0].equalsIgnoreCase("requests")) {
             Team team = worldGroup.getPlayerTeam(player.getUniqueId());
             if (args.length == 1) {
                 // No arguments for /team requests
@@ -171,7 +171,7 @@ public class TeamCommands implements CommandExecutor {
                 // Player is not on a team
                 sender.sendMessage(ChatColor.RED + "You must be on a team to use team requests commands. If you want to join a team, use /team join");
                 return true;
-            } else if (args[1].equals("list")) {
+            } else if (args[1].equalsIgnoreCase("list")) {
                 Set<UUID> requests = worldGroup.getTeamJoinRequests(team);
                 ArrayList<String> names = new ArrayList<>();
                 for (UUID req : requests)
@@ -179,7 +179,7 @@ public class TeamCommands implements CommandExecutor {
                 sender.sendMessage(CMD.buildListText(team.getName() + " Join Requests", names));
                 // TODO: Make this a tellraw for team leaders to be able to click to run accept/deny
                 return true;
-            } else if (args[1].equals("accept")) {
+            } else if (args[1].equalsIgnoreCase("accept")) {
                 if (team.getLeader().equals(player.getUniqueId())) {
                     if (args.length != 3) {
                         // No arguments or too many for /team requests accept
@@ -218,7 +218,7 @@ public class TeamCommands implements CommandExecutor {
                     sender.sendMessage(ChatColor.RED + "You cannot accept or deny join requests if you are not the team leader.");
                     return true;
                 }
-            } else if (args[1].equals("deny")) {
+            } else if (args[1].equalsIgnoreCase("deny")) {
                 if (team.getLeader().equals(player.getUniqueId())) {
                     if (args.length != 3) {
                         // No arguments or too many for /team requests deny
@@ -231,7 +231,7 @@ public class TeamCommands implements CommandExecutor {
                             try {
                                 uuid = UUID.fromString(args[2]);
                             } catch (IllegalArgumentException e) {
-                                // argument not recognized as a name nor as a UUID
+                                // Argument not recognized as a name nor as a UUID
                                 sender.sendMessage(ChatColor.RED + "Player '" + args[2] + "' was not recognized.");
                                 return true;
                             }

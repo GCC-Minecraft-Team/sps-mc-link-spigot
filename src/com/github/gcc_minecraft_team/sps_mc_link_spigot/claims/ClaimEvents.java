@@ -55,42 +55,19 @@ public class ClaimEvents implements Listener {
             // Lectern (taking is blocked)
             Material.LECTERN);
 
-    private static final Map<UUID, Integer> prevSector = new HashMap<>();
-
-    /*
-    @EventHandler
-    public void onPlayerMoveEvent(PlayerMoveEvent event) {
-        // Handle board updates here when the player rotates enough or changes chunks.
-        // Nathan: This doesn't work well on the server, it only updates like 30% of the time
-
-        Location from = event.getFrom();
-        Location to = event.getTo();
-        UUID player = event.getPlayer().getUniqueId();
-        FastBoard board = SPSSpigot.plugin().boards.get(player);
-        if (to != null && board != null && !board.isDeleted()) {
-            int toSector = CMD.sector(4, 45, to.getYaw());
-            if (!from.getChunk().equals(to.getChunk()) || !prevSector.containsKey(player) || toSector != prevSector.get(player)) {
-                // The player has either changed chunks or rotated towards another cardinal direction.
-                SPSSpigot.plugin().updateBoard(board);
-            }
-            prevSector.put(player, toSector);
-        }
-    }
-    */
-
     // ========[PLAYER BLOCK INTERACTION]========
 
-    /*
-    Only disable vehicles in claims not spawn
-     */
     @EventHandler
     public void onVehicleDestroy(VehicleDestroyEvent event) {
         if (event.getAttacker() != null) {
-            Chunk chunk = event.getAttacker().getLocation().getChunk();
-            WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
-            if (worldGroup != null && !worldGroup.hasOverride(event.getAttacker().getUniqueId())) {
-                if (!worldGroup.canModifyChunk(event.getAttacker().getUniqueId(), chunk, true)) {
-                    event.setCancelled(true);
+            Player attacker = CMD.playerAttacker(event.getAttacker());
+            if (attacker != null) {
+                Chunk chunk = event.getVehicle().getLocation().getChunk();
+                WorldGroup worldGroup = SPSSpigot.getWorldGroup(chunk.getWorld());
+                if (worldGroup != null && !worldGroup.hasOverride(attacker.getUniqueId())) {
+                    if (!worldGroup.canModifyChunk(attacker.getUniqueId(), chunk, true)) {
+                        event.setCancelled(true);
+                    }
                 }
             }
         }
@@ -162,9 +139,9 @@ public class ClaimEvents implements Listener {
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getPlayer().getWorld());
         if (worldGroup != null && !worldGroup.hasOverride(event.getPlayer().getUniqueId())) {
-            if (worldGroup.isInSpawn(event.getPlayer().getLocation())) {
+            if (worldGroup.isInSpawn(event.getRightClicked().getLocation())) {
                 // We don't need to prevent put items into the empty item frame (that's out of scope of this plugin)
-                if (event.getRightClicked() instanceof ItemFrame && !((ItemFrame) event.getRightClicked()).getItem().getType().equals(Material.AIR)) {
+                if (event.getRightClicked() instanceof ItemFrame && ((ItemFrame) event.getRightClicked()).getItem().getType() != Material.AIR) {
                     event.setCancelled(true);
                 }
             } else if (!worldGroup.canModifyChunk(event.getPlayer().getUniqueId(), event.getRightClicked().getLocation().getChunk(), true)) {
@@ -173,10 +150,10 @@ public class ClaimEvents implements Listener {
                 // Get the item the player is using to interact with the entity:
                 Material interactItem = event.getPlayer().getInventory().getItem(event.getHand()).getType();
 
-                if (interactItem.equals(Material.NAME_TAG)) {
+                if (interactItem == Material.NAME_TAG) {
                     // Don't let players rename in other people's claims.
                     event.setCancelled(true);
-                } else if (interactItem.equals(Material.SHEARS)) {
+                } else if (interactItem == Material.SHEARS) {
                     // Don't let players shear animals in other people's claims.
                     event.setCancelled(true);
                 } else if (event.getRightClicked() instanceof ArmorStand || event.getRightClicked() instanceof ItemFrame) {
@@ -282,7 +259,7 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onBlockSpreadEvent(BlockSpreadEvent event) {
         // Only CLAIMS (and you) can prevent forest fires!
-        if (event.getBlock().getType().equals(Material.FIRE)) {
+        if (event.getBlock().getType() == Material.FIRE) {
             WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
             if (worldGroup != null && !worldGroup.canModifyChunk(worldGroup.getChunkOwner(event.getSource().getChunk()), event.getBlock().getChunk(), false)) {
                 event.setCancelled(true);
@@ -313,7 +290,7 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onEntityExplodeEvent(EntityExplodeEvent event) {
         // Stop TNT explosions from breaking claimed blocks
-        if (!event.getEntityType().isAlive()) {
+        if (event.getEntity() instanceof TNTPrimed) {
             TNTPrimed tnt = (TNTPrimed) event.getEntity();
             WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getEntity().getWorld());
             if (worldGroup != null) {
@@ -329,7 +306,7 @@ public class ClaimEvents implements Listener {
                     if (origin == null)
                         owner = null;
                     else
-                        owner = worldGroup.getChunkOwner(origin.getChunk());
+                        owner = worldGroup.getOwner(origin);
                 }
                 if (owner == null || !worldGroup.hasOverride(owner)) {
                     for (int i = event.blockList().size() - 1; i >= 0; i--) {
@@ -349,7 +326,6 @@ public class ClaimEvents implements Listener {
     public void onTNTPrime(TNTPrimeEvent event) {
         WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
         if (worldGroup != null && event.getPrimerEntity() != null) {
-            Chunk chunk = event.getBlock().getChunk();
             UUID player;
             boolean isPlayer = false;
             if (event.getPrimerEntity() instanceof Player) {
@@ -383,7 +359,7 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onBlockDispense(BlockDispenseEvent event) {
         // Override TNT spawns to have the origin be the dispenser block.
-        if (event.getItem().getType().equals(Material.TNT)) {
+        if (event.getItem().getType() == Material.TNT) {
             event.setCancelled(true);
             WorldGroup worldGroup = SPSSpigot.getWorldGroup(event.getBlock().getWorld());
             if (worldGroup != null) {
@@ -412,19 +388,9 @@ public class ClaimEvents implements Listener {
     @EventHandler
     public void onEntityDamageEvent(EntityDamageByEntityEvent event) {
         Entity target = event.getEntity();
-        Player attacker;
-        if (event.getDamager() instanceof Player) {
-            attacker = (Player) event.getDamager();
-        } else if (event.getDamager() instanceof Projectile) {
-            Projectile projectile = (Projectile) event.getDamager();
-            if (projectile.getShooter() instanceof Player) {
-                attacker = (Player) projectile.getShooter();
-            } else {
-                return;
-            }
-        } else {
+        Player attacker = CMD.playerAttacker(event.getDamager());
+        if (attacker == null)
             return;
-        }
         // At this point, target and attacker are set.
         WorldGroup worldGroup = SPSSpigot.getWorldGroup(target.getWorld());
         if (worldGroup != null && !worldGroup.hasOverride(attacker.getUniqueId())) {

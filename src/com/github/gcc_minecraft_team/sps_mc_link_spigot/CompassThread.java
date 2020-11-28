@@ -30,7 +30,7 @@ public class CompassThread implements Runnable {
      * Creates and starts the {@link Thread}.
      */
     public void start() {
-        if (t == null) {
+        if (t == null || !t.isAlive()) {
             t = new Thread(this, "CompassThread");
             t.start();
         }
@@ -53,7 +53,7 @@ public class CompassThread implements Runnable {
             if (worldGroup == null || !worldGroup.isClaimable(player.getWorld())) {
                 claimStatus = net.md_5.bungee.api.ChatColor.GRAY + "World not claimable!";
             } else {
-                UUID chunkOwner = worldGroup.getChunkOwner(player.getLocation().getChunk());
+                UUID chunkOwner = worldGroup.getOwner(player.getLocation());
                 if (worldGroup.isInSpawn(player.getLocation()) && worldGroup.isClaimable(player.getWorld())) {
                     claimStatus = net.md_5.bungee.api.ChatColor.DARK_PURPLE + "[Spawn] Claiming Disabled";
                 } else {

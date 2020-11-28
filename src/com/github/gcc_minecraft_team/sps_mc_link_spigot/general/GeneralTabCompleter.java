@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class GeneralTabCompleter implements TabCompleter {
@@ -20,10 +21,10 @@ public class GeneralTabCompleter implements TabCompleter {
             if (args.length == 1) {
                 return CMD.keepStarts(new ArrayList<>(DatabaseLink.getAllSPSNames()), args[0]);
             } else {
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
         } else {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
     }
 }

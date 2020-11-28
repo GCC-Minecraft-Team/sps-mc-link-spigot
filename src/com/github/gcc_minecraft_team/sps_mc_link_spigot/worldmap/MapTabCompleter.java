@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class MapTabCompleter implements TabCompleter {
@@ -20,7 +21,7 @@ public class MapTabCompleter implements TabCompleter {
             // /maps <partial>
             return CMD.keepStarts(Arrays.asList("players", "image", "claims"), args[0]);
         } else {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
     }
 }

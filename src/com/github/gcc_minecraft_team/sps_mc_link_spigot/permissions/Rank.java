@@ -80,6 +80,7 @@ public class Rank implements ConfigurationSerializable {
         else
             return false;
     }
+
     /**
      * Sets the value of a {@link Permission} node for this {@link Rank}.
      * @param perm The {@link Permission} node to set the value of.
@@ -123,8 +124,8 @@ public class Rank implements ConfigurationSerializable {
     }
 
     /**
-     * Gets the values of all set permission nodes.
-     * @return An unmodifiable {@link Map} containing the fully qualified names of each permission node and the value they are set to.
+     * Gets the values of all set {@link Permission} nodes.
+     * @return An unmodifiable {@link Map} containing the fully qualified names of each {@link Permission} node and the value they are set to.
      */
     @NotNull
     public Map<Permission, Boolean> getPerms() {
@@ -189,7 +190,7 @@ public class Rank implements ConfigurationSerializable {
                 this.perms.put(perm, permStr.getValue());
         }
 
-        // get extra claims
+        // Get extra claims
         if (map.get(EXTRACLAIMSKEY) != null) {
             this.extraClaims = (int) map.get(EXTRACLAIMSKEY);
         } else {

@@ -25,7 +25,7 @@ public class WorldGroupCommands implements CommandExecutor {
         if (args.length == 0) {
             // No arguments for /wgroup
             return false;
-        } else if (args[0].equals("create")) {
+        } else if (args[0].equalsIgnoreCase("create")) {
             if (args.length != 2) {
                 // Either no arguments or too many for /wgroup create <name>
                 sender.sendMessage(adminPrefix + ChatColor.RED + "Usage: /" + label + " create <name>");
@@ -41,7 +41,7 @@ public class WorldGroupCommands implements CommandExecutor {
                     return true;
                 }
             }
-        } else if (args[0].equals("delete")) {
+        } else if (args[0].equalsIgnoreCase("delete")) {
             // arg[2] can equal "-confirm=<CASE-SENSITIVE NAME>" to skip confirmation. This is suggested by the tellraw in confirmation to force the player to rewrite the name.
             if (args.length == 3 && args[2].startsWith("-confirm=")) {
                 // /wgroup delete <NON-CASE-SENSITIVE NAME> -confirm=<CASE-SENSITIVE NAME>
@@ -87,7 +87,7 @@ public class WorldGroupCommands implements CommandExecutor {
                     return true;
                 }
             }
-        } else if (args[0].equals("addworld")) {
+        } else if (args[0].equalsIgnoreCase("addworld")) {
             // This one does not need confirmation because you can't add a taken world
             if (args.length != 3) {
                 // Incorrect number of arguments for /wgroup addworld <world group> <world>
@@ -112,7 +112,7 @@ public class WorldGroupCommands implements CommandExecutor {
                     }
                 }
             }
-        } else if (args[0].equals("setworldspawn")) {
+        } else if (args[0].equalsIgnoreCase("setworldspawn")) {
             if (args.length != 3) {
                 // Incorrect number of arguments for /wgroup setworldspawn <world group> <world>
                 sender.sendMessage(adminPrefix + ChatColor.RED + "Usage: /" + label + " setworldspawn <world group> <world>");
@@ -132,7 +132,7 @@ public class WorldGroupCommands implements CommandExecutor {
                     return true;
                 }
             }
-        } else if (args[0].equals("remworld")) {
+        } else if (args[0].equalsIgnoreCase("remworld")) {
             // arg[3] can equal "-confirm=<CASE-SENSITIVE WORLD NAME>" to skip confirmation. This is suggested by the tellraw in confirmation to force the player to rewrite the name.
             if (args.length == 4 && args[3].startsWith("-confirm=")) {
                 // /wgroup remworld <WORLD GROUP> <NON-CASE-SENSITIVE WORLD NAME> -confirm=<CASE-SENSITIVE WORLD NAME>
@@ -186,8 +186,8 @@ public class WorldGroupCommands implements CommandExecutor {
                     return true;
                 }
             }
-        } else if (args[0].equals("claimable")) {
-            if (args[1].equals("addworld")) {
+        } else if (args[0].equalsIgnoreCase("claimable")) {
+            if (args[1].equalsIgnoreCase("addworld")) {
                 // This one does not need confirmation because you can't add a taken world
                 if (args.length != 4) {
                     // Incorrect number of arguments for /wgroup claimable addworld <world group> <world>
@@ -212,7 +212,7 @@ public class WorldGroupCommands implements CommandExecutor {
                         }
                     }
                 }
-            } else if (args[1].equals("remworld")) {
+            } else if (args[1].equalsIgnoreCase("remworld")) {
                 // arg[3] can equal "-confirm=<CASE-SENSITIVE WORLD NAME>" to skip confirmation. This is suggested by the tellraw in confirmation to force the player to rewrite the name.
                 if (args.length == 4) {
                     // /wgroup claimable remworld <WORLD GROUP> <NON-CASE-SENSITIVE WORLD NAME> -confirm=<CASE-SENSITIVE WORLD NAME>
@@ -250,7 +250,7 @@ public class WorldGroupCommands implements CommandExecutor {
             } else {
                 return false;
             }
-        } else if (args[0].equals("list")) {
+        } else if (args[0].equalsIgnoreCase("list")) {
             if (args.length == 1) {
                 // List all world groups
                 List<String> names = new ArrayList<>();

@@ -29,11 +29,9 @@ public class ClaimCommands implements CommandExecutor {
             return true;
         }
         Chunk playerChunk = player.getLocation().getChunk();
-        /*
-         * Unclaims a 3x3 area of chunks (9 total if all points are availible)
-         */
+
         if (command.getName().equalsIgnoreCase("unclaim")) {
-            // unclaim 3x3
+            // Unclaims a 3x3 area of chunks (9 total if all points are availible)
             Set<Chunk> chunks = new HashSet<>();
 
             for (int z = -1; z <= 1; z++) {
@@ -53,12 +51,8 @@ public class ClaimCommands implements CommandExecutor {
             Set<Chunk> unclaimed = worldGroup.unclaimChunkSet(chunks, player.getUniqueId());
             sender.sendMessage(ChatColor.GREEN + "Unclaimed " + unclaimed.size() + "/" + chunks.size() + " chunks! You are now at " + worldGroup.getChunkCount(player.getUniqueId()) + "/" + worldGroup.getMaxChunks(player) + " chunks you can currently claim.");
             return true;
-
-        /*
-         * Unclaims a 3x3 area of chunks (9 total if all points are availible)
-         */
         } else if (command.getName().equalsIgnoreCase("claim")) {
-            // /claim
+            // Unclaims a 3x3 area of chunks (9 total if all points are availible)
             if (args.length == 0) {
                 // No arguments
                 // claim 3x3
@@ -89,11 +83,9 @@ public class ClaimCommands implements CommandExecutor {
                 }
                 return true;
             } else {
-                /*
-                 * Claims a single chunk
-                 */
                 Chunk chunk = player.getLocation().getChunk();
                 if (args[0].equalsIgnoreCase("chunk")) {
+                    // Claims a single chunk
                     UUID owner = worldGroup.getChunkOwner(chunk);
 
                     if (worldGroup.isInSpawn(player.getLocation())) {
@@ -117,10 +109,8 @@ public class ClaimCommands implements CommandExecutor {
                             return true;
                         }
                     }
-                /*
-                 * Unclaims a single chunk
-                 */
                 } else if (args[0].equalsIgnoreCase("unchunk")) {
+                    // Unclaims a single chunk
                     UUID owner = worldGroup.getChunkOwner(chunk);
                     if (owner == null || !owner.equals(player.getUniqueId())) {
                         // Player doesn't own this chunk so can't unclaim it

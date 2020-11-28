@@ -4,6 +4,9 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.metadata.Metadatable;
 import org.jetbrains.annotations.NotNull;
@@ -105,6 +108,12 @@ public class CMD {
         return out;
     }
 
+    /**
+     * Gets a subset of arguments for a command that are valid given the starting letters.
+     * @param list The {@link List} of valid arguments.
+     * @param prefix The {@link String} that the chosen argument should start with.
+     * @return The sorted {@link List} subset of arguments that start with the prefix.
+     */
     @NotNull
     public static List<String> keepStarts(@NotNull List<String> list, @NotNull String prefix) {
         List<String> newList = new ArrayList<>();
@@ -121,9 +130,9 @@ public class CMD {
     /**
      * Gets the sector of a circle that an angle falls at, given a set number of sectors.
      * @param sectors The number of sectors to divide the circle into.
-     * @param start The position at which the first sector starts.
-     * @param value The value to check.
-     * @return The sector the value falls in. {@code 0 <= x < sectors}.
+     * @param start The position at which the first sector starts, in degrees.
+     * @param value The value to check, in degrees.
+     * @return The sector the value falls in, in degrees. {@code 0 <= x < sectors}.
      */
     public static int sector(int sectors, float start, float value) {
         float relativeValue = (value - start) % 360;
@@ -145,5 +154,25 @@ public class CMD {
             }
         }
         return null;
+    }
+
+    /**
+     * Gets the {@link Player} responsible for an attack. This includes {@link Projectile}s fired by a {@link Player}.
+     * @param entity The {@link Entity} that did the damage.
+     * @return The {@link Player} responsible for the attack, or {@code null} if not a {@link Player}.
+     */
+    @Nullable
+    public static Player playerAttacker(Entity entity) {
+        if (entity instanceof Player) {
+            return (Player) entity;
+        } else if (entity instanceof Projectile) {
+            Projectile projectile = (Projectile) entity;
+            if (projectile.getShooter() instanceof Player)
+                return (Player) projectile.getShooter();
+            else
+                return null;
+        } else {
+            return null;
+        }
     }
 }

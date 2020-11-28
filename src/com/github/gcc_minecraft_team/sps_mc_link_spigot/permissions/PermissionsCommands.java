@@ -25,12 +25,12 @@ public class PermissionsCommands implements CommandExecutor {
         if (args.length == 0) {
             // No arguments
             return false;
-        } else if (args[0].equals("members")) {
+        } else if (args[0].equalsIgnoreCase("members")) {
             if (args.length == 1) {
                 // No arguments for /perms members
                 sender.sendMessage(ChatColor.RED + "Usage: /" + label + " members <set|unset|list>");
                 return true;
-            } else if (args[1].equals("set")) {
+            } else if (args[1].equalsIgnoreCase("set")) {
                 if (args.length != 4) {
                     // Wrong number of arguments for /perms members set
                     sender.sendMessage(ChatColor.RED + "Usage: /" + label + " members set <permission> <true|false>");
@@ -59,7 +59,7 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     }
                 }
-            } else if (args[1].equals("unset")) {
+            } else if (args[1].equalsIgnoreCase("unset")) {
                 if (args.length != 3) {
                     // Wrong number of arguments for /perms members unset
                     sender.sendMessage(ChatColor.RED + "Usage: /" + label + " members unset <permission>");
@@ -79,7 +79,7 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     }
                 }
-            } else if (args[1].equals("list")) {
+            } else if (args[1].equalsIgnoreCase("list")) {
                 // Send full list of permissions
                 Map<String, Boolean> perms = new HashMap<>();
                 for (Map.Entry<Permission, Boolean> p : SPSSpigot.perms().getMemberPerms().entrySet())
@@ -91,12 +91,12 @@ public class PermissionsCommands implements CommandExecutor {
                 sender.sendMessage(ChatColor.RED + "Usage: /" + label + " members <set|unset|list>");
                 return true;
             }
-        } else if (args[0].equals("rank")) {
+        } else if (args[0].equalsIgnoreCase("rank")) {
             if (args.length == 1) {
                 // No arguments for /perms rank
                 sender.sendMessage(ChatColor.RED + "Usage: /" + label + " rank <create|delete|list|set|unset|color>");
                 return true;
-            } else if (args[1].equals("create")) {
+            } else if (args[1].equalsIgnoreCase("create")) {
                 // Creates a new rank and adds it to the list.
                 if (args.length != 3) {
                     // Either no arguments for /perms rank create
@@ -113,7 +113,7 @@ public class PermissionsCommands implements CommandExecutor {
                     sender.sendMessage(ChatColor.GREEN + "Created new rank '" + args[2] + "'!");
                     return true;
                 }
-            } else if (args[1].equals("delete")) {
+            } else if (args[1].equalsIgnoreCase("delete")) {
                 // Deletes a rank and removes it from all players.
                 if (args.length != 3) {
                     // Either no arguments for /perms rank delete
@@ -130,7 +130,7 @@ public class PermissionsCommands implements CommandExecutor {
                     sender.sendMessage(ChatColor.GREEN + "Deleted rank '" + args[2] + "'!");
                     return true;
                 }
-            } else if (args[1].equals("list")) {
+            } else if (args[1].equalsIgnoreCase("list")) {
                 // Lists either all ranks or all permissions given by a specified rank.
                 if (args.length > 3) {
                     // Too many arguments (multi-word rank name)
@@ -155,7 +155,7 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     }
                 }
-            } else if (args[1].equals("set")) {
+            } else if (args[1].equalsIgnoreCase("set")) {
                 // Sets a specified permission for a specified rank to true or false
                 if (args.length != 5) {
                     // Not enough arguments or too many arguments given for /perms rank set
@@ -189,7 +189,7 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     }
                 }
-            } else if (args[1].equals("unset")) {
+            } else if (args[1].equalsIgnoreCase("unset")) {
                 // Unsets a specified permission for a specified rank
                 if (args.length != 4) {
                     // Not enough arguments or too many arguments given for /perms rank unset
@@ -214,7 +214,7 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     }
                 }
-            } else if (args[1].equals("color")) {
+            } else if (args[1].equalsIgnoreCase("color")) {
                 // Sets the color for a given rank, or tells you the current color if unspecified.
                 if (args.length == 2) {
                     // No arguments given for /perms rank color
@@ -247,7 +247,7 @@ public class PermissionsCommands implements CommandExecutor {
                         return true;
                     }
                 }
-            } else if (args[1].equals("claims")) {
+            } else if (args[1].equalsIgnoreCase("claims")) {
                 // sets the number of extra claims a rank should have.
                 if (args.length == 2) {
                     // No arguments given for /perms rank color
@@ -282,12 +282,12 @@ public class PermissionsCommands implements CommandExecutor {
                 sender.sendMessage(ChatColor.RED + "Usage: /" + label + " rank <create|delete|list|set|unset|color>");
                 return true;
             }
-        } else if (args[0].equals("player")) {
+        } else if (args[0].equalsIgnoreCase("player")) {
             if (args.length == 1) {
                 // No arguments for /perms player
                 sender.sendMessage(ChatColor.RED + "Usage: /" + label + " player <give|remove|info>");
                 return true;
-            } else if (args[1].equals("give")) {
+            } else if (args[1].equalsIgnoreCase("give")) {
                 // Gives a player a specified rank.
                 if (args.length < 4) {
                     // Either no arguments or only rank for /perms player give
@@ -325,7 +325,7 @@ public class PermissionsCommands implements CommandExecutor {
                         }
                     }
                 }
-            } else if (args[1].equals("remove")) {
+            } else if (args[1].equalsIgnoreCase("remove")) {
                 // Removes a specified rank from a player.
                 if (args.length < 4) {
                     // Either no arguments or only rank for /perms player remove
@@ -362,7 +362,7 @@ public class PermissionsCommands implements CommandExecutor {
                         }
                     }
                 }
-            } else if (args[1].equals("info")) {
+            } else if (args[1].equalsIgnoreCase("info")) {
                 // Gets info on a specific player's ranks
                 if (args.length == 2) {
                     // No arguments for /perms player info
@@ -399,7 +399,7 @@ public class PermissionsCommands implements CommandExecutor {
                 sender.sendMessage(ChatColor.RED + "Usage: /" + label + "player <give|remove|info>");
                 return true;
             }
-        } else if (args[0].equals("reload")) {
+        } else if (args[0].equalsIgnoreCase("reload")) {
             // Reloads perms from file.
             SPSSpigot.perms().loadFile();
             // Update perms for everybody online

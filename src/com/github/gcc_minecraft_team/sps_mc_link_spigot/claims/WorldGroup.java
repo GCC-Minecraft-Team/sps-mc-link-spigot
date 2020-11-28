@@ -455,7 +455,7 @@ public class WorldGroup {
 
     /**
      * Calculates the maximum number of {@link Chunk}s a player can claim, based on their play time.
-     * Formula where h is the number of hours online and r is extra claims from {@link Rank}s: {@code 16 + 8log_{2}(h+2) + r}
+     * Formula where h is the number of hours online and r is extra claims from {@link Rank}s: {@code 16 + 32log_{2}(h+2) + r}
      * @param player The {@link OfflinePlayer} to check.
      * @return Maximum number of {@link Chunk}s the player can claim.
      */
@@ -473,7 +473,7 @@ public class WorldGroup {
 
     /**
      * Calculates the maximum number of {@link Chunk}s a player can claim, based on their play time.
-     * Formula where h is the number of hours online and r is extra claims from {@link Rank}s: {@code 16 + 8log_{2}(h+2) + r}
+     * Formula where h is the number of hours online and r is extra claims from {@link Rank}s: {@code 16 + 32log_{2}(h+2) + r}
      * @param player The {@link UUID} of the player.
      * @return Maximum number of {@link Chunk}s the player can claim.
      */
@@ -491,24 +491,6 @@ public class WorldGroup {
             return claims.get(player).size();
         else
             return 0;
-    }
-
-    /**
-     * Gets the owner of a given {@link Chunk}.
-     * @param chunk The {@link Chunk} to check.
-     * @return The {@link UUID} of the owner, or {@code null} if unowned.
-     */
-    // NOTE!!! READ ME!!! Don't remove this function or change it to use .equals() (for some reason that breaks the server a lot)
-    @Nullable
-    public UUID getChunkOwner(@NotNull Chunk chunk) {
-        for (Map.Entry<UUID, Set<Chunk>> player : claims.entrySet()) {
-            for (Chunk c : player.getValue()) {
-                if (c.getX() == chunk.getX() && c.getZ() == chunk.getZ() && chunk.getWorld().equals(c.getWorld())) {
-                    return player.getKey();
-                }
-            }
-        }
-        return null;
     }
 
     /**
@@ -531,6 +513,16 @@ public class WorldGroup {
     }
 
     /**
+     * Gets the owner of a given {@link Chunk}.
+     * @param chunk The {@link Chunk} to check.
+     * @return The {@link UUID} of the owner, or {@code null} if unowned.
+     */
+    @Nullable
+    public UUID getChunkOwner(@NotNull Chunk chunk) {
+        return getChunkOwner(chunk.getWorld(), chunk.getX(), chunk.getZ());
+    }
+
+    /**
      * Gets the owner of a location.
      * @param world The {@link World}.
      * @param x The block X.
@@ -540,6 +532,16 @@ public class WorldGroup {
     @Nullable
     public UUID getOwner(@NotNull World world, int x, int z) {
         return getChunkOwner(world, Math.floorDiv(x, 16), Math.floorDiv(z, 16));
+    }
+
+    /**
+     * Gets the owner of a {@link Location}.
+     * @param location The {@link Location}.
+     * @return The {@link UUID} of the owner or {@code null} if unowned.
+     */
+    @Nullable
+    public UUID getOwner(@NotNull Location location) {
+        return getChunkOwner(location.getChunk());
     }
 
     /**
@@ -568,17 +570,23 @@ public class WorldGroup {
     }
 
     /**
+     * Checks if a {@link Chunk} can be claimed.
+     * @param chunk The {@link Chunk} to check.
+     * @return {@code true} if it is claimable. This means the {@link World} is claimable and the {@link Chunk} is unclaimed.
+     */
+    public boolean isClaimable(Chunk chunk) {
+        return claimable != null && claimable.contains(chunk.getWorld()) && getChunkOwner(chunk) == null;
+    }
+
+    /**
      * Claims a {@link Chunk} for a given player.
      * @param player The {@link UUID} of the player.
      * @param chunk The {@link Chunk} to be claimed.
      * @return {@code true} if successful. This means the {@link Chunk} is not already claimed, the player is not exceeding their claim limit, and the {@link World} is claimable by this {@link WorldGroup}.
      */
     public boolean claimChunk(@NotNull UUID player, @NotNull Chunk chunk) {
-        if (claimable == null || claimable.isEmpty() || !claimable.contains(chunk.getWorld())) {
-            // Ensure the world is claimable in this
-            return false;
-        } else if (getChunkOwner(chunk) != null) {
-            // Ensure the chunk isn't claimed
+        if (!isClaimable(chunk)) {
+            // Check if the chunk is not claimable
             return false;
         } else if (getChunkCount(player) >= getMaxChunks(player)) {
             // Ensure this won't put the player over their claim limit
@@ -594,7 +602,7 @@ public class WorldGroup {
     }
 
     /**
-     * Claims a list of {@link Chunk}s for a given player.
+     * Claims multiple {@link Chunk}s for a given player.
      * @param player The {@link UUID} of the player.
      * @param chunks The {@link Set} of {@link Chunk}s to be claimed.
      * @return A {@link Set} of successfully claimed {@link Chunk}s. This means the {@link Chunk}s are not already claimed, the player is not exceeding their claim limit, and the {@link World}s are claimable.
@@ -603,13 +611,7 @@ public class WorldGroup {
     public Set<Chunk> claimChunkSet(@NotNull UUID player, @NotNull Set<Chunk> chunks) {
         Set<Chunk> successes = new HashSet<>();
         for (Chunk chunk : chunks) {
-            if (claimable == null || claimable.isEmpty() || !claimable.contains(chunk.getWorld())) {
-                // Ensure the world is claimable in this
-            } else if (getChunkOwner(chunk) != null) {
-                // Ensure the chunk isn't claimed
-            } else if (getChunkCount(player) >= getMaxChunks(player)) {
-                // Ensure this won't put the player over their claim limit
-            } else {
+            if (isClaimable(chunk) && getChunkCount(player) < getMaxChunks(player)) {
                 if (!claims.containsKey(player)) {
                     claims.put(player, new HashSet<>());
                 }
@@ -635,7 +637,7 @@ public class WorldGroup {
     }
 
     /**
-     * Unclaims multiple {@link Chunk}s.
+     * Unclaims multiple {@link Chunk}s for a given player.
      * @param chunks The {@link Chunk}s to be unclaimed.
      * @return A {@link Set} of the {@link Chunk}s that were successfully unclaimed.
      */

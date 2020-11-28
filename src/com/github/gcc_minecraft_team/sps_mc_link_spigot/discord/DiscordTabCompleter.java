@@ -8,7 +8,7 @@ import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DiscordTabCompleter implements TabCompleter {
@@ -20,6 +20,6 @@ public class DiscordTabCompleter implements TabCompleter {
             return CMD.keepStarts(DatabaseLink.getPlayerNames(), args[0]);
         }
 
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 }

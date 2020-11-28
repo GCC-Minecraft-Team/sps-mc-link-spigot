@@ -67,15 +67,15 @@ public class MapEvents implements Listener {
         if (MapRegistry.isClaimMap(stack)) {
             if (event.getPlayer().isSneaking()) {
                 MapView view = ((MapMeta) stack.getItemMeta()).getMapView();
-                if (view.getScale().equals(MapView.Scale.CLOSEST))
+                if (view.getScale() == MapView.Scale.CLOSEST)
                     view.setScale(MapView.Scale.CLOSE);
-                else if (view.getScale().equals(MapView.Scale.CLOSE))
+                else if (view.getScale() == MapView.Scale.CLOSE)
                     view.setScale(MapView.Scale.NORMAL);
-                else if (view.getScale().equals(MapView.Scale.NORMAL))
+                else if (view.getScale() == MapView.Scale.NORMAL)
                     view.setScale(MapView.Scale.FAR);
-                else if (view.getScale().equals(MapView.Scale.FAR))
+                else if (view.getScale() == MapView.Scale.FAR)
                     view.setScale(MapView.Scale.FARTHEST);
-                else if (view.getScale().equals(MapView.Scale.FARTHEST))
+                else if (view.getScale() == MapView.Scale.FARTHEST)
                     view.setScale(MapView.Scale.CLOSEST);
                 event.setCancelled(true);
             }

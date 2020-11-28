@@ -96,8 +96,8 @@ public class SPSSpigot extends JavaPlugin {
         GeneralTabCompleter generalTabCompleter = new GeneralTabCompleter();
         this.getCommand("spawn").setExecutor(generalCommands);
         this.getCommand("cancel").setExecutor(generalCommands);
-        this.getCommand("stats").setExecutor(generalCommands);
 
+        this.getCommand("stats").setExecutor(generalCommands);
         this.getCommand("stats").setTabCompleter(generalTabCompleter);
 
         // Moderation discord integration

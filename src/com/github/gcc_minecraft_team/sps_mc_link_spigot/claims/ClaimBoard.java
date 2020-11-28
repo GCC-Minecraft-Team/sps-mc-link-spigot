@@ -109,8 +109,7 @@ public class ClaimBoard {
                         StringBuilder bRow = new StringBuilder();
                         for (int x = -3; x <= 3; x++) {
                             // Get the surrounding chunks
-                            Chunk chunk = player.getWorld().getChunkAt(playerChunk.getX() + x, playerChunk.getZ() + z);
-                            UUID chunkOwner = worldGroup.getChunkOwner(chunk);
+                            UUID chunkOwner = worldGroup.getChunkOwner(player.getWorld(), playerChunk.getX() + x, playerChunk.getZ() + z);
                             if (x == 0 && z == 0) {
                                 // Player location.
                                 ChatColor color;
@@ -138,7 +137,7 @@ public class ClaimBoard {
                                 bRow.append(color).append(symbol);
                             } else {
                                 if (worldGroup.isClaimable(player.getWorld())) {
-                                    if (worldGroup.isInSpawn(chunk.getBlock(0, 0, 0).getLocation())) {
+                                    if (worldGroup.isInSpawn(player.getWorld().getBlockAt((playerChunk.getX() + x)*16, 0, (playerChunk.getZ() + z)*16).getLocation())) {
                                         // In spawn
                                         bRow.append(ChatColor.DARK_PURPLE).append("Ⓢ");
                                     } else if (chunkOwner == null) {
@@ -181,6 +180,5 @@ public class ClaimBoard {
                 }
             }
         }
-
     }
 }

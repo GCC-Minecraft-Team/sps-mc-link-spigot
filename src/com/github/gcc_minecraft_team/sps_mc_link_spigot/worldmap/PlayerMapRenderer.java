@@ -150,7 +150,7 @@ public class PlayerMapRenderer extends MapRenderer {
                 if (Arrays.asList(B_WATER).contains(biome)) {
                     g2d.setColor(new Color(25, 0, 120));
                     g2d.fillRect(x, z, 1, 1);
-                } else if (biome.equals(Biome.MUSHROOM_FIELDS) || biome.equals(Biome.MUSHROOM_FIELD_SHORE)) {
+                } else if (biome == Biome.MUSHROOM_FIELDS || biome == Biome.MUSHROOM_FIELD_SHORE) {
                     if (CheckInSpawnRadius((int) spawn.getX() + (x * 16) + offsetX, (int) spawn.getZ() + (z * 16) + offsetZ)) {
                         g2d.setColor(new Color(255, 0, 0));
                         g2d.fillRect(x, z, 1, 1);

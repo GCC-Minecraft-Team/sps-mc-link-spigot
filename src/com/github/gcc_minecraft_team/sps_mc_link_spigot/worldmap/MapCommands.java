@@ -22,7 +22,7 @@ public class MapCommands implements CommandExecutor {
             if (args.length == 0) {
                 // No arguments for /maps
                 return false;
-            } else if (args[0].equals("image")) {
+            } else if (args[0].equalsIgnoreCase("image")) {
                 if (!sender.hasPermission("spsmc.map.image")) {
                     sender.sendMessage(ChatColor.RED + "You do not have permission to create image maps.");
                     return true;
@@ -39,7 +39,7 @@ public class MapCommands implements CommandExecutor {
                     sender.sendMessage(ChatColor.RED + "Usage: /" + label + " image <file>");
                     return true;
                 }
-            } else if (args[0].equals("players")) {
+            } else if (args[0].equalsIgnoreCase("players")) {
                 if (!sender.hasPermission("spsmc.map.players")) {
                     sender.sendMessage(ChatColor.RED + "You do not have permission to create players maps.");
                     return true;
@@ -65,7 +65,7 @@ public class MapCommands implements CommandExecutor {
                     sender.sendMessage(ChatColor.RED + "Usage: /" + label + " players <# of maps x-wise> <# of maps z-wise>");
                     return true;
                 }
-            } else if (args[0].equals("claims")) {
+            } else if (args[0].equalsIgnoreCase("claims")) {
                 if (!sender.hasPermission("spsmc.map.claims")) {
                     sender.sendMessage(ChatColor.RED + "You do not have permission to create claims maps.");
                     return true;

@@ -23,7 +23,7 @@ public class AdminClaimCommands implements CommandExecutor {
             if (args.length == 0) {
                 // No arguments for /adminc
                 return false;
-            } else if (args[0].equals("override")) {
+            } else if (args[0].equalsIgnoreCase("override")) {
                 WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
                 if (worldGroup == null) {
                     sender.sendMessage(ChatColor.RED + "You must be in a world group to be able to override the claims in it.");
@@ -37,13 +37,13 @@ public class AdminClaimCommands implements CommandExecutor {
                     sender.sendMessage(ChatColor.GREEN + "Enabled claim override.");
                     return true;
                 }
-            } else if (args[0].equals("unclaim")) {
+            } else if (args[0].equalsIgnoreCase("unclaim")) {
                 WorldGroup worldGroup = SPSSpigot.getWorldGroup(player.getWorld());
                 if (worldGroup == null) {
                     sender.sendMessage(ChatColor.RED + "You must be in a world group to be able to remove the claims in it.");
                     return true;
                 } else {
-                    UUID owner = worldGroup.getChunkOwner(player.getLocation().getChunk());
+                    UUID owner = worldGroup.getOwner(player.getLocation());
                     if (owner == null) {
                         sender.sendMessage(ChatColor.RED + "This chunk is already unclaimed.");
                         return true;

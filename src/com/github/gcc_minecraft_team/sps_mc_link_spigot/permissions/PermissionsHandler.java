@@ -321,7 +321,7 @@ public class PermissionsHandler {
         if (playerRanks.containsKey(player))
             return Collections.unmodifiableSet(playerRanks.get(player));
         else
-            return new HashSet<>();
+            return Collections.emptySet();
     }
 
     /**

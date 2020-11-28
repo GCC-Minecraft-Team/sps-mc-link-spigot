@@ -18,7 +18,7 @@ public class ModerationCommands implements CommandExecutor {
         if (args.length == 0) {
             // No arguments
             return false;
-        } else if (args[0].equals("banSPS")) {
+        } else if (args[0].equalsIgnoreCase("banSPS")) {
             if (args.length != 2) {
                 // No arguments or too many arguments for /mod banSPS
                 sender.sendMessage(modPrefix + ChatColor.RED + "Usage: /" + label + " banSPS <player>");
@@ -33,7 +33,7 @@ public class ModerationCommands implements CommandExecutor {
                     return true;
                 }
             }
-        } else if (args[0].equals("tpSPS")) {
+        } else if (args[0].equalsIgnoreCase("tpSPS")) {
             if (args.length != 2) {
                 // No arguments or too many arguments for /mod banSPS
                 sender.sendMessage(modPrefix + ChatColor.RED + "Usage: /" + label + " tpSPS <player>");
@@ -43,7 +43,7 @@ public class ModerationCommands implements CommandExecutor {
                 ((Player) sender).teleport(NickAPI.getPlayerOfNickedName(args[1]).getLocation());
                 return true;
             }
-        } else if (args[0].equals("muteSPS")) {
+        } else if (args[0].equalsIgnoreCase("muteSPS")) {
             if (args.length != 2) {
                 // No arguments or too many arguments for /mod muteSPS
                 sender.sendMessage(modPrefix + ChatColor.RED + "Usage: /" + label + " muteSPS <player>");
@@ -58,7 +58,7 @@ public class ModerationCommands implements CommandExecutor {
                     return true;
                 }
             }
-        } else if (args[0].equals("unmuteSPS")) {
+        } else if (args[0].equalsIgnoreCase("unmuteSPS")) {
             if (args.length != 2) {
                 // No arguments or too many arguments for /mod muteSPS
                 sender.sendMessage(modPrefix + ChatColor.RED + "Usage: /" + label + " unmuteSPS <player>");

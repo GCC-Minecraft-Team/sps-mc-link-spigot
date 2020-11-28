@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class WorldGroupTabCompleter implements TabCompleter {
@@ -22,10 +23,10 @@ public class WorldGroupTabCompleter implements TabCompleter {
         if (args.length == 1) {
             // /wgroup <partial>
             return CMD.keepStarts(Arrays.asList("create", "delete", "addworld", "remworld", "claimable", "list", "setworldspawn"), args[0]);
-        } else if (args[0].equals("create")) {
+        } else if (args[0].equalsIgnoreCase("create")) {
             // /wgroup create <...partial>
-            return new ArrayList<>();
-        } else if (args[0].equals("delete")) {
+            return Collections.emptyList();
+        } else if (args[0].equalsIgnoreCase("delete")) {
             if (args.length == 2) {
                 // /wgroup delete <partial>
                 List<String> names = new ArrayList<>();
@@ -34,9 +35,9 @@ public class WorldGroupTabCompleter implements TabCompleter {
                 return CMD.keepStarts(names, args[1]);
             } else {
                 // /wgroup delete <world group> <...partial>
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
-        } else if (args[0].equals("addworld")) {
+        } else if (args[0].equalsIgnoreCase("addworld")) {
             if (args.length == 2) {
                 // /wgroup addworld <partial>
                 List<String> names = new ArrayList<>();
@@ -52,9 +53,9 @@ public class WorldGroupTabCompleter implements TabCompleter {
                 // TODO: Decide if we exclude worlds already in world groups
             } else {
                 // /wgroup addworld <world group> <world> <...partial>
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
-        } else if (args[0].equals("remworld")) {
+        } else if (args[0].equalsIgnoreCase("remworld")) {
             if (args.length == 2) {
                 // /wgroup remworld <partial>
                 List<String> names = new ArrayList<>();
@@ -65,7 +66,7 @@ public class WorldGroupTabCompleter implements TabCompleter {
                 // /wgroup remworld <world group> <partial>
                 WorldGroup worldGroup = SPSSpigot.plugin().getWorldGroup(args[1]);
                 if (worldGroup == null) {
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 } else {
                     List<String> names = new ArrayList<>();
                     for (World world : worldGroup.getWorlds())
@@ -74,16 +75,16 @@ public class WorldGroupTabCompleter implements TabCompleter {
                 }
             } else {
                 // /wgroup remworld <world group> <world> <...partial>
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
-        } else if (args[0].equals("claimable")) {
+        } else if (args[0].equalsIgnoreCase("claimable")) {
             if (args.length == 2) {
                 // wgroup claimable
                 return CMD.keepStarts(Arrays.asList("addworld", "remworld"), args[1]);
             } else {
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
-        } else if (args[0].equals("list")) {
+        } else if (args[0].equalsIgnoreCase("list")) {
             if (args.length == 2) {
                 // /wgroup list <partial>
                 List<String> names = new ArrayList<>();
@@ -92,11 +93,11 @@ public class WorldGroupTabCompleter implements TabCompleter {
                 return CMD.keepStarts(names, args[1]);
             } else {
                 // /wgroup list <world group> <...partial>
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
         } else {
             // /wgroup <INVALID> <...partial>
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
     }
 }

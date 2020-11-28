@@ -90,16 +90,4 @@ public class JoinEvent implements Listener {
             SPSSpigot.plugin().giveStartingItems(event.getPlayer());
         }
     }
-
-    /*
-    @EventHandler
-    public void onServerListPing(ServerListPingEvent event) {
-        Iterator<Player> it = event.iterator();
-        while (it.hasNext()) {
-            it.next();
-            it.remove();
-        }
-
-    }*/
-
 }
