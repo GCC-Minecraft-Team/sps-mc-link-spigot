@@ -157,7 +157,6 @@
             <groupId>xyz.haoshoku.nick</groupId>
             <artifactId>nickapi</artifactId>
             <version>6.2.1-SNAPSHOT</version>
-            <scope>provided</scope>
         </dependency>
         <!-- UNIT TESTING -->
         <dependency>
