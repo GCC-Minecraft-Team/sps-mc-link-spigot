@@ -1,6 +1,11 @@
 package com.github.gcc_minecraft_team.sps_mc_link_spigot.worldmap;
 
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.CompassThread;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.SPSSpigot;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.Team;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
+import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
@@ -19,9 +24,76 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 import java.util.logging.Level;
+
+class RenderPlayerClaims implements Runnable {
+    private Thread t;
+    private WorldGroup worldGroup;
+    private Map<Team, ArrayList<Chunk>> claims;
+    volatile boolean running = false;
+
+    public RenderPlayerClaims(WorldGroup worldGroup) {
+        this.worldGroup = worldGroup;
+        claims = new HashMap<Team, ArrayList<Chunk>>();
+        running = true;
+    }
+
+    public void start() {
+        if (t == null || !t.isAlive()) {
+            t = new Thread(this, "RenderPlayerClaims");
+            t.start();
+        }
+    }
+
+    public void stop() {
+        running = false;
+        t.interrupt();
+    }
+
+    @Override
+    public void run() {
+        while (running) {
+            Set<Team> teams = DatabaseLink.getTeams(worldGroup);
+            Map<UUID, Set<Chunk>> playerClaims = DatabaseLink.getClaims(worldGroup);
+
+            for (Map.Entry<UUID,Set<Chunk>> player : playerClaims.entrySet()) {
+                Team playerTeam = null;
+                for (Team team : teams) {
+                    if (team.getMembers().contains(player.getKey())) {
+                        playerTeam = team;
+                    }
+                }
+
+                if (playerTeam != null) {
+                    // if we have an existing team in claims, add this player's claims
+                    // to the team's list of chunks claimed
+                    if (claims != null && claims.containsKey(playerTeam)) {
+                        ArrayList<Chunk> teamClaims = new ArrayList<Chunk>();
+                        teamClaims.addAll(player.getValue());
+                        teamClaims.addAll(claims.get(playerTeam));
+
+                        claims.put(playerTeam, teamClaims);
+                    } else {
+                        ArrayList<Chunk> teamClaims = new ArrayList<Chunk>();
+                        teamClaims.addAll(player.getValue());
+                        claims.put(playerTeam,teamClaims);
+                    }
+                }
+            }
+
+            try {
+                Thread.sleep(30000);
+            } catch (InterruptedException e) {
+                // don't print stack trace, this is most likely intentional
+            }
+        }
+    }
+
+    public Map<Team, ArrayList<Chunk>> getClaims() {
+        return claims;
+    }
+}
 
 public class PlayerMapRenderer extends MapRenderer {
 
@@ -42,12 +114,16 @@ public class PlayerMapRenderer extends MapRenderer {
     private final int offsetX;
     private final int offsetZ;
 
+    private Map<Team, ArrayList<Chunk>> claims;
+
     private BufferedImage background;
     private BufferedImage frame;
+    private RenderPlayerClaims renderPlayerClaims;
 
     public PlayerMapRenderer(int xOffset, int zOffset) {
         this.offsetX = xOffset;
         this.offsetZ = zOffset;
+        claims = new HashMap<Team, ArrayList<Chunk>>();
     }
 
     public PlayerMapRenderer(@NotNull MapRegistry.PlayerMap playerMap) {
@@ -84,6 +160,11 @@ public class PlayerMapRenderer extends MapRenderer {
             exception.printStackTrace();
         }
 
+        // this ended up being too slow
+        // TODO: Figure out how to make this faster
+        //enderPlayerClaims = new RenderPlayerClaims(SPSSpigot.getWorldGroup(SPSSpigot.server().getWorlds().get(0)));
+        //renderPlayerClaims.start();
+
         // load generated images
         try {
             background = ImageIO.read(new File(SPSSpigot.plugin().getDataFolder(),"worldCache" + offsetZ + "," +  offsetX +".png"));
@@ -104,6 +185,8 @@ public class PlayerMapRenderer extends MapRenderer {
         if (!hasRendered) {
             Collection<Player> onlinePlayers = (Collection<Player>) SPSSpigot.server().getOnlinePlayers();
             World world = SPSSpigot.server().getWorlds().get(0);
+
+            //claims = renderPlayerClaims.getClaims();
 
             // load background cache
             canvas.drawImage(0, 0, background);
@@ -126,6 +209,29 @@ public class PlayerMapRenderer extends MapRenderer {
                             exception.printStackTrace();
                         }
                     }
+
+                    // unfortunately this is too slow
+                    /*
+                    if (claims != null) {
+                        int seed = 0;
+                        for (Map.Entry<Team, ArrayList<Chunk>> claimSet : claims.entrySet()) {
+                            Random rand = new Random();
+                            rand.setSeed(seed);
+                            int teamColor = rand.nextInt(255 - 0) + 0;
+                            for (Chunk chunk : claimSet.getValue()) {
+                                try {
+                                    if (chunk.getBlock(0,0,0).getLocation().getX() < (((x + 1) * 16) + offsetX) + 32 && chunk.getBlock(0,0,0).getLocation().getX() >= (((x + 1) * 16) + offsetX) - 16) {
+                                        if (chunk.getBlock(0,0,0).getLocation().getZ() < (((z + 1) * 16) + offsetZ) + 32 && chunk.getBlock(0,0,0).getLocation().getZ() >= (((z + 1) * 16) + offsetZ) - 16) {
+                                            canvas.setPixel(x, z, MapPalette.matchColor(teamColor, 0, teamColor));
+                                        }
+                                    }
+                                } catch (Exception exception) {
+                                    exception.printStackTrace();
+                                }
+                            }
+                            seed++;
+                        }
+                    }*/
                 }
             }
         }

@@ -12,9 +12,9 @@
       <option name="url" value="https://jitpack.io" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="spigot-repo" />
-      <option name="name" value="spigot-repo" />
-      <option name="url" value="https://hub.spigotmc.org/nexus/content/repositories/snapshots/" />
+      <option name="id" value="papermc" />
+      <option name="name" value="papermc" />
+      <option name="url" value="https://papermc.io/repo/repository/maven-public/" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="Haoshoku-NickAPI" />
@@ -27,14 +27,29 @@
       <option name="url" value="https://repo.codemc.io/repository/maven-public/" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="inventive-repo" />
-      <option name="name" value="inventive-repo" />
-      <option name="url" value="https://repo.inventivetalent.org/content/groups/public/" />
-    </remote-repository>
-    <remote-repository>
       <option name="id" value="central" />
       <option name="name" value="Maven Central repository" />
       <option name="url" value="https://repo1.maven.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="upstream" />
+      <option name="name" value="upstream" />
+      <option name="url" value="http://ci.nametagedit.com/plugin/repository/everything/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="sk89q-repo" />
+      <option name="name" value="sk89q-repo" />
+      <option name="url" value="https://maven.enginehub.org/repo/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="spigot-repo" />
+      <option name="name" value="spigot-repo" />
+      <option name="url" value="https://hub.spigotmc.org/nexus/content/repositories/snapshots/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="inventive-repo" />
+      <option name="name" value="inventive-repo" />
+      <option name="url" value="https://repo.inventivetalent.org/content/groups/public/" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="upstream" />
@@ -47,14 +62,9 @@
       <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="upstream" />
-      <option name="name" value="upstream" />
-      <option name="url" value="http://ci.nametagedit.com/plugin/repository/everything/" />
-    </remote-repository>
-    <remote-repository>
-      <option name="id" value="sk89q-repo" />
-      <option name="name" value="sk89q-repo" />
-      <option name="url" value="https://maven.enginehub.org/repo/" />
+      <option name="id" value="public" />
+      <option name="name" value="public" />
+      <option name="url" value="http://haoshoku.xyz:8081/repository/public" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="alvinb-repo" />

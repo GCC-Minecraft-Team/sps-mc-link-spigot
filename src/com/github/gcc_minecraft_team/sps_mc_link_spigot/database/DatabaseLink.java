@@ -303,6 +303,15 @@ public class DatabaseLink {
         }
     }
 
+    @NotNull
+    public static String getEmailDomain(@NotNull UUID uuid) {
+        if (isRegistered(uuid)) {
+            return userCol.find(new Document("mcUUID", uuid.toString())).first().getString("oAuthEmail");
+        } else {
+            return "Unregistered User";
+        }
+    }
+
     /**
      * Gets the school a player goes to.
      * @param uuid The {@link UUID} of the player to check.
@@ -312,7 +321,11 @@ public class DatabaseLink {
         if (isRegistered(uuid)) {
             String fullName = userCol.find(new Document("mcUUID", uuid.toString())).first().getString("oAuthName");
             if (fullName != null) {
-                return fullName.split(" ")[4].trim();
+                if (fullName.split(" ").length >= 5) {
+                    return fullName.split(" ")[4].trim();
+                } else {
+                    return "EXT";
+                }
             } else {
                 return "";
             }
@@ -330,7 +343,11 @@ public class DatabaseLink {
         if (isRegistered(uuid)) {
             String fullName = userCol.find(new Document("mcUUID", uuid.toString())).first().getString("oAuthName");
             if (fullName != null) {
-                return fullName.split(" ")[5].trim();
+                if (fullName.split(" ").length >= 5) {
+                    return fullName.split(" ")[5].trim();
+                } else {
+                    return "";
+                }
             } else {
                 return "";
             }

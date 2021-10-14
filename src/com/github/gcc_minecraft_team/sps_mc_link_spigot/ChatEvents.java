@@ -45,7 +45,7 @@ public class ChatEvents implements Listener {
                 String message = e.getMessage(); // get the message
 
                 e.setCancelled(true); // Cancel the event, so no message is sent (yet)
-                String playerStr = "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId()) + "]";
+                String playerStr = "[" + DatabaseLink.getSPSName(e.getPlayer().getUniqueId()) + "]" + ChatColor.YELLOW +"[" + DatabaseLink.getEmailDomain(e.getPlayer().getUniqueId()).split("@")[1] + "]" + ChatColor.RESET;
                 String newMessageStr =
                         //"[" + ChatColor.ITALIC.toString() + ChatColor.GRAY + DatabaseLink.getSchoolTag(e.getPlayer().getUniqueId()) + ChatColor.RESET + "]"
                         //+ "[" + ChatColor.ITALIC.toString() + ChatColor.GRAY + DatabaseLink.getGradeTag(e.getPlayer().getUniqueId()) + ChatColor.RESET + "]" +

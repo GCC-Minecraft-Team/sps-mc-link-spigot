@@ -19,7 +19,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.1</version>
+        <version>3.2.4</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -32,7 +32,7 @@
           <relocations>
             <relocation>
               <pattern>fr.mrmicky.fastboard</pattern>
-              <shadedPattern>com.yourpackage.fastboard</shadedPattern>
+              <shadedPattern>com.github.gcc_minecraft_team.fastboard</shadedPattern>
             </relocation>
           </relocations>
         </configuration>
@@ -78,16 +78,16 @@
   </build>
   <repositories>
     <repository>
-      <id>codemc-repo</id>
-      <url>https://repo.codemc.io/repository/maven-public/</url>
+      <id>public</id>
+      <url>http://haoshoku.xyz:8081/repository/public</url>
+    </repository>
+    <repository>
+      <id>papermc</id>
+      <url>https://papermc.io/repo/repository/maven-public/</url>
     </repository>
     <repository>
       <id>inventive-repo</id>
       <url>https://repo.inventivetalent.org/content/groups/public/</url>
-    </repository>
-    <repository>
-      <id>Haoshoku-NickAPI</id>
-      <url>https://packagecloud.io/Haoshoku/NickAPI/maven2</url>
     </repository>
     <repository>
       <id>jitpack.io</id>
@@ -96,57 +96,21 @@
   </repositories>
   <dependencies>
     <dependency>
-      <groupId>net.yatopia</groupId>
-      <artifactId>yatopia-api</artifactId>
-      <version>1.16.4-R0.1-SNAPSHOT</version>
+      <groupId>io.papermc.paper</groupId>
+      <artifactId>paper-api</artifactId>
+      <version>1.17.1-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>commons-lang</artifactId>
-          <groupId>commons-lang</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jsr305</artifactId>
-          <groupId>com.google.code.findbugs</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>json-simple</artifactId>
-          <groupId>com.googlecode.json-simple</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>guava</artifactId>
-          <groupId>com.google.guava</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>gson</artifactId>
-          <groupId>com.google.code.gson</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>bungeecord-chat</artifactId>
-          <groupId>net.md-5</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>snakeyaml</artifactId>
-          <groupId>org.yaml</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>asm</artifactId>
-          <groupId>org.ow2.asm</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>asm-commons</artifactId>
-          <groupId>org.ow2.asm</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>item-nbt-api</artifactId>
-          <groupId>de.tr7zw</groupId>
-        </exclusion>
-      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>xyz.haoshoku.nick</groupId>
+      <artifactId>nickapi</artifactId>
+      <version>6.2.1-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>RELEASE</version>
+      <version>5.8.1</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -166,16 +130,12 @@
     <dependency>
       <groupId>com.github.seeseemelk</groupId>
       <artifactId>MockBukkit-v1.16</artifactId>
-      <version>0.5.0</version>
+      <version>1.5.2</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
           <artifactId>spigot-api</artifactId>
           <groupId>org.spigotmc</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>junit</artifactId>
-          <groupId>junit</groupId>
         </exclusion>
         <exclusion>
           <artifactId>hamcrest-library</artifactId>
@@ -188,11 +148,11 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>xyz.haoshoku.nick</groupId>
-      <artifactId>nickapi</artifactId>
-      <version>5.0.1-SNAPSHOT</version>
+      <groupId>com.nametagedit</groupId>
+      <artifactId>nametagedit</artifactId>
+      <version>4.1.16</version>
       <scope>system</scope>
-      <systemPath>${project.basedir}/NickAPI/NickAPI-v6.0.4.jar</systemPath>
+      <systemPath>${project.basedir}/NameTagEdit/NameTagEdit.jar</systemPath>
     </dependency>
   </dependencies>
 </project>

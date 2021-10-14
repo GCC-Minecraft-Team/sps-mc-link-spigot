@@ -18,8 +18,10 @@ public class LeaveEvent implements Listener {
         // shutdown and remove the map thread
         ClaimBoard.removeBoard(event.getPlayer().getUniqueId());
         // remove the compass thread and shut it down
-        SPSSpigot.plugin().compassThreads.get(event.getPlayer().getUniqueId()).stop();
-        SPSSpigot.plugin().compassThreads.remove(event.getPlayer().getUniqueId());
+        if (SPSSpigot.plugin().compassThreads.get(event.getPlayer().getUniqueId()) != null) {
+            SPSSpigot.plugin().compassThreads.get(event.getPlayer().getUniqueId()).stop();
+            SPSSpigot.plugin().compassThreads.remove(event.getPlayer().getUniqueId());
+        }
 
         event.setQuitMessage("");
     }

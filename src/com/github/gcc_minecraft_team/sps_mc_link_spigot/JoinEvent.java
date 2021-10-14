@@ -3,6 +3,7 @@ package com.github.gcc_minecraft_team.sps_mc_link_spigot;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.ClaimBoard;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.claims.WorldGroup;
 import com.github.gcc_minecraft_team.sps_mc_link_spigot.database.DatabaseLink;
+import com.nametagedit.plugin.NametagEdit;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -58,7 +59,7 @@ public class JoinEvent implements Listener {
 
                 int maxLength = Math.min(userNoFormat.length(), 15);
                 Bukkit.getScheduler().scheduleSyncDelayedTask(SPSSpigot.plugin(), () -> {
-                    NickAPI.nick(player, userNoFormat.substring(0, maxLength));
+                    NickAPI.nick(player, userNoFormat);
                     NickAPI.refreshPlayer(player);
                 }, 20);
             }
