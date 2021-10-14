@@ -85,6 +85,14 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub GCC-Minecraft-Team Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/GCC-Minecraft-Team/sps-mc-link-spigot</url>
+        </repository>
+    </distributionManagement>
+
     <repositories>
         <repository>
             <id>nick-api-haoshoku</id>
