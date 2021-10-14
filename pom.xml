@@ -87,8 +87,9 @@
 
     <repositories>
         <repository>
-            <id>public</id>
-            <url>http://haoshoku.xyz:8081/repository/public</url>
+            <id>nick-api-haoshoku</id>
+            <name>Nick API</name>
+            <url>https://nickapi.nlaha.com/repository/nick-api-haoshoku/</url>
         </repository>
         <repository>
             <id>papermc</id>

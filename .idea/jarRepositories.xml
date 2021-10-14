@@ -67,6 +67,11 @@
       <option name="url" value="http://haoshoku.xyz:8081/repository/public" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="nick-api-haoshoku" />
+      <option name="name" value="Nick API" />
+      <option name="url" value="https://nickapi.nlaha.com/repository/nick-api-haoshoku/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="alvinb-repo" />
       <option name="name" value="alvinb-repo" />
       <option name="url" value="http://repo.bringholm.com/" />

@@ -59,15 +59,6 @@
     <orderEntry type="library" name="Maven: io.jsonwebtoken:jjwt:0.9.1" level="project" />
     <orderEntry type="library" name="Maven: jakarta.xml.bind:jakarta.xml.bind-api:3.0.1" level="project" />
     <orderEntry type="library" name="Maven: com.sun.activation:jakarta.activation:2.0.1" level="project" />
-    <orderEntry type="module-library">
-      <library name="Maven: com.nametagedit:nametagedit:4.1.16">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/NameTagEdit/NameTagEdit.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="library" name="Maven: io.javalin:javalin:4.1.0" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jetty:jetty-server:9.4.44.v20210927" level="project" />
     <orderEntry type="library" name="Maven: javax.servlet:javax.servlet-api:3.1.0" level="project" />
