@@ -133,13 +133,6 @@
             <version>3.0.1</version>
         </dependency>
         <dependency>
-            <groupId>com.nametagedit</groupId>
-            <artifactId>nametagedit</artifactId>
-            <version>4.1.16</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/NameTagEdit/NameTagEdit.jar</systemPath>
-        </dependency>
-        <dependency>
             <groupId>io.javalin</groupId>
             <artifactId>javalin</artifactId>
             <version>4.1.0</version>
